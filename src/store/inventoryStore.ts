@@ -37,8 +37,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   addItem: async (item) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      set({ error: 'Du måste tillhöra ett hushåll för att lägga till varor' })
-      return
+      throw new Error('Du måste tillhöra ett hushåll för att lägga till varor')
     }
     const now = new Date().toISOString()
     const { error } = await supabase.from('inventory').insert({
@@ -53,18 +52,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       created_at: now,
       updated_at: now,
     })
-    if (error) {
-      set({ error: error.message })
-    } else {
-      get().fetchItems()
-    }
+    if (error) throw new Error(error.message)
+    get().fetchItems()
   },
 
   addItems: async (items) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      set({ error: 'Du måste tillhöra ett hushåll för att lägga till varor' })
-      return
+      throw new Error('Du måste tillhöra ett hushåll för att lägga till varor')
     }
     const now = new Date().toISOString()
     const rows = items.map((item) => ({
@@ -80,11 +75,8 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       updated_at: now,
     }))
     const { error } = await supabase.from('inventory').insert(rows)
-    if (error) {
-      set({ error: error.message })
-    } else {
-      get().fetchItems()
-    }
+    if (error) throw new Error(error.message)
+    get().fetchItems()
   },
 
   updateItem: async (id, updates) => {
