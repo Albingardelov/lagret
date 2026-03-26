@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { useHouseholdStore } from './householdStore'
-import type { InventoryItem, StorageLocation } from '../types'
+import type { InventoryItem } from '../types'
 
 function mapItem(row: Record<string, unknown>): InventoryItem {
   return {
@@ -10,7 +10,7 @@ function mapItem(row: Record<string, unknown>): InventoryItem {
     barcode: (row.barcode as string) ?? undefined,
     quantity: row.quantity as number,
     unit: row.unit as string,
-    location: row.location as StorageLocation,
+    location: row.location as string,
     expiryDate: (row.expiry_date as string) ?? undefined,
     category: (row.category as string) ?? undefined,
     createdAt: row.created_at as string,
@@ -29,7 +29,7 @@ interface InventoryState {
   addItems: (items: NewItem[]) => Promise<void>
   updateItem: (id: string, updates: Partial<InventoryItem>) => Promise<void>
   deleteItem: (id: string) => Promise<void>
-  getByLocation: (location: StorageLocation) => InventoryItem[]
+  getByLocation: (location: string) => InventoryItem[]
   getExpiringSoon: (days?: number) => InventoryItem[]
   subscribeRealtime: () => () => void
 }
