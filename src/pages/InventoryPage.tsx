@@ -27,6 +27,7 @@ export function InventoryPage() {
   } = useInventoryStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState<InventoryItem | null>(null)
+  const [activeTab, setActiveTab] = useState<StorageLocation>('pantry')
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
@@ -59,7 +60,7 @@ export function InventoryPage() {
           <Loader />
         </Center>
       ) : (
-        <Tabs defaultValue="pantry">
+        <Tabs value={activeTab} onChange={(v) => setActiveTab((v as StorageLocation) ?? 'pantry')}>
           <Tabs.List>
             {TABS.map((t) => (
               <Tabs.Tab key={t.value} value={t.value} leftSection={t.icon}>
@@ -94,7 +95,11 @@ export function InventoryPage() {
         </Tabs>
       )}
 
-      <AddItemModal opened={modalOpen} onClose={() => setModalOpen(false)} />
+      <AddItemModal
+        opened={modalOpen}
+        onClose={() => setModalOpen(false)}
+        defaultLocation={activeTab}
+      />
       <EditItemModal item={editItem} onClose={() => setEditItem(null)} />
     </Stack>
   )

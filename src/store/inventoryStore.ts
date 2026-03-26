@@ -103,9 +103,17 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   updateItem: async (id, updates) => {
+    const dbUpdates: Record<string, unknown> = { updated_at: new Date().toISOString() }
+    if (updates.name !== undefined) dbUpdates.name = updates.name
+    if (updates.quantity !== undefined) dbUpdates.quantity = updates.quantity
+    if (updates.unit !== undefined) dbUpdates.unit = updates.unit
+    if (updates.location !== undefined) dbUpdates.location = updates.location
+    if (updates.expiryDate !== undefined) dbUpdates.expiry_date = updates.expiryDate ?? null
+    if (updates.category !== undefined) dbUpdates.category = updates.category ?? null
+    if (updates.barcode !== undefined) dbUpdates.barcode = updates.barcode ?? null
     const { data, error } = await supabase
       .from('inventory')
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(dbUpdates)
       .eq('id', id)
       .select()
       .single()

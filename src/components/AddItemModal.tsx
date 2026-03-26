@@ -25,9 +25,10 @@ interface Props {
   opened: boolean
   onClose: () => void
   defaultBarcode?: string
+  defaultLocation?: StorageLocation
 }
 
-export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
+export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation }: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
   const [showScanner, setShowScanner] = useState(false)
@@ -43,7 +44,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
       barcode: defaultBarcode ?? '',
       quantity: 1,
       unit: 'st',
-      location: 'pantry' as StorageLocation,
+      location: (defaultLocation ?? 'pantry') as StorageLocation,
       expiryDate: null as Date | null,
       category: '',
     },
