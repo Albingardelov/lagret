@@ -73,8 +73,10 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
   const handleSubmit = form.onSubmit(async (values) => {
     setSubmitError(null)
     setSubmitting(true)
-    const base = { ...values, expiryDate: values.expiryDate?.toISOString().split('T')[0] }
     try {
+      const d = values.expiryDate
+      const expiryDate = d instanceof Date ? d.toISOString().split('T')[0] : (d ?? undefined)
+      const base = { ...values, expiryDate }
       if (splitCount && splitCount > 1 && quantityPerPart !== null) {
         await addItems(
           Array.from({ length: splitCount }, () => ({ ...base, quantity: quantityPerPart }))
