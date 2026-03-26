@@ -56,7 +56,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (error) {
       set({ error: error.message })
     } else {
-      await get().fetchItems()
+      get().fetchItems()
     }
   },
 
@@ -83,7 +83,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (error) {
       set({ error: error.message })
     } else {
-      await get().fetchItems()
+      get().fetchItems()
     }
   },
 
