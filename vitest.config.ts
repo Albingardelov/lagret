@@ -15,11 +15,14 @@ export default defineConfig({
         'src/lib/supabase.ts', // bara env-config, inte testbar isolerat
       ],
       thresholds: {
-        // Trösklar ökas per issue när tester skrivs:
-        // issue #5 → recipes.ts täckt
-        // issue #6 → inventoryStore.ts täckt
         // issue #7 → useScanner.ts täckt
         'src/lib/recipes.ts': {
+          lines: 80,
+          functions: 80,
+          branches: 80,
+          statements: 80,
+        },
+        'src/store/inventoryStore.ts': {
           lines: 80,
           functions: 80,
           branches: 80,

@@ -65,11 +65,14 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   getByLocation: (location) => get().items.filter((i) => i.location === location),
 
   getExpiringSoon: (days = 3) => {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
     const cutoff = new Date()
     cutoff.setDate(cutoff.getDate() + days)
     return get().items.filter((i) => {
       if (!i.expiryDate) return false
-      return new Date(i.expiryDate) <= cutoff
+      const expiry = new Date(i.expiryDate)
+      return expiry >= today && expiry <= cutoff
     })
   },
 }))
