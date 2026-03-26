@@ -19,18 +19,19 @@ import { useState } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
 import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
-import type { StorageLocation } from '../types'
+import { useLocationsStore } from '../store/locationsStore'
 
 interface Props {
   opened: boolean
   onClose: () => void
   defaultBarcode?: string
-  defaultLocation?: StorageLocation
+  defaultLocation?: string // now a UUID string
 }
 
 export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation }: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
+  const locations = useLocationsStore((s) => s.locations)
   const [showScanner, setShowScanner] = useState(false)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupFailed, setLookupFailed] = useState(false)
@@ -44,7 +45,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
       barcode: defaultBarcode ?? '',
       quantity: 1,
       unit: 'st',
-      location: (defaultLocation ?? 'pantry') as StorageLocation,
+      location: defaultLocation ?? locations[0]?.id ?? '',
       expiryDate: null as Date | null,
       category: '',
     },
@@ -156,11 +157,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
             </Group>
             <Select
               label="Förvaringsplats"
-              data={[
-                { value: 'pantry', label: 'Skafferi' },
-                { value: 'fridge', label: 'Kylskåp' },
-                { value: 'freezer', label: 'Frys' },
-              ]}
+              data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
               {...form.getInputProps('location')}
             />
             <DateInput
