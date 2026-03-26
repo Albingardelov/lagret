@@ -8,13 +8,8 @@ interface Props {
 }
 
 export function AuthGuard({ children }: Props) {
-  const { user, loading, initialize } = useAuthStore()
+  const { user, loading } = useAuthStore()
   const navigate = useNavigate()
-
-  useEffect(() => {
-    const unsubscribe = initialize()
-    return unsubscribe
-  }, [initialize])
 
   useEffect(() => {
     if (!loading && !user) {
