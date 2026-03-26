@@ -24,4 +24,11 @@ export default defineConfig([
       globals: globals.browser,
     },
   },
+  {
+    // react-refresh-regler är inte relevanta för testfiler
+    files: ['**/__tests__/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}'],
+    rules: {
+      'react-refresh/only-export-components': 'off',
+    },
+  },
 ])
