@@ -52,8 +52,6 @@ jobs:
   e2e:
     name: E2E Tests (Playwright)
     runs-on: ubuntu-latest
-    # Aktiveras när issue #8 (Playwright-setup) är klar
-    if: false
 
     steps:
       - uses: actions/checkout@v4
