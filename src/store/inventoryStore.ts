@@ -41,15 +41,22 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       return
     }
     const now = new Date().toISOString()
-    const { data, error } = await supabase
-      .from('inventory')
-      .insert({ ...item, household_id: householdId, created_at: now, updated_at: now })
-      .select()
-      .single()
+    const { error } = await supabase.from('inventory').insert({
+      household_id: householdId,
+      name: item.name,
+      barcode: item.barcode ?? null,
+      quantity: item.quantity,
+      unit: item.unit,
+      location: item.location,
+      expiry_date: item.expiryDate ?? null,
+      category: item.category ?? null,
+      created_at: now,
+      updated_at: now,
+    })
     if (error) {
       set({ error: error.message })
-    } else if (data) {
-      set((s) => ({ items: [...s.items, data as InventoryItem] }))
+    } else {
+      await get().fetchItems()
     }
   },
 
@@ -61,16 +68,22 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     }
     const now = new Date().toISOString()
     const rows = items.map((item) => ({
-      ...item,
       household_id: householdId,
+      name: item.name,
+      barcode: item.barcode ?? null,
+      quantity: item.quantity,
+      unit: item.unit,
+      location: item.location,
+      expiry_date: item.expiryDate ?? null,
+      category: item.category ?? null,
       created_at: now,
       updated_at: now,
     }))
-    const { data, error } = await supabase.from('inventory').insert(rows).select()
+    const { error } = await supabase.from('inventory').insert(rows)
     if (error) {
       set({ error: error.message })
-    } else if (data) {
-      set((s) => ({ items: [...s.items, ...(data as InventoryItem[])] }))
+    } else {
+      await get().fetchItems()
     }
   },
 
