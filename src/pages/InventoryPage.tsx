@@ -4,9 +4,10 @@ import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-reac
 import { useInventoryStore } from '../store/inventoryStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
+import { EditItemModal } from '../components/EditItemModal'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
-import type { StorageLocation } from '../types'
+import type { InventoryItem, StorageLocation } from '../types'
 
 const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] = [
   { value: 'pantry', label: 'Skafferi', icon: <IconBox size={16} /> },
@@ -25,6 +26,7 @@ export function InventoryPage() {
     subscribeRealtime,
   } = useInventoryStore()
   const [modalOpen, setModalOpen] = useState(false)
+  const [editItem, setEditItem] = useState<InventoryItem | null>(null)
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
@@ -78,7 +80,12 @@ export function InventoryPage() {
                   </Text>
                 ) : (
                   getByLocation(t.value).map((item) => (
-                    <ItemCard key={item.id} item={item} onEdit={() => {}} onDelete={deleteItem} />
+                    <ItemCard
+                      key={item.id}
+                      item={item}
+                      onEdit={setEditItem}
+                      onDelete={deleteItem}
+                    />
                   ))
                 )}
               </Stack>
@@ -88,6 +95,7 @@ export function InventoryPage() {
       )}
 
       <AddItemModal opened={modalOpen} onClose={() => setModalOpen(false)} />
+      <EditItemModal item={editItem} onClose={() => setEditItem(null)} />
     </Stack>
   )
 }
