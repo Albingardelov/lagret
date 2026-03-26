@@ -10,6 +10,7 @@ import {
   Loader,
   Divider,
   Badge,
+  Alert,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
@@ -32,6 +33,8 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
   const [showScanner, setShowScanner] = useState(false)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupFailed, setLookupFailed] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
   const [splitCount, setSplitCount] = useState<number | null>(null)
 
   const form = useForm({
@@ -68,13 +71,27 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
       : null
 
   const handleSubmit = form.onSubmit(async (values) => {
+    setSubmitError(null)
+    setSubmitting(true)
     const base = { ...values, expiryDate: values.expiryDate?.toISOString().split('T')[0] }
-    if (splitCount && splitCount > 1 && quantityPerPart !== null) {
-      await addItems(
-        Array.from({ length: splitCount }, () => ({ ...base, quantity: quantityPerPart }))
-      )
-    } else {
-      await addItem(base)
+    try {
+      if (splitCount && splitCount > 1 && quantityPerPart !== null) {
+        await addItems(
+          Array.from({ length: splitCount }, () => ({ ...base, quantity: quantityPerPart }))
+        )
+      } else {
+        await addItem(base)
+      }
+    } catch (e) {
+      setSubmitError(e instanceof Error ? e.message : 'Något gick fel')
+      setSubmitting(false)
+      return
+    }
+    const storeError = useInventoryStore.getState().error
+    if (storeError) {
+      setSubmitError(storeError)
+      setSubmitting(false)
+      return
     }
     // Spara i det delade registret om streckkod finns (fire-and-forget)
     if (values.barcode && values.name) {
@@ -84,9 +101,11 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
         category: values.category || undefined,
       }).catch(() => {})
     }
+    setSubmitting(false)
     form.reset()
     setSplitCount(null)
     setLookupFailed(false)
+    setSubmitError(null)
     onClose()
   })
 
@@ -196,7 +215,13 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
               </Stack>
             )}
 
-            <Button type="submit" fullWidth>
+            {submitError && (
+              <Alert color="red" title="Fel">
+                {submitError}
+              </Alert>
+            )}
+
+            <Button type="submit" fullWidth loading={submitting}>
               {splitCount && splitCount > 1 ? `Lägg till ${splitCount} delar` : 'Lägg till'}
             </Button>
           </Stack>
