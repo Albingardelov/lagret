@@ -1,0 +1,41 @@
+export type StorageLocation = 'pantry' | 'fridge' | 'freezer'
+
+export interface InventoryItem {
+  id: string
+  name: string
+  barcode?: string
+  quantity: number
+  unit: string
+  location: StorageLocation
+  expiryDate?: string // ISO date string
+  imageUrl?: string
+  category?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Recipe {
+  idMeal: string
+  strMeal: string
+  strMealThumb: string
+  strCategory: string
+  strArea: string
+  strInstructions: string
+  strYoutube?: string
+  ingredients: { name: string; measure: string }[]
+}
+
+export interface MealDBResponse {
+  meals: MealDBMeal[] | null
+}
+
+export interface MealDBMeal {
+  idMeal: string
+  strMeal: string
+  strMealThumb: string
+  strCategory: string
+  strArea: string
+  strInstructions: string
+  strYoutube: string
+  [key: string]: string
+}
