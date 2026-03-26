@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { AppShell, UnstyledButton, Stack, Text, ActionIcon, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
 import { useAuthStore } from '../store/authStore'
+import { useHouseholdStore } from '../store/householdStore'
 import { OfflineBanner } from './OfflineBanner'
 
 const NAV_ITEMS = [
@@ -15,6 +17,11 @@ export function AppLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const signOut = useAuthStore((s) => s.signOut)
+  const fetchHousehold = useHouseholdStore((s) => s.fetchHousehold)
+
+  useEffect(() => {
+    fetchHousehold()
+  }, [fetchHousehold])
 
   const handleSignOut = async () => {
     await signOut()
