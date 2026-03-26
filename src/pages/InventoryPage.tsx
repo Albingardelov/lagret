@@ -5,6 +5,7 @@ import { useInventoryStore } from '../store/inventoryStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
 import { useErrorNotification } from '../hooks/useErrorNotification'
+import { NotificationBanner } from '../components/NotificationBanner'
 import type { StorageLocation } from '../types'
 
 const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] = [
@@ -35,6 +36,7 @@ export function InventoryPage() {
 
   return (
     <Stack p="md">
+      <NotificationBanner />
       {expiring.length > 0 && (
         <Badge color="orange" size="lg" fullWidth>
           {expiring.length} vara{expiring.length > 1 ? 'r' : ''} går snart ut!

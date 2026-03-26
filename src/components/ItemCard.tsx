@@ -36,10 +36,19 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
           )}
         </Stack>
         <Group gap={4}>
-          <ActionIcon variant="subtle" onClick={() => onEdit(item)}>
+          <ActionIcon
+            variant="subtle"
+            onClick={() => onEdit(item)}
+            aria-label={`Redigera ${item.name}`}
+          >
             <IconEdit size={16} />
           </ActionIcon>
-          <ActionIcon variant="subtle" color="red" onClick={() => onDelete(item.id)}>
+          <ActionIcon
+            variant="subtle"
+            color="red"
+            onClick={() => onDelete(item.id)}
+            aria-label={`Ta bort ${item.name}`}
+          >
             <IconTrash size={16} />
           </ActionIcon>
         </Group>

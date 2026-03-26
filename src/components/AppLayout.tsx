@@ -2,6 +2,7 @@ import { AppShell, UnstyledButton, Stack, Text, ActionIcon, Group } from '@manti
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
 import { useAuthStore } from '../store/authStore'
+import { OfflineBanner } from './OfflineBanner'
 
 const NAV_ITEMS = [
   { path: '/', label: 'Lager', icon: IconBox },
@@ -31,6 +32,7 @@ export function AppLayout() {
       </AppShell.Header>
       <AppShell.Main>
         <Outlet />
+        <OfflineBanner />
       </AppShell.Main>
       <AppShell.Footer>
         <Stack

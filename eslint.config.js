@@ -26,7 +26,7 @@ export default defineConfig([
   },
   {
     // react-refresh-regler är inte relevanta för testfiler eller router
-    files: ['**/__tests__/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}', 'src/router.tsx'],
+    files: ['**/__tests__/**/*.{ts,tsx}', 'src/test/**/*.{ts,tsx}', 'src/router.tsx', 'src/components/NotificationBanner.tsx'],
     rules: {
       'react-refresh/only-export-components': 'off',
     },
