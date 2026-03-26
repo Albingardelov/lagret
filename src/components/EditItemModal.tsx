@@ -3,7 +3,8 @@ import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { useState, useEffect } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
-import type { InventoryItem, StorageLocation } from '../types'
+import { useLocationsStore } from '../store/locationsStore'
+import type { InventoryItem } from '../types'
 
 interface Props {
   item: InventoryItem | null
@@ -12,6 +13,7 @@ interface Props {
 
 export function EditItemModal({ item, onClose }: Props) {
   const updateItem = useInventoryStore((s) => s.updateItem)
+  const locations = useLocationsStore((s) => s.locations)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -20,7 +22,7 @@ export function EditItemModal({ item, onClose }: Props) {
       name: '',
       quantity: 1,
       unit: 'st',
-      location: 'pantry' as StorageLocation,
+      location: '',
       expiryDate: null as Date | null,
       category: '',
     },
@@ -75,11 +77,7 @@ export function EditItemModal({ item, onClose }: Props) {
           </Group>
           <Select
             label="Förvaringsplats"
-            data={[
-              { value: 'pantry', label: 'Skafferi' },
-              { value: 'fridge', label: 'Kylskåp' },
-              { value: 'freezer', label: 'Frys' },
-            ]}
+            data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
             {...form.getInputProps('location')}
           />
           <DateInput
