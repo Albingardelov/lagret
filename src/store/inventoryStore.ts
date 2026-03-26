@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
+import { useHouseholdStore } from './householdStore'
 import type { InventoryItem, StorageLocation } from '../types'
 
 type NewItem = Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>
@@ -34,22 +35,41 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   addItem: async (item) => {
+    const householdId = useHouseholdStore.getState().household?.id
+    if (!householdId) {
+      set({ error: 'Du måste tillhöra ett hushåll för att lägga till varor' })
+      return
+    }
     const now = new Date().toISOString()
     const { data, error } = await supabase
       .from('inventory')
-      .insert({ ...item, created_at: now, updated_at: now })
+      .insert({ ...item, household_id: householdId, created_at: now, updated_at: now })
       .select()
       .single()
-    if (!error && data) {
+    if (error) {
+      set({ error: error.message })
+    } else if (data) {
       set((s) => ({ items: [...s.items, data as InventoryItem] }))
     }
   },
 
   addItems: async (items) => {
+    const householdId = useHouseholdStore.getState().household?.id
+    if (!householdId) {
+      set({ error: 'Du måste tillhöra ett hushåll för att lägga till varor' })
+      return
+    }
     const now = new Date().toISOString()
-    const rows = items.map((item) => ({ ...item, created_at: now, updated_at: now }))
+    const rows = items.map((item) => ({
+      ...item,
+      household_id: householdId,
+      created_at: now,
+      updated_at: now,
+    }))
     const { data, error } = await supabase.from('inventory').insert(rows).select()
-    if (!error && data) {
+    if (error) {
+      set({ error: error.message })
+    } else if (data) {
       set((s) => ({ items: [...s.items, ...(data as InventoryItem[])] }))
     }
   },
