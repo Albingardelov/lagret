@@ -1,6 +1,7 @@
-import { AppShell, UnstyledButton, Stack, Text } from '@mantine/core'
+import { AppShell, UnstyledButton, Stack, Text, ActionIcon, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { IconBox, IconBook2, IconShoppingCart, IconHome } from '@tabler/icons-react'
+import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
+import { useAuthStore } from '../store/authStore'
 
 const NAV_ITEMS = [
   { path: '/', label: 'Lager', icon: IconBox },
@@ -12,9 +13,22 @@ const NAV_ITEMS = [
 export function AppLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
+  const signOut = useAuthStore((s) => s.signOut)
+
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
 
   return (
-    <AppShell footer={{ height: 64 }} padding="md">
+    <AppShell footer={{ height: 64 }} header={{ height: 48 }} padding="md">
+      <AppShell.Header px="md">
+        <Group h="100%" justify="flex-end">
+          <ActionIcon variant="subtle" onClick={handleSignOut} aria-label="Logga ut">
+            <IconLogout size={18} />
+          </ActionIcon>
+        </Group>
+      </AppShell.Header>
       <AppShell.Main>
         <Outlet />
       </AppShell.Main>
