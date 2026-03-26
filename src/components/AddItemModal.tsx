@@ -76,13 +76,13 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
     } else {
       await addItem(base)
     }
-    // Spara i det delade registret om streckkod finns
+    // Spara i det delade registret om streckkod finns (fire-and-forget)
     if (values.barcode && values.name) {
-      await saveBarcodeRegistry(values.barcode, {
+      saveBarcodeRegistry(values.barcode, {
         name: values.name,
         unit: values.unit,
         category: values.category || undefined,
-      })
+      }).catch(() => {})
     }
     form.reset()
     setSplitCount(null)
