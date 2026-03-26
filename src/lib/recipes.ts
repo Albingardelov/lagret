@@ -1,4 +1,5 @@
 import type { MealDBMeal, MealDBResponse, Recipe } from '../types'
+import { getCached, setCache } from './recipeMatching'
 
 const BASE_URL = 'https://www.themealdb.com/api/json/v1/1'
 
@@ -33,10 +34,15 @@ export async function searchRecipesByIngredient(ingredient: string): Promise<Rec
 }
 
 export async function getRecipeById(id: string): Promise<Recipe | null> {
+  const cacheKey = `recipe:${id}`
+  const cached = getCached<Recipe>(cacheKey)
+  if (cached) return cached
   const res = await fetch(`${BASE_URL}/lookup.php?i=${id}`)
   const data: MealDBResponse = await res.json()
   if (!data.meals?.[0]) return null
-  return parseMeal(data.meals[0])
+  const recipe = parseMeal(data.meals[0])
+  setCache(cacheKey, recipe)
+  return recipe
 }
 
 export async function searchRecipesByName(name: string): Promise<Recipe[]> {
