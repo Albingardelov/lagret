@@ -1,15 +1,5 @@
 {
   "permissions": {
-    "allow": [
-      "Bash(gh api:*)",
-      "Bash(git push:*)",
-      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" npm run:*)",
-      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" npm install:*)",
-      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" git add:*)",
-      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" git push:*)",
-      "Bash(gh run:*)",
-      "Bash(gh issue:*)",
-      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" npx husky:*)"
-    ]
+    "allow": ["Bash(*)", "Edit(*)", "Write(*)", "Read(*)", "Glob(*)", "Grep(*)"]
   }
 }

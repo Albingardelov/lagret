@@ -23,7 +23,7 @@ npm run test:e2e     # Playwright (när det är uppsatt, issue #8)
 
 | Del                | Teknologi                                          |
 | ------------------ | -------------------------------------------------- |
-| UI                 | React 19 + Vite 8 + TypeScript                     |
+| UI                 | React 19 + Vite 7 + TypeScript                     |
 | Komponentbibliotek | Mantine 8 (ej Tailwind)                            |
 | Ikoner             | `@tabler/icons-react`                              |
 | State              | Zustand                                            |
@@ -63,7 +63,14 @@ På Vercel läggs samma variabler in i projektinställningarna.
 
 ## Databas
 
-Migrationer ligger i `supabase/migrations/`. Tabeller: `households`, `household_members`, `inventory`, `shopping_list`. RLS är aktiverat – en användare når bara sin households data. Se issue #3 för fullt schema.
+Migrationer ligger i `supabase/migrations/`. Tabeller: `households`, `household_members`, `inventory`, `shopping_list`.
+
+- RLS aktiverat på alla tabeller – helper `is_household_member(uuid)` används i alla policies
+- `updated_at`-trigger på `inventory` uppdateras automatiskt
+- Realtime aktiverat för `inventory` och `shopping_list`
+- Seed-data för lokal dev: `supabase/seed.sql` (kör med `supabase db reset`)
+
+Lokal Supabase: `supabase start` / `supabase stop`
 
 ## Git-regler
 
