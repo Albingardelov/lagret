@@ -21,10 +21,11 @@ RETURNS boolean AS $$
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- ---- households ----
--- Användaren ser bara hushåll de tillhör
+-- Inloggad användare kan se hushåll (krävs för att söka på inbjudningskod).
+-- Åtkomst till känslig data (inventory, shopping) skyddas av egna policies.
 CREATE POLICY "households: member read"
   ON households FOR SELECT
-  USING (is_household_member(id));
+  USING (is_household_member(id) OR auth.uid() IS NOT NULL);
 
 -- Ny rad: vem som helst som är inloggad kan skapa ett hushåll
 CREATE POLICY "households: authenticated create"
