@@ -11,7 +11,8 @@ import {
   Paper,
   Anchor,
 } from '@mantine/core'
-import { IconBrandGoogle, IconMail, IconCheck } from '@tabler/icons-react'
+import { IconBrandGoogle, IconCheck, IconMail } from '@tabler/icons-react'
+import { useNavigate } from 'react-router-dom'
 import { useAuthStore } from '../store/authStore'
 
 type Mode = 'login' | 'register' | 'magic'
@@ -19,6 +20,7 @@ type Mode = 'login' | 'register' | 'magic'
 export function LoginPage() {
   const { signInWithEmail, signInWithPassword, signUpWithPassword, signInWithGoogle } =
     useAuthStore()
+  const navigate = useNavigate()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -33,6 +35,7 @@ export function LoginPage() {
     try {
       if (mode === 'login') {
         await signInWithPassword(email.trim(), password)
+        navigate('/', { replace: true })
       } else if (mode === 'register') {
         await signUpWithPassword(email.trim(), password)
         setSent(true)
