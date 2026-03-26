@@ -12,11 +12,21 @@ import {
 } from '@mantine/core'
 import { IconPlus, IconTrash } from '@tabler/icons-react'
 import { useShoppingStore } from '../store/shoppingStore'
+import { useErrorNotification } from '../hooks/useErrorNotification'
 
 export function ShoppingListPage() {
-  const { items, loading, fetchItems, addItem, toggleBought, clearBought, subscribeRealtime } =
-    useShoppingStore()
+  const {
+    items,
+    loading,
+    error,
+    fetchItems,
+    addItem,
+    toggleBought,
+    clearBought,
+    subscribeRealtime,
+  } = useShoppingStore()
   const [name, setName] = useState('')
+  useErrorNotification(error, 'Inköpslistefel')
   const [note, setNote] = useState('')
 
   useEffect(() => {

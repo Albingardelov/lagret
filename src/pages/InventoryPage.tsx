@@ -4,6 +4,7 @@ import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-reac
 import { useInventoryStore } from '../store/inventoryStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
+import { useErrorNotification } from '../hooks/useErrorNotification'
 import type { StorageLocation } from '../types'
 
 const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] = [
@@ -13,8 +14,9 @@ const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] =
 ]
 
 export function InventoryPage() {
-  const { loading, deleteItem, getByLocation, getExpiringSoon } = useInventoryStore()
+  const { loading, error, deleteItem, getByLocation, getExpiringSoon } = useInventoryStore()
   const [modalOpen, setModalOpen] = useState(false)
+  useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
   return (
