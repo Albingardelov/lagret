@@ -1,10 +1,21 @@
-import { Modal, TextInput, NumberInput, Select, Button, Stack, Group } from '@mantine/core'
+import {
+  Modal,
+  TextInput,
+  NumberInput,
+  Select,
+  Button,
+  Stack,
+  Group,
+  Text,
+  Loader,
+} from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { IconBarcode } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
+import { lookupBarcode } from '../lib/openFoodFacts'
 import type { StorageLocation } from '../types'
 
 interface Props {
@@ -16,6 +27,8 @@ interface Props {
 export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
   const [showScanner, setShowScanner] = useState(false)
+  const [lookupLoading, setLookupLoading] = useState(false)
+  const [lookupFailed, setLookupFailed] = useState(false)
 
   const form = useForm({
     initialValues: {
@@ -29,34 +42,38 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
     },
   })
 
+  const handleBarcode = async (code: string) => {
+    form.setFieldValue('barcode', code)
+    setShowScanner(false)
+    setLookupFailed(false)
+    setLookupLoading(true)
+    const product = await lookupBarcode(code)
+    setLookupLoading(false)
+    if (product) {
+      form.setFieldValue('name', product.name)
+      if (product.category) form.setFieldValue('category', product.category)
+    } else {
+      setLookupFailed(true)
+    }
+  }
+
   const handleSubmit = form.onSubmit(async (values) => {
     await addItem({
       ...values,
       expiryDate: values.expiryDate?.toISOString().split('T')[0],
     })
     form.reset()
+    setLookupFailed(false)
     onClose()
   })
 
   return (
     <Modal opened={opened} onClose={onClose} title="Lägg till vara">
       {showScanner ? (
-        <Scanner
-          onBarcode={(code) => {
-            form.setFieldValue('barcode', code)
-            setShowScanner(false)
-          }}
-          onClose={() => setShowScanner(false)}
-        />
+        <Scanner onBarcode={handleBarcode} onClose={() => setShowScanner(false)} />
       ) : (
         <form onSubmit={handleSubmit}>
           <Stack>
-            <TextInput
-              label="Namn"
-              placeholder="T.ex. Mjölk"
-              required
-              {...form.getInputProps('name')}
-            />
             <Group align="flex-end">
               <TextInput
                 label="Streckkod"
@@ -72,6 +89,28 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
                 Skanna
               </Button>
             </Group>
+
+            {lookupLoading && (
+              <Group gap="xs">
+                <Loader size="xs" />
+                <Text size="sm" c="dimmed">
+                  Söker produktinformation...
+                </Text>
+              </Group>
+            )}
+
+            {lookupFailed && (
+              <Text size="sm" c="orange">
+                Produkten hittades inte. Fyll i uppgifterna manuellt.
+              </Text>
+            )}
+
+            <TextInput
+              label="Namn"
+              placeholder="T.ex. Mjölk"
+              required
+              {...form.getInputProps('name')}
+            />
             <Group grow>
               <NumberInput label="Antal" min={0} step={0.5} {...form.getInputProps('quantity')} />
               <TextInput label="Enhet" placeholder="st, kg, l..." {...form.getInputProps('unit')} />
