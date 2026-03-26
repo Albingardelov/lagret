@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center } from '@mantine/core'
 import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
@@ -14,10 +14,24 @@ const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] =
 ]
 
 export function InventoryPage() {
-  const { loading, error, deleteItem, getByLocation, getExpiringSoon } = useInventoryStore()
+  const {
+    loading,
+    error,
+    fetchItems,
+    deleteItem,
+    getByLocation,
+    getExpiringSoon,
+    subscribeRealtime,
+  } = useInventoryStore()
   const [modalOpen, setModalOpen] = useState(false)
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
+
+  useEffect(() => {
+    fetchItems()
+    const unsubscribe = subscribeRealtime()
+    return unsubscribe
+  }, [fetchItems, subscribeRealtime])
 
   return (
     <Stack p="md">

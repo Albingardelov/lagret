@@ -12,6 +12,7 @@ interface InventoryState {
   deleteItem: (id: string) => Promise<void>
   getByLocation: (location: StorageLocation) => InventoryItem[]
   getExpiringSoon: (days?: number) => InventoryItem[]
+  subscribeRealtime: () => () => void
 }
 
 export const useInventoryStore = create<InventoryState>((set, get) => ({
@@ -63,6 +64,18 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   },
 
   getByLocation: (location) => get().items.filter((i) => i.location === location),
+
+  subscribeRealtime: () => {
+    const channel = supabase
+      .channel('inventory_changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'inventory' }, () => {
+        get().fetchItems()
+      })
+      .subscribe()
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  },
 
   getExpiringSoon: (days = 3) => {
     const today = new Date()

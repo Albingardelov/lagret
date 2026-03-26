@@ -25,6 +25,13 @@ export interface Recipe {
   ingredients: { name: string; measure: string }[]
 }
 
+export interface Household {
+  id: string
+  name: string
+  inviteCode: string
+  createdAt: string
+}
+
 export interface ShoppingItem {
   id: string
   householdId: string
