@@ -3,6 +3,25 @@ import { http, HttpResponse } from 'msw'
 // Supabase REST API base – matchar VITE_SUPABASE_URL i tester
 const BASE = 'http://localhost:54321/rest/v1'
 
+export const MOCK_SHOPPING_ITEMS = [
+  {
+    id: 'shop-1',
+    household_id: 'hh-1',
+    name: 'Mjölk',
+    note: null,
+    is_bought: false,
+    created_at: '2026-03-26T00:00:00Z',
+  },
+  {
+    id: 'shop-2',
+    household_id: 'hh-1',
+    name: 'Bröd',
+    note: 'Surdeg',
+    is_bought: true,
+    created_at: '2026-03-26T00:00:00Z',
+  },
+]
+
 export const MOCK_ITEMS = [
   {
     id: 'item-1',
@@ -50,6 +69,27 @@ export const supabaseHandlers = [
   }),
 
   http.delete(`${BASE}/inventory`, () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get(`${BASE}/shopping_list`, () => {
+    return HttpResponse.json(MOCK_SHOPPING_ITEMS)
+  }),
+
+  http.post(`${BASE}/shopping_list`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>
+    return HttpResponse.json(
+      { ...body, id: 'new-shop-id', is_bought: false, created_at: new Date().toISOString() },
+      { status: 201 }
+    )
+  }),
+
+  http.patch(`${BASE}/shopping_list`, async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>
+    return HttpResponse.json({ ...MOCK_SHOPPING_ITEMS[0], ...body })
+  }),
+
+  http.delete(`${BASE}/shopping_list`, () => {
     return new HttpResponse(null, { status: 204 })
   }),
 ]

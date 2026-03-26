@@ -25,6 +25,15 @@ export interface Recipe {
   ingredients: { name: string; measure: string }[]
 }
 
+export interface ShoppingItem {
+  id: string
+  householdId: string
+  name: string
+  note?: string
+  isBought: boolean
+  createdAt: string
+}
+
 export interface MealDBResponse {
   meals: MealDBMeal[] | null
 }
