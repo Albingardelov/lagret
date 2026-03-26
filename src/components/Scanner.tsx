@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Button, Stack, Text, Alert } from '@mantine/core'
-import { IconScan, IconX } from '@tabler/icons-react'
+import { IconX } from '@tabler/icons-react'
 import { useScanner } from '../hooks/useScanner'
 
 interface ScannerProps {

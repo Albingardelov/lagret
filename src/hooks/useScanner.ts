@@ -12,7 +12,7 @@ export function useScanner(onResult: (barcode: string) => void) {
     readerRef.current = reader
     setScanning(true)
     try {
-      await reader.decodeFromVideoDevice(undefined, videoElement, (result, err) => {
+      await reader.decodeFromVideoDevice(null, videoElement, (result, err) => {
         if (result) {
           onResult(result.getText())
           stopScanning()

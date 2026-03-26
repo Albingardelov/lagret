@@ -1,12 +1,12 @@
 import { useState } from 'react'
 import {
-  Tabs, Button, Stack, Text, Group, Badge, ActionIcon, Loader, Center
+  Tabs, Button, Stack, Text, Group, Badge, Loader, Center
 } from '@mantine/core'
 import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
-import type { InventoryItem, StorageLocation } from '../types'
+import type { StorageLocation } from '../types'
 
 const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] = [
   { value: 'pantry', label: 'Skafferi', icon: <IconBox size={16} /> },
@@ -17,7 +17,6 @@ const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] =
 export function InventoryPage() {
   const { loading, deleteItem, getByLocation, getExpiringSoon } = useInventoryStore()
   const [modalOpen, setModalOpen] = useState(false)
-  const [editItem, setEditItem] = useState<InventoryItem | null>(null)
   const expiring = getExpiringSoon(3)
 
   return (
@@ -60,7 +59,7 @@ export function InventoryPage() {
                     <ItemCard
                       key={item.id}
                       item={item}
-                      onEdit={setEditItem}
+                      onEdit={() => {}}
                       onDelete={deleteItem}
                     />
                   ))

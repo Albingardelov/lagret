@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api:*)",
+      "Bash(git push:*)",
+      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" npm run:*)",
+      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" npm install:*)",
+      "Bash(PATH=\"$HOME/.nvm/versions/node/v24.14.1/bin:$PATH\" git add:*)"
+    ]
+  }
+}
