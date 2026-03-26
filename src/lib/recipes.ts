@@ -1,5 +1,6 @@
 import type { MealDBMeal, MealDBResponse, Recipe } from '../types'
 import { getCached, setCache } from './recipeMatching'
+import { translateToEnglish, translateQueryToEnglish } from './ingredientTranslations'
 
 const BASE_URL = 'https://www.themealdb.com/api/json/v1/1'
 
@@ -25,7 +26,9 @@ function parseMeal(meal: MealDBMeal): Recipe {
 }
 
 export async function searchRecipesByIngredient(ingredient: string): Promise<Recipe[]> {
-  const res = await fetch(`${BASE_URL}/filter.php?i=${encodeURIComponent(ingredient)}`)
+  const res = await fetch(
+    `${BASE_URL}/filter.php?i=${encodeURIComponent(translateToEnglish(ingredient))}`
+  )
   const data: MealDBResponse = await res.json()
   if (!data.meals) return []
   // filter.php returns partial data — fetch full details for first 10
@@ -46,7 +49,9 @@ export async function getRecipeById(id: string): Promise<Recipe | null> {
 }
 
 export async function searchRecipesByName(name: string): Promise<Recipe[]> {
-  const res = await fetch(`${BASE_URL}/search.php?s=${encodeURIComponent(name)}`)
+  const res = await fetch(
+    `${BASE_URL}/search.php?s=${encodeURIComponent(translateQueryToEnglish(name))}`
+  )
   const data: MealDBResponse = await res.json()
   if (!data.meals) return []
   return data.meals.map(parseMeal)
