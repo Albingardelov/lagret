@@ -3,6 +3,21 @@ import { supabase } from '../lib/supabase'
 import { useHouseholdStore } from './householdStore'
 import type { InventoryItem, StorageLocation } from '../types'
 
+function mapItem(row: Record<string, unknown>): InventoryItem {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    barcode: (row.barcode as string) ?? undefined,
+    quantity: row.quantity as number,
+    unit: row.unit as string,
+    location: row.location as StorageLocation,
+    expiryDate: (row.expiry_date as string) ?? undefined,
+    category: (row.category as string) ?? undefined,
+    createdAt: row.created_at as string,
+    updatedAt: row.updated_at as string,
+  }
+}
+
 type NewItem = Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>
 
 interface InventoryState {
@@ -30,7 +45,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (error) {
       set({ error: error.message, loading: false })
     } else {
-      set({ items: data as InventoryItem[], loading: false })
+      set({ items: (data as Record<string, unknown>[]).map(mapItem), loading: false })
     }
   },
 
@@ -96,7 +111,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       .single()
     if (!error && data) {
       set((s) => ({
-        items: s.items.map((i) => (i.id === id ? (data as InventoryItem) : i)),
+        items: s.items.map((i) => (i.id === id ? mapItem(data as Record<string, unknown>) : i)),
       }))
     }
   },
