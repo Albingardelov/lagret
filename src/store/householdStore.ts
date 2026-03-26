@@ -46,9 +46,12 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: hhError?.message ?? 'Okänt fel', loading: false })
       return
     }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const { error: memberError } = await supabase
       .from('household_members')
-      .insert({ household_id: hh.id })
+      .insert({ household_id: hh.id, user_id: user?.id })
     if (memberError) {
       set({ error: memberError.message, loading: false })
       return
@@ -67,9 +70,12 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: 'Hittade inget hushåll med den koden', loading: false })
       return
     }
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
     const { error: memberError } = await supabase
       .from('household_members')
-      .insert({ household_id: hh.id })
+      .insert({ household_id: hh.id, user_id: user?.id })
     if (memberError) {
       set({ error: memberError.message, loading: false })
       return
