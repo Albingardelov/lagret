@@ -1,4 +1,13 @@
-export type StorageLocation = 'pantry' | 'fridge' | 'freezer'
+export type LocationIcon = 'pantry' | 'fridge' | 'freezer'
+
+export interface StorageLocation {
+  id: string
+  householdId: string
+  name: string
+  icon: LocationIcon
+  sortOrder: number
+  createdAt: string
+}
 
 export interface InventoryItem {
   id: string
@@ -6,7 +15,7 @@ export interface InventoryItem {
   barcode?: string
   quantity: number
   unit: string
-  location: StorageLocation
+  location: string // UUID referencing storage_locations.id
   expiryDate?: string // ISO date string
   imageUrl?: string
   category?: string
