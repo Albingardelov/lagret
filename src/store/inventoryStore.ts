@@ -37,10 +37,13 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   addItem: async (item) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      throw new Error('Du måste tillhöra ett hushåll för att lägga till varor')
+      throw new Error('Inget hushåll laddat – logga ut och in igen')
     }
     const now = new Date().toISOString()
-    const { error } = await supabase.from('inventory').insert({
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout: ingen svar från databasen (10s)')), 10000)
+    )
+    const insert = supabase.from('inventory').insert({
       household_id: householdId,
       name: item.name,
       barcode: item.barcode ?? null,
@@ -52,6 +55,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       created_at: now,
       updated_at: now,
     })
+    const { error } = await Promise.race([insert, timeout])
     if (error) throw new Error(error.message)
     get().fetchItems()
   },
@@ -59,7 +63,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   addItems: async (items) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      throw new Error('Du måste tillhöra ett hushåll för att lägga till varor')
+      throw new Error('Inget hushåll laddat – logga ut och in igen')
     }
     const now = new Date().toISOString()
     const rows = items.map((item) => ({
@@ -74,7 +78,11 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       created_at: now,
       updated_at: now,
     }))
-    const { error } = await supabase.from('inventory').insert(rows)
+    const timeout = new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('Timeout: ingen svar från databasen (10s)')), 10000)
+    )
+    const insert = supabase.from('inventory').insert(rows)
+    const { error } = await Promise.race([insert, timeout])
     if (error) throw new Error(error.message)
     get().fetchItems()
   },
