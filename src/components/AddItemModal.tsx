@@ -17,7 +17,7 @@ import { IconBarcode, IconScissors } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
-import { lookupBarcode } from '../lib/openFoodFacts'
+import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
 import type { StorageLocation } from '../types'
 
 interface Props {
@@ -51,11 +51,12 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
     setShowScanner(false)
     setLookupFailed(false)
     setLookupLoading(true)
-    const product = await lookupBarcode(code)
+    const entry = await lookupBarcodeRegistry(code)
     setLookupLoading(false)
-    if (product) {
-      form.setFieldValue('name', product.name)
-      if (product.category) form.setFieldValue('category', product.category)
+    if (entry) {
+      form.setFieldValue('name', entry.name)
+      form.setFieldValue('unit', entry.unit)
+      if (entry.category) form.setFieldValue('category', entry.category)
     } else {
       setLookupFailed(true)
     }
@@ -74,6 +75,14 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
       )
     } else {
       await addItem(base)
+    }
+    // Spara i det delade registret om streckkod finns
+    if (values.barcode && values.name) {
+      await saveBarcodeRegistry(values.barcode, {
+        name: values.name,
+        unit: values.unit,
+        category: values.category || undefined,
+      })
     }
     form.reset()
     setSplitCount(null)
@@ -115,7 +124,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
 
             {lookupFailed && (
               <Text size="sm" c="orange">
-                Produkten hittades inte. Fyll i uppgifterna manuellt.
+                Okänd streckkod — fyll i namn och enhet så sparas den för nästa gång.
               </Text>
             )}
 
