@@ -8,10 +8,12 @@ import {
   Group,
   Text,
   Loader,
+  Divider,
+  Badge,
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
-import { IconBarcode } from '@tabler/icons-react'
+import { IconBarcode, IconScissors } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
@@ -26,9 +28,11 @@ interface Props {
 
 export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
+  const addItems = useInventoryStore((s) => s.addItems)
   const [showScanner, setShowScanner] = useState(false)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupFailed, setLookupFailed] = useState(false)
+  const [splitCount, setSplitCount] = useState<number | null>(null)
 
   const form = useForm({
     initialValues: {
@@ -57,12 +61,22 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
     }
   }
 
+  const quantityPerPart =
+    splitCount && splitCount > 1
+      ? Math.round((form.values.quantity / splitCount) * 100) / 100
+      : null
+
   const handleSubmit = form.onSubmit(async (values) => {
-    await addItem({
-      ...values,
-      expiryDate: values.expiryDate?.toISOString().split('T')[0],
-    })
+    const base = { ...values, expiryDate: values.expiryDate?.toISOString().split('T')[0] }
+    if (splitCount && splitCount > 1 && quantityPerPart !== null) {
+      await addItems(
+        Array.from({ length: splitCount }, () => ({ ...base, quantity: quantityPerPart }))
+      )
+    } else {
+      await addItem(base)
+    }
     form.reset()
+    setSplitCount(null)
     setLookupFailed(false)
     onClose()
   })
@@ -135,8 +149,46 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
               placeholder="Mejeri, Kött, Grönsaker..."
               {...form.getInputProps('category')}
             />
+            <Divider />
+
+            {splitCount === null ? (
+              <Button
+                variant="light"
+                leftSection={<IconScissors size={16} />}
+                onClick={() => setSplitCount(2)}
+              >
+                Dela upp i portioner
+              </Button>
+            ) : (
+              <Stack gap="xs">
+                <Group align="flex-end">
+                  <NumberInput
+                    label="Antal delar"
+                    min={2}
+                    max={20}
+                    value={splitCount}
+                    onChange={(v) => setSplitCount(typeof v === 'number' ? v : 2)}
+                    style={{ flex: 1 }}
+                  />
+                  <Button variant="subtle" color="gray" onClick={() => setSplitCount(null)}>
+                    Avbryt
+                  </Button>
+                </Group>
+                {quantityPerPart !== null && (
+                  <Group gap="xs">
+                    <Text size="sm" c="dimmed">
+                      Varje del:
+                    </Text>
+                    <Badge variant="light">
+                      {quantityPerPart} {form.values.unit}
+                    </Badge>
+                  </Group>
+                )}
+              </Stack>
+            )}
+
             <Button type="submit" fullWidth>
-              Lägg till
+              {splitCount && splitCount > 1 ? `Lägg till ${splitCount} delar` : 'Lägg till'}
             </Button>
           </Stack>
         </form>

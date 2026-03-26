@@ -2,12 +2,15 @@ import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import type { InventoryItem, StorageLocation } from '../types'
 
+type NewItem = Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>
+
 interface InventoryState {
   items: InventoryItem[]
   loading: boolean
   error: string | null
   fetchItems: () => Promise<void>
-  addItem: (item: Omit<InventoryItem, 'id' | 'createdAt' | 'updatedAt'>) => Promise<void>
+  addItem: (item: NewItem) => Promise<void>
+  addItems: (items: NewItem[]) => Promise<void>
   updateItem: (id: string, updates: Partial<InventoryItem>) => Promise<void>
   deleteItem: (id: string) => Promise<void>
   getByLocation: (location: StorageLocation) => InventoryItem[]
@@ -39,6 +42,15 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       .single()
     if (!error && data) {
       set((s) => ({ items: [...s.items, data as InventoryItem] }))
+    }
+  },
+
+  addItems: async (items) => {
+    const now = new Date().toISOString()
+    const rows = items.map((item) => ({ ...item, created_at: now, updated_at: now }))
+    const { data, error } = await supabase.from('inventory').insert(rows).select()
+    if (!error && data) {
+      set((s) => ({ items: [...s.items, ...(data as InventoryItem[])] }))
     }
   },
 
