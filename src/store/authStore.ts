@@ -7,6 +7,8 @@ interface AuthState {
   session: Session | null
   loading: boolean
   signInWithEmail: (email: string) => Promise<void>
+  signInWithPassword: (email: string, password: string) => Promise<void>
+  signUpWithPassword: (email: string, password: string) => Promise<void>
   signInWithGoogle: () => Promise<void>
   signOut: () => Promise<void>
   initialize: () => () => void
@@ -29,6 +31,16 @@ export const useAuthStore = create<AuthState>((set) => ({
       email,
       options: { emailRedirectTo: window.location.origin },
     })
+  },
+
+  signInWithPassword: async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    if (error) throw error
+  },
+
+  signUpWithPassword: async (email, password) => {
+    const { error } = await supabase.auth.signUp({ email, password })
+    if (error) throw error
   },
 
   signInWithGoogle: async () => {
