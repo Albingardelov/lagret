@@ -87,12 +87,6 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
       setSubmitting(false)
       return
     }
-    const storeError = useInventoryStore.getState().error
-    if (storeError) {
-      setSubmitError(storeError)
-      setSubmitting(false)
-      return
-    }
     // Spara i det delade registret om streckkod finns (fire-and-forget)
     if (values.barcode && values.name) {
       saveBarcodeRegistry(values.barcode, {

@@ -23,6 +23,12 @@ vi.mock('../../lib/supabase', () => ({
   supabase: { from: mockFrom },
 }))
 
+vi.mock('../../store/householdStore', () => ({
+  useHouseholdStore: {
+    getState: () => ({ household: { id: 'hh-1' } }),
+  },
+}))
+
 const MOCK_ITEM: InventoryItem = {
   id: 'item-1',
   name: 'Mjölk',
@@ -80,7 +86,17 @@ describe('fetchItems', () => {
 
 describe('addItem', () => {
   it('lägger till nytt item i listan', async () => {
-    mockSingle.mockResolvedValueOnce({ data: MOCK_ITEM, error: null })
+    // insert returns no error; fetchItems (via mockOrder) returns the item
+    mockFrom.mockImplementationOnce(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValueOnce({ error: null }),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      order: mockOrder,
+      eq: mockEq.mockReturnThis(),
+      single: mockSingle,
+    }))
+    mockOrder.mockResolvedValueOnce({ data: [MOCK_ITEM], error: null })
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, createdAt, updatedAt, ...newItemData } = MOCK_ITEM
     await useInventoryStore.getState().addItem(newItemData)
@@ -89,7 +105,15 @@ describe('addItem', () => {
   })
 
   it('gör ingenting vid Supabase-fel', async () => {
-    mockSingle.mockResolvedValueOnce({ data: null, error: { message: 'fel' } })
+    mockFrom.mockImplementationOnce(() => ({
+      select: vi.fn().mockReturnThis(),
+      insert: vi.fn().mockResolvedValueOnce({ error: { message: 'fel' } }),
+      update: vi.fn().mockReturnThis(),
+      delete: vi.fn().mockReturnThis(),
+      order: mockOrder,
+      eq: mockEq.mockReturnThis(),
+      single: mockSingle,
+    }))
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, createdAt, updatedAt, ...newItemData } = MOCK_ITEM
     await useInventoryStore.getState().addItem(newItemData)

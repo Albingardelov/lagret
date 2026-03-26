@@ -2,18 +2,25 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useHouseholdStore } from '../householdStore'
 import type { Household } from '../../types'
 
-const { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom } = vi.hoisted(() => {
-  const mockMaybeSingle = vi.fn()
-  const mockSingle = vi.fn()
-  const mockEq = vi.fn()
-  const mockInsert = vi.fn()
-  const mockSelect = vi.fn()
-  const mockFrom = vi.fn()
-  return { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom }
-})
+const { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, mockGetUser } =
+  vi.hoisted(() => {
+    const mockMaybeSingle = vi.fn()
+    const mockSingle = vi.fn()
+    const mockEq = vi.fn()
+    const mockInsert = vi.fn()
+    const mockSelect = vi.fn()
+    const mockFrom = vi.fn()
+    const mockGetUser = vi.fn()
+    return { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, mockGetUser }
+  })
 
 vi.mock('../../lib/supabase', () => ({
-  supabase: { from: mockFrom },
+  supabase: {
+    from: mockFrom,
+    auth: {
+      getUser: mockGetUser,
+    },
+  },
 }))
 
 function defaultFromImpl() {
@@ -44,6 +51,7 @@ const MOCK_HH: Household = {
 beforeEach(() => {
   vi.resetAllMocks()
   mockFrom.mockImplementation(defaultFromImpl)
+  mockGetUser.mockResolvedValue({ data: { user: { id: 'test-user-id' } } })
   useHouseholdStore.setState({ household: null, loading: false, error: null })
 })
 

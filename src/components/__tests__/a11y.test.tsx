@@ -1,15 +1,23 @@
 import { describe, it, expect, vi } from 'vitest'
 import { axe } from 'jest-axe'
 import { render } from '../../test/utils'
+import { MemoryRouter } from 'react-router-dom'
 import { ItemCard } from '../ItemCard'
 import { ErrorBoundary } from '../ErrorBoundary'
 import { LoginPage } from '../../pages/LoginPage'
 import type { InventoryItem } from '../../types'
 
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
+  return { ...actual, useNavigate: () => vi.fn() }
+})
+
 vi.mock('../../store/authStore', () => ({
   useAuthStore: () => ({
     signInWithEmail: vi.fn(),
     signInWithGoogle: vi.fn(),
+    signInWithPassword: vi.fn(),
+    signUpWithPassword: vi.fn(),
   }),
 }))
 
@@ -41,7 +49,11 @@ describe('Accessibility (axe)', () => {
   })
 
   it('LoginPage har inga axe-violations', async () => {
-    const { container } = render(<LoginPage />)
+    const { container } = render(
+      <MemoryRouter>
+        <LoginPage />
+      </MemoryRouter>
+    )
     const results = await axe(container)
     expect(results).toHaveNoViolations()
   })
