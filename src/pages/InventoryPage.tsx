@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center } from '@mantine/core'
 import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
+import { useLocationsStore } from '../store/locationsStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
 import { EditItemModal } from '../components/EditItemModal'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
-import type { InventoryItem, StorageLocation } from '../types'
+import type { LocationIcon } from '../types'
 
-const TABS: { value: StorageLocation; label: string; icon: React.ReactNode }[] = [
-  { value: 'pantry', label: 'Skafferi', icon: <IconBox size={16} /> },
-  { value: 'fridge', label: 'Kylskåp', icon: <IconFridge size={16} /> },
-  { value: 'freezer', label: 'Frys', icon: <IconSnowflake size={16} /> },
-]
+const ICON_MAP: Record<LocationIcon, React.ReactNode> = {
+  pantry: <IconBox size={16} />,
+  fridge: <IconFridge size={16} />,
+  freezer: <IconSnowflake size={16} />,
+}
 
 export function InventoryPage() {
   const {
@@ -25,17 +26,21 @@ export function InventoryPage() {
     getExpiringSoon,
     subscribeRealtime,
   } = useInventoryStore()
+  const { locations, fetchLocations } = useLocationsStore()
   const [modalOpen, setModalOpen] = useState(false)
-  const [editItem, setEditItem] = useState<InventoryItem | null>(null)
-  const [activeTab, setActiveTab] = useState<StorageLocation>('pantry')
+  const [editItem, setEditItem] = useState(null as import('../types').InventoryItem | null)
+  const [activeTab, setActiveTab] = useState<string>('')
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
   useEffect(() => {
     fetchItems()
+    fetchLocations()
     const unsubscribe = subscribeRealtime()
     return unsubscribe
-  }, [fetchItems, subscribeRealtime])
+  }, [fetchItems, fetchLocations, subscribeRealtime])
+
+  const effectiveTab = useMemo(() => activeTab || locations[0]?.id || '', [activeTab, locations])
 
   return (
     <Stack p="md">
@@ -60,27 +65,27 @@ export function InventoryPage() {
           <Loader />
         </Center>
       ) : (
-        <Tabs value={activeTab} onChange={(v) => setActiveTab((v as StorageLocation) ?? 'pantry')}>
+        <Tabs value={effectiveTab} onChange={(v) => setActiveTab(v ?? '')}>
           <Tabs.List>
-            {TABS.map((t) => (
-              <Tabs.Tab key={t.value} value={t.value} leftSection={t.icon}>
-                {t.label}
+            {locations.map((loc) => (
+              <Tabs.Tab key={loc.id} value={loc.id} leftSection={ICON_MAP[loc.icon]}>
+                {loc.name}
                 <Badge ml={6} size="xs" variant="light">
-                  {getByLocation(t.value).length}
+                  {getByLocation(loc.id).length}
                 </Badge>
               </Tabs.Tab>
             ))}
           </Tabs.List>
 
-          {TABS.map((t) => (
-            <Tabs.Panel key={t.value} value={t.value} pt="md">
+          {locations.map((loc) => (
+            <Tabs.Panel key={loc.id} value={loc.id} pt="md">
               <Stack gap="xs">
-                {getByLocation(t.value).length === 0 ? (
+                {getByLocation(loc.id).length === 0 ? (
                   <Text c="dimmed" ta="center" py="xl">
                     Tomt här!
                   </Text>
                 ) : (
-                  getByLocation(t.value).map((item) => (
+                  getByLocation(loc.id).map((item) => (
                     <ItemCard
                       key={item.id}
                       item={item}
@@ -98,7 +103,7 @@ export function InventoryPage() {
       <AddItemModal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        defaultLocation={activeTab}
+        defaultLocation={effectiveTab}
       />
       <EditItemModal item={editItem} onClose={() => setEditItem(null)} />
     </Stack>
