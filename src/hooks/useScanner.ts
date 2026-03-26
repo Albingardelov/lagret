@@ -6,6 +6,12 @@ export function useScanner(onResult: (barcode: string) => void) {
   const [scanning, setScanning] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  const stopScanning = useCallback(() => {
+    readerRef.current?.reset()
+    readerRef.current = null
+    setScanning(false)
+  }, [])
+
   const startScanning = useCallback(async (videoElement: HTMLVideoElement) => {
     setError(null)
     const reader = new BrowserMultiFormatReader()
@@ -25,13 +31,7 @@ export function useScanner(onResult: (barcode: string) => void) {
       setError(e instanceof Error ? e.message : 'Kunde inte starta kameran')
       setScanning(false)
     }
-  }, [onResult])
-
-  const stopScanning = useCallback(() => {
-    readerRef.current?.reset()
-    readerRef.current = null
-    setScanning(false)
-  }, [])
+  }, [onResult, stopScanning])
 
   return { scanning, error, startScanning, stopScanning }
 }

@@ -17,7 +17,7 @@ export function Scanner({ onBarcode, onClose }: ScannerProps) {
       startScanning(videoRef.current)
     }
     return () => stopScanning()
-  }, [])
+  }, [startScanning, stopScanning])
 
   return (
     <Stack>
