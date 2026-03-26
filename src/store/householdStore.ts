@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import type { Household } from '../types'
+import { useLocationsStore } from './locationsStore'
 
 interface HouseholdState {
   household: Household | null
@@ -56,6 +57,7 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: memberError.message, loading: false })
       return
     }
+    await useLocationsStore.getState().fetchLocations()
     set({ household: mapHousehold(hh as Record<string, string>), loading: false })
   },
 
@@ -80,6 +82,7 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: memberError.message, loading: false })
       return
     }
+    await useLocationsStore.getState().fetchLocations()
     set({ household: mapHousehold(hh as Record<string, string>), loading: false })
   },
 }))

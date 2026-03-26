@@ -14,6 +14,10 @@ const { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, m
     return { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, mockGetUser }
   })
 
+vi.mock('../locationsStore', () => ({
+  useLocationsStore: { getState: () => ({ fetchLocations: vi.fn() }) },
+}))
+
 vi.mock('../../lib/supabase', () => ({
   supabase: {
     from: mockFrom,
