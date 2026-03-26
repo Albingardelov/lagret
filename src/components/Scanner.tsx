@@ -26,10 +26,8 @@ export function Scanner({ onBarcode, onClose }: ScannerProps) {
           {error}
         </Alert>
       )}
-      <video
-        ref={videoRef}
-        style={{ width: '100%', borderRadius: 8, background: '#000' }}
-      />
+      {/* eslint-disable-next-line jsx-a11y/media-has-caption -- kamera-preview för streckkodsskanning, ej mediaspelare */}
+      <video ref={videoRef} style={{ width: '100%', borderRadius: 8, background: '#000' }} />
       <Text size="sm" c="dimmed" ta="center">
         {scanning ? 'Rikta kameran mot streckkoden...' : 'Startar kameran...'}
       </Text>
@@ -37,7 +35,10 @@ export function Scanner({ onBarcode, onClose }: ScannerProps) {
         leftSection={<IconX size={16} />}
         variant="subtle"
         color="red"
-        onClick={() => { stopScanning(); onClose() }}
+        onClick={() => {
+          stopScanning()
+          onClose()
+        }}
       >
         Avbryt
       </Button>

@@ -1,7 +1,5 @@
 import { useState } from 'react'
-import {
-  Tabs, Button, Stack, Text, Group, Badge, Loader, Center
-} from '@mantine/core'
+import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center } from '@mantine/core'
 import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { ItemCard } from '../components/ItemCard'
@@ -28,14 +26,18 @@ export function InventoryPage() {
       )}
 
       <Group justify="space-between">
-        <Text fw={700} size="xl">Lagret</Text>
+        <Text fw={700} size="xl">
+          Lagret
+        </Text>
         <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
           Lägg till
         </Button>
       </Group>
 
       {loading ? (
-        <Center h={200}><Loader /></Center>
+        <Center h={200}>
+          <Loader />
+        </Center>
       ) : (
         <Tabs defaultValue="pantry">
           <Tabs.List>
@@ -53,15 +55,12 @@ export function InventoryPage() {
             <Tabs.Panel key={t.value} value={t.value} pt="md">
               <Stack gap="xs">
                 {getByLocation(t.value).length === 0 ? (
-                  <Text c="dimmed" ta="center" py="xl">Tomt här!</Text>
+                  <Text c="dimmed" ta="center" py="xl">
+                    Tomt här!
+                  </Text>
                 ) : (
                   getByLocation(t.value).map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      onEdit={() => {}}
-                      onDelete={deleteItem}
-                    />
+                    <ItemCard key={item.id} item={item} onEdit={() => {}} onDelete={deleteItem} />
                   ))
                 )}
               </Stack>
@@ -70,10 +69,7 @@ export function InventoryPage() {
         </Tabs>
       )}
 
-      <AddItemModal
-        opened={modalOpen}
-        onClose={() => setModalOpen(false)}
-      />
+      <AddItemModal opened={modalOpen} onClose={() => setModalOpen(false)} />
     </Stack>
   )
 }

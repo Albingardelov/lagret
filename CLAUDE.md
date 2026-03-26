@@ -21,20 +21,20 @@ npm run test:e2e     # Playwright (när det är uppsatt, issue #8)
 
 ## Stack
 
-| Del | Teknologi |
-|-----|-----------|
-| UI | React 19 + Vite 8 + TypeScript |
-| Komponentbibliotek | Mantine 8 (ej Tailwind) |
-| Ikoner | `@tabler/icons-react` |
-| State | Zustand |
-| Databas/Auth | Supabase (realtid, RLS) |
-| Recept-API | TheMealDB (gratis, ingen nyckel) |
-| Produktinfo | Open Food Facts (gratis, ingen nyckel) – issue #13 |
-| Streckkod | ZXing (`@zxing/library`) |
-| Datum | dayjs |
-| Routing | React Router v7 |
-| PWA | vite-plugin-pwa + Workbox |
-| Tester | Vitest + React Testing Library + Playwright |
+| Del                | Teknologi                                          |
+| ------------------ | -------------------------------------------------- |
+| UI                 | React 19 + Vite 8 + TypeScript                     |
+| Komponentbibliotek | Mantine 8 (ej Tailwind)                            |
+| Ikoner             | `@tabler/icons-react`                              |
+| State              | Zustand                                            |
+| Databas/Auth       | Supabase (realtid, RLS)                            |
+| Recept-API         | TheMealDB (gratis, ingen nyckel)                   |
+| Produktinfo        | Open Food Facts (gratis, ingen nyckel) – issue #13 |
+| Streckkod          | ZXing (`@zxing/library`)                           |
+| Datum              | dayjs                                              |
+| Routing            | React Router v7                                    |
+| PWA                | vite-plugin-pwa + Workbox                          |
+| Tester             | Vitest + React Testing Library + Playwright        |
 
 ## Arkitektur
 
@@ -73,6 +73,7 @@ Migrationer ligger i `supabase/migrations/`. Tabeller: `households`, `household_
 ## Issues och milestones
 
 Projektet är strukturerat i 4 milestones på GitHub:
+
 1. **Grund & Infrastruktur** – CI/CD (#1), linting (#2), Supabase-schema (#3)
 2. **Testsvit** – Vitest (#4), enhetstester (#5–6), komponenttester (#7), Playwright (#8–10)
 3. **Kärnfunktioner** – Auth (#11), hushåll (#12), streckkodsskanning (#13), navigation (#14), inköpslista (#15), felhantering (#20)

@@ -51,7 +51,12 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
       ) : (
         <form onSubmit={handleSubmit}>
           <Stack>
-            <TextInput label="Namn" placeholder="T.ex. Mjölk" required {...form.getInputProps('name')} />
+            <TextInput
+              label="Namn"
+              placeholder="T.ex. Mjölk"
+              required
+              {...form.getInputProps('name')}
+            />
             <Group align="flex-end">
               <TextInput
                 label="Streckkod"
@@ -86,7 +91,11 @@ export function AddItemModal({ opened, onClose, defaultBarcode }: Props) {
               clearable
               {...form.getInputProps('expiryDate')}
             />
-            <TextInput label="Kategori" placeholder="Mejeri, Kött, Grönsaker..." {...form.getInputProps('category')} />
+            <TextInput
+              label="Kategori"
+              placeholder="Mejeri, Kött, Grönsaker..."
+              {...form.getInputProps('category')}
+            />
             <Button type="submit" fullWidth>
               Lägg till
             </Button>

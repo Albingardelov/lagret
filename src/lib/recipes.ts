@@ -28,9 +28,7 @@ export async function searchRecipesByIngredient(ingredient: string): Promise<Rec
   const data: MealDBResponse = await res.json()
   if (!data.meals) return []
   // filter.php returns partial data — fetch full details for first 10
-  const details = await Promise.all(
-    data.meals.slice(0, 10).map((m) => getRecipeById(m.idMeal))
-  )
+  const details = await Promise.all(data.meals.slice(0, 10).map((m) => getRecipeById(m.idMeal)))
   return details.filter(Boolean) as Recipe[]
 }
 

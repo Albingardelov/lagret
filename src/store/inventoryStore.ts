@@ -21,10 +21,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   fetchItems: async () => {
     set({ loading: true, error: null })
-    const { data, error } = await supabase
-      .from('inventory')
-      .select('*')
-      .order('name')
+    const { data, error } = await supabase.from('inventory').select('*').order('name')
     if (error) {
       set({ error: error.message, loading: false })
     } else {

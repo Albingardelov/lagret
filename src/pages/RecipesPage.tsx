@@ -1,7 +1,18 @@
 import { useState } from 'react'
 import {
-  Stack, Text, Button, Card, Image, Group, Badge, Loader, Center,
-  TextInput, Modal, ScrollArea, List
+  Stack,
+  Text,
+  Button,
+  Card,
+  Image,
+  Group,
+  Badge,
+  Loader,
+  Center,
+  TextInput,
+  Modal,
+  ScrollArea,
+  List,
 } from '@mantine/core'
 import { IconSearch, IconChefHat } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
@@ -33,7 +44,9 @@ export function RecipesPage() {
 
   return (
     <Stack p="md">
-      <Text fw={700} size="xl">Recept</Text>
+      <Text fw={700} size="xl">
+        Recept
+      </Text>
 
       <Button
         leftSection={<IconChefHat size={16} />}
@@ -58,7 +71,9 @@ export function RecipesPage() {
       </Group>
 
       {loading ? (
-        <Center h={200}><Loader /></Center>
+        <Center h={200}>
+          <Loader />
+        </Center>
       ) : (
         <Stack gap="xs">
           {recipes.map((recipe) => (
@@ -75,8 +90,12 @@ export function RecipesPage() {
                 <Stack gap={2} style={{ flex: 1 }}>
                   <Text fw={600}>{recipe.strMeal}</Text>
                   <Group gap={4}>
-                    <Badge size="xs" variant="light">{recipe.strCategory}</Badge>
-                    <Badge size="xs" variant="light" color="teal">{recipe.strArea}</Badge>
+                    <Badge size="xs" variant="light">
+                      {recipe.strCategory}
+                    </Badge>
+                    <Badge size="xs" variant="light" color="teal">
+                      {recipe.strArea}
+                    </Badge>
                   </Group>
                 </Stack>
               </Group>
