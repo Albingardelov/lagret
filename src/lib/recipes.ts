@@ -64,6 +64,20 @@ export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   return mapRecipe(data as RecipeRow)
 }
 
+export async function getRecentRecipes(limit = 20): Promise<Recipe[]> {
+  const { data, error } = await supabase
+    .from('recipes')
+    .select(
+      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+    )
+    .not('name', 'is', null)
+    .not('image_urls', 'eq', '[]')
+    .order('id', { ascending: false })
+    .limit(limit)
+  if (error || !data) return []
+  return (data as RecipeRow[]).map(mapRecipe)
+}
+
 export async function suggestRecipes(ingredientNames: string[], limit = 20): Promise<Recipe[]> {
   if (ingredientNames.length === 0) return []
   const { data, error } = await supabase.rpc('match_recipes_by_ingredients', {

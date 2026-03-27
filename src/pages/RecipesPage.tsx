@@ -29,7 +29,7 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
-import { suggestRecipes, searchRecipes } from '../lib/recipes'
+import { suggestRecipes, searchRecipes, getRecentRecipes } from '../lib/recipes'
 import { matchRecipes, ingredientsMatch } from '../lib/recipeMatching'
 import type { RecipeMatch } from '../lib/recipeMatching'
 
@@ -72,6 +72,22 @@ export function RecipesPage() {
   }, [favorites])
 
   const inventoryNames = items.map((i) => i.name)
+
+  useEffect(() => {
+    const loadInitial = async () => {
+      setLoading(true)
+      if (inventoryNames.length > 0) {
+        const results = await suggestRecipes(inventoryNames)
+        setMatches(matchRecipes(results, inventoryNames))
+      } else {
+        const results = await getRecentRecipes()
+        setMatches(matchRecipes(results, []))
+      }
+      setLoading(false)
+    }
+    loadInitial()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const handleSuggest = async () => {
     setLoading(true)
