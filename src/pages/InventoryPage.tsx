@@ -1,6 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center } from '@mantine/core'
-import { IconPlus, IconFridge, IconBox, IconSnowflake } from '@tabler/icons-react'
+import {
+  IconPlus,
+  IconFridge,
+  IconBox,
+  IconSnowflake,
+  IconAlertTriangle,
+  IconPackage,
+} from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { ItemCard } from '../components/ItemCard'
@@ -46,9 +53,12 @@ export function InventoryPage() {
     <Stack p="md">
       <NotificationBanner />
       {expiring.length > 0 && (
-        <Badge color="orange" size="lg" fullWidth>
-          {expiring.length} vara{expiring.length > 1 ? 'r' : ''} går snart ut!
-        </Badge>
+        <Group gap="xs">
+          <IconAlertTriangle size={16} color="var(--mantine-color-orange-6)" />
+          <Text size="sm" c="orange">
+            {expiring.length} vara{expiring.length > 1 ? 'r' : ''} går ut inom 3 dagar
+          </Text>
+        </Group>
       )}
 
       <Group justify="space-between">
@@ -81,9 +91,14 @@ export function InventoryPage() {
             <Tabs.Panel key={loc.id} value={loc.id} pt="md">
               <Stack gap="xs">
                 {getByLocation(loc.id).length === 0 ? (
-                  <Text c="dimmed" ta="center" py="xl">
-                    Tomt här!
-                  </Text>
+                  <Center py="xl">
+                    <Stack align="center" gap="xs">
+                      <IconPackage size={40} opacity={0.25} />
+                      <Text c="dimmed" size="sm">
+                        Inga varor här ännu
+                      </Text>
+                    </Stack>
+                  </Center>
                 ) : (
                   getByLocation(loc.id).map((item) => (
                     <ItemCard

@@ -1,4 +1,5 @@
 import type { Recipe } from '../types'
+import { translateToEnglish } from './ingredientTranslations'
 
 export interface RecipeMatch {
   recipe: Recipe
@@ -32,7 +33,7 @@ export function matchRecipe(recipe: Recipe, inventoryNames: string[]): RecipeMat
   const missing: string[] = []
 
   for (const ing of recipe.ingredients) {
-    const found = inventoryNames.some((inv) => ingredientsMatch(ing.name, inv))
+    const found = inventoryNames.some((inv) => ingredientsMatch(ing.name, translateToEnglish(inv)))
     if (found) {
       matched.push(ing.name)
     } else {

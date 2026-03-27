@@ -4,6 +4,7 @@ import { useForm } from '@mantine/form'
 import { useState, useEffect } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
+import { ITEM_CATEGORIES } from '../lib/categories'
 import type { InventoryItem } from '../types'
 
 interface Props {
@@ -86,9 +87,12 @@ export function EditItemModal({ item, onClose }: Props) {
             clearable
             {...form.getInputProps('expiryDate')}
           />
-          <TextInput
+          <Select
             label="Kategori"
-            placeholder="Mejeri, Kött, Grönsaker..."
+            placeholder="Välj kategori"
+            data={ITEM_CATEGORIES}
+            clearable
+            searchable
             {...form.getInputProps('category')}
           />
 

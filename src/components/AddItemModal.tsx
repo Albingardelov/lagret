@@ -14,12 +14,13 @@ import {
 } from '@mantine/core'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
-import { IconBarcode, IconScissors } from '@tabler/icons-react'
-import { useState } from 'react'
+import { IconBarcode, IconScissors, IconCheck, IconAlertTriangle } from '@tabler/icons-react'
+import { useState, useEffect } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
 import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
 import { useLocationsStore } from '../store/locationsStore'
+import { ITEM_CATEGORIES } from '../lib/categories'
 
 interface Props {
   opened: boolean
@@ -35,6 +36,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
   const [showScanner, setShowScanner] = useState(false)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupFailed, setLookupFailed] = useState(false)
+  const [lookupSuccess, setLookupSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [splitCount, setSplitCount] = useState<number | null>(null)
@@ -51,10 +53,18 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
     },
   })
 
+  useEffect(() => {
+    if (opened) {
+      form.setFieldValue('location', defaultLocation ?? locations[0]?.id ?? '')
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [opened])
+
   const handleBarcode = async (code: string) => {
     form.setFieldValue('barcode', code)
     setShowScanner(false)
     setLookupFailed(false)
+    setLookupSuccess(false)
     setLookupLoading(true)
     const entry = await lookupBarcodeRegistry(code)
     setLookupLoading(false)
@@ -62,6 +72,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
       form.setFieldValue('name', entry.name)
       form.setFieldValue('unit', entry.unit)
       if (entry.category) form.setFieldValue('category', entry.category)
+      setLookupSuccess(true)
     } else {
       setLookupFailed(true)
     }
@@ -103,6 +114,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
     form.reset()
     setSplitCount(null)
     setLookupFailed(false)
+    setLookupSuccess(false)
     setSubmitError(null)
     onClose()
   })
@@ -139,10 +151,16 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
               </Group>
             )}
 
+            {lookupSuccess && (
+              <Alert color="green" icon={<IconCheck size={16} />}>
+                Produkt hittad och ifylld automatiskt.
+              </Alert>
+            )}
+
             {lookupFailed && (
-              <Text size="sm" c="orange">
-                Okänd streckkod — fyll i namn och enhet så sparas den för nästa gång.
-              </Text>
+              <Alert color="orange" icon={<IconAlertTriangle size={16} />} title="Okänd streckkod">
+                Fyll i namn och enhet så sparas den för nästa gång.
+              </Alert>
             )}
 
             <TextInput
@@ -166,9 +184,12 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
               clearable
               {...form.getInputProps('expiryDate')}
             />
-            <TextInput
+            <Select
               label="Kategori"
-              placeholder="Mejeri, Kött, Grönsaker..."
+              placeholder="Välj kategori"
+              data={ITEM_CATEGORIES}
+              clearable
+              searchable
               {...form.getInputProps('category')}
             />
             <Divider />
