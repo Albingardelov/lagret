@@ -7,7 +7,7 @@ interface ShoppingState {
   loading: boolean
   error: string | null
   fetchItems: () => Promise<void>
-  addItem: (name: string, note?: string) => Promise<void>
+  addItem: (name: string, note?: string, category?: string) => Promise<void>
   toggleBought: (id: string) => Promise<void>
   clearBought: () => Promise<void>
   subscribeRealtime: () => () => void
@@ -31,10 +31,10 @@ export const useShoppingStore = create<ShoppingState>((set, get) => ({
     }
   },
 
-  addItem: async (name, note) => {
+  addItem: async (name, note, category) => {
     const { data, error } = await supabase
       .from('shopping_list')
-      .insert({ name, note: note ?? null })
+      .insert({ name, note: note ?? null, category: category ?? null })
       .select()
       .single()
     if (!error && data) {

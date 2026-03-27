@@ -27,9 +27,16 @@ interface Props {
   onClose: () => void
   defaultBarcode?: string
   defaultLocation?: string // now a UUID string
+  defaultName?: string
 }
 
-export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation }: Props) {
+export function AddItemModal({
+  opened,
+  onClose,
+  defaultBarcode,
+  defaultLocation,
+  defaultName,
+}: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
   const locations = useLocationsStore((s) => s.locations)
@@ -56,6 +63,7 @@ export function AddItemModal({ opened, onClose, defaultBarcode, defaultLocation 
   useEffect(() => {
     if (opened) {
       form.setFieldValue('location', defaultLocation ?? locations[0]?.id ?? '')
+      if (defaultName) form.setFieldValue('name', defaultName)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened])

@@ -16,11 +16,22 @@ import {
   SegmentedControl,
   ActionIcon,
   ThemeIcon,
+  Checkbox,
+  Divider,
+  Alert,
 } from '@mantine/core'
-import { IconSearch, IconChefHat, IconHeart, IconHeartFilled } from '@tabler/icons-react'
+import {
+  IconSearch,
+  IconChefHat,
+  IconHeart,
+  IconHeartFilled,
+  IconCooker,
+  IconCheck,
+} from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { suggestRecipes, searchRecipesByName } from '../lib/recipes'
-import { matchRecipes } from '../lib/recipeMatching'
+import { matchRecipes, ingredientsMatch } from '../lib/recipeMatching'
+import { translateToEnglish } from '../lib/ingredientTranslations'
 import type { RecipeMatch } from '../lib/recipeMatching'
 
 const FAVORITES_KEY = 'lagret:favorite-recipes'
@@ -46,12 +57,16 @@ type FilterMode = 'all' | 'ready' | 'almost'
 
 export function RecipesPage() {
   const items = useInventoryStore((s) => s.items)
+  const updateItem = useInventoryStore((s) => s.updateItem)
   const [matches, setMatches] = useState<RecipeMatch[]>([])
   const [loading, setLoading] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<RecipeMatch | null>(null)
   const [filter, setFilter] = useState<FilterMode>('all')
   const [favorites, setFavorites] = useState<Set<string>>(() => loadFavorites())
+  const [cooking, setCooking] = useState(false)
+  const [cookChecked, setCookChecked] = useState<Set<string>>(new Set())
+  const [cookDone, setCookDone] = useState(false)
 
   useEffect(() => {
     saveFavorites(favorites)
@@ -92,6 +107,27 @@ export function RecipesPage() {
     if (filter === 'almost') return m.score >= 0.6
     return true
   })
+
+  const matchedInventoryItems = selected
+    ? items.filter((inv) =>
+        selected.matched.some((m) => ingredientsMatch(m, translateToEnglish(inv.name)))
+      )
+    : []
+
+  const openCook = () => {
+    setCookChecked(new Set(matchedInventoryItems.map((i) => i.id)))
+    setCookDone(false)
+    setCooking(true)
+  }
+
+  const handleCook = async () => {
+    await Promise.all(
+      matchedInventoryItems
+        .filter((i) => cookChecked.has(i.id))
+        .map((i) => updateItem(i.id, { quantity: Math.max(0, i.quantity - 1) }))
+    )
+    setCookDone(true)
+  }
 
   const scoreColor = (score: number) => {
     if (score >= 1) return 'green'
@@ -195,7 +231,11 @@ export function RecipesPage() {
 
       <Modal
         opened={!!selected}
-        onClose={() => setSelected(null)}
+        onClose={() => {
+          setSelected(null)
+          setCooking(false)
+          setCookDone(false)
+        }}
         title={selected?.recipe.strMeal}
         size="lg"
         scrollAreaComponent={ScrollArea.Autosize}
@@ -203,34 +243,96 @@ export function RecipesPage() {
         {selected && (
           <Stack>
             <Image src={selected.recipe.strMealThumb} radius="md" />
-            <Text fw={600}>
-              Ingredienser ({selected.matched.length}/{selected.recipe.ingredients.length} hemma)
-            </Text>
-            <List>
-              {selected.recipe.ingredients.map((ing, i) => {
-                const have = selected.matched.some(
-                  (m) => m.toLowerCase() === ing.name.toLowerCase()
-                )
-                return (
-                  <List.Item
-                    key={i}
-                    icon={
-                      <ThemeIcon color={have ? 'green' : 'red'} size={16} radius="xl">
-                        <span style={{ fontSize: 10 }}>{have ? '✓' : '✗'}</span>
-                      </ThemeIcon>
-                    }
-                  >
-                    <Text size="sm" c={have ? undefined : 'dimmed'}>
-                      {ing.measure} {ing.name}
-                    </Text>
-                  </List.Item>
-                )
-              })}
-            </List>
-            <Text fw={600}>Instruktioner</Text>
-            <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
-              {selected.recipe.strInstructions}
-            </Text>
+
+            {!cooking ? (
+              <>
+                <Group justify="space-between">
+                  <Text fw={600}>
+                    Ingredienser ({selected.matched.length}/{selected.recipe.ingredients.length}{' '}
+                    hemma)
+                  </Text>
+                  {matchedInventoryItems.length > 0 && (
+                    <Button
+                      size="xs"
+                      variant="light"
+                      leftSection={<IconCooker size={14} />}
+                      onClick={openCook}
+                    >
+                      Laga rätten
+                    </Button>
+                  )}
+                </Group>
+                <List>
+                  {selected.recipe.ingredients.map((ing, i) => {
+                    const have = selected.matched.some(
+                      (m) => m.toLowerCase() === ing.name.toLowerCase()
+                    )
+                    return (
+                      <List.Item
+                        key={i}
+                        icon={
+                          <ThemeIcon color={have ? 'green' : 'red'} size={16} radius="xl">
+                            <span style={{ fontSize: 10 }}>{have ? '✓' : '✗'}</span>
+                          </ThemeIcon>
+                        }
+                      >
+                        <Text size="sm" c={have ? undefined : 'dimmed'}>
+                          {ing.measure} {ing.name}
+                        </Text>
+                      </List.Item>
+                    )
+                  })}
+                </List>
+                <Divider />
+                <Text fw={600}>Instruktioner</Text>
+                <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
+                  {selected.recipe.strInstructions}
+                </Text>
+              </>
+            ) : cookDone ? (
+              <Alert color="green" icon={<IconCheck size={16} />}>
+                Lagret uppdaterat! Smaklig måltid.
+              </Alert>
+            ) : (
+              <>
+                <Text fw={600}>Vilka varor använde du?</Text>
+                <Text size="sm" c="dimmed">
+                  Bocka av det du använt — antalet minskas med 1.
+                </Text>
+                <Stack gap="xs">
+                  {matchedInventoryItems.map((inv) => (
+                    <Checkbox
+                      key={inv.id}
+                      checked={cookChecked.has(inv.id)}
+                      onChange={() =>
+                        setCookChecked((prev) => {
+                          const next = new Set(prev)
+                          if (next.has(inv.id)) next.delete(inv.id)
+                          else next.add(inv.id)
+                          return next
+                        })
+                      }
+                      label={
+                        <Text size="sm">
+                          {inv.name}{' '}
+                          <Text span c="dimmed">
+                            ({inv.quantity} {inv.unit})
+                          </Text>
+                        </Text>
+                      }
+                    />
+                  ))}
+                </Stack>
+                <Group>
+                  <Button variant="subtle" color="gray" onClick={() => setCooking(false)}>
+                    Avbryt
+                  </Button>
+                  <Button onClick={handleCook} disabled={cookChecked.size === 0}>
+                    Bekräfta
+                  </Button>
+                </Group>
+              </>
+            )}
           </Stack>
         )}
       </Modal>

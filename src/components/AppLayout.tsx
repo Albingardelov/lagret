@@ -5,6 +5,7 @@ import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tab
 import { useAuthStore } from '../store/authStore'
 import { useHouseholdStore } from '../store/householdStore'
 import { OfflineBanner } from './OfflineBanner'
+import { useExpiryNotifications } from '../hooks/useExpiryNotifications'
 
 const NAV_ITEMS = [
   { path: '/', label: 'Lager', icon: IconBox },
@@ -18,6 +19,7 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const signOut = useAuthStore((s) => s.signOut)
   const fetchHousehold = useHouseholdStore((s) => s.fetchHousehold)
+  useExpiryNotifications()
 
   useEffect(() => {
     fetchHousehold()

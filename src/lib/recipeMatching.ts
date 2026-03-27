@@ -21,7 +21,7 @@ export function normalizeIngredient(name: string): string {
 }
 
 /** Returns true if two ingredient names are considered the same */
-function ingredientsMatch(a: string, b: string): boolean {
+export function ingredientsMatch(a: string, b: string): boolean {
   const na = normalizeIngredient(a)
   const nb = normalizeIngredient(b)
   return na === nb || na.includes(nb) || nb.includes(na)

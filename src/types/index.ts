@@ -46,6 +46,7 @@ export interface ShoppingItem {
   householdId: string
   name: string
   note?: string
+  category?: string
   isBought: boolean
   createdAt: string
 }
