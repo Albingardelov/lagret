@@ -29,23 +29,22 @@ import {
   IconCheck,
 } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
-import { suggestRecipes, searchRecipesByName } from '../lib/recipes'
+import { suggestRecipes, searchRecipes } from '../lib/recipes'
 import { matchRecipes, ingredientsMatch } from '../lib/recipeMatching'
-import { translateToEnglish } from '../lib/ingredientTranslations'
 import type { RecipeMatch } from '../lib/recipeMatching'
 
 const FAVORITES_KEY = 'lagret:favorite-recipes'
 
-function loadFavorites(): Set<string> {
+function loadFavorites(): Set<number> {
   try {
     const raw = localStorage.getItem(FAVORITES_KEY)
-    return new Set(raw ? (JSON.parse(raw) as string[]) : [])
+    return new Set(raw ? (JSON.parse(raw) as number[]) : [])
   } catch {
     return new Set()
   }
 }
 
-function saveFavorites(ids: Set<string>) {
+function saveFavorites(ids: Set<number>) {
   try {
     localStorage.setItem(FAVORITES_KEY, JSON.stringify([...ids]))
   } catch {
@@ -63,7 +62,7 @@ export function RecipesPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [selected, setSelected] = useState<RecipeMatch | null>(null)
   const [filter, setFilter] = useState<FilterMode>('all')
-  const [favorites, setFavorites] = useState<Set<string>>(() => loadFavorites())
+  const [favorites, setFavorites] = useState<Set<number>>(() => loadFavorites())
   const [cooking, setCooking] = useState(false)
   const [cookChecked, setCookChecked] = useState<Set<string>>(new Set())
   const [cookDone, setCookDone] = useState(false)
@@ -85,12 +84,12 @@ export function RecipesPage() {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return
     setLoading(true)
-    const results = await searchRecipesByName(searchQuery)
+    const results = await searchRecipes(searchQuery)
     setMatches(matchRecipes(results, inventoryNames))
     setLoading(false)
   }
 
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = (id: number) => {
     setFavorites((prev) => {
       const next = new Set(prev)
       if (next.has(id)) {
@@ -109,9 +108,7 @@ export function RecipesPage() {
   })
 
   const matchedInventoryItems = selected
-    ? items.filter((inv) =>
-        selected.matched.some((m) => ingredientsMatch(m, translateToEnglish(inv.name)))
-      )
+    ? items.filter((inv) => selected.matched.some((m) => ingredientsMatch(m, inv.name)))
     : []
 
   const openCook = () => {
@@ -182,10 +179,10 @@ export function RecipesPage() {
       ) : (
         <Stack gap="xs">
           {filtered.map((m) => {
-            const isFav = favorites.has(m.recipe.idMeal)
+            const isFav = favorites.has(m.recipe.id)
             return (
               <Card
-                key={m.recipe.idMeal}
+                key={m.recipe.id}
                 shadow="xs"
                 radius="md"
                 withBorder
@@ -193,13 +190,17 @@ export function RecipesPage() {
                 onClick={() => setSelected(m)}
               >
                 <Group wrap="nowrap">
-                  <Image src={m.recipe.strMealThumb} w={64} h={64} radius="md" />
+                  {m.recipe.imageUrls?.[0] && (
+                    <Image src={m.recipe.imageUrls[0]} w={64} h={64} radius="md" />
+                  )}
                   <Stack gap={2} style={{ flex: 1 }}>
-                    <Text fw={600}>{m.recipe.strMeal}</Text>
+                    <Text fw={600}>{m.recipe.name}</Text>
                     <Group gap={4}>
-                      <Badge size="xs" variant="light">
-                        {m.recipe.strCategory}
-                      </Badge>
+                      {m.recipe.totalTime && (
+                        <Badge size="xs" variant="light">
+                          {m.recipe.totalTime} min
+                        </Badge>
+                      )}
                       <Badge size="xs" color={scoreColor(m.score)} data-testid="score-badge">
                         {m.matched.length}/{m.recipe.ingredients.length} ingredienser
                       </Badge>
@@ -216,7 +217,7 @@ export function RecipesPage() {
                     color={isFav ? 'red' : 'gray'}
                     onClick={(e) => {
                       e.stopPropagation()
-                      toggleFavorite(m.recipe.idMeal)
+                      toggleFavorite(m.recipe.id)
                     }}
                     aria-label={isFav ? 'Ta bort favorit' : 'Spara som favorit'}
                   >
@@ -236,13 +237,20 @@ export function RecipesPage() {
           setCooking(false)
           setCookDone(false)
         }}
-        title={selected?.recipe.strMeal}
+        title={selected?.recipe.name}
         size="lg"
         scrollAreaComponent={ScrollArea.Autosize}
       >
         {selected && (
           <Stack>
-            <Image src={selected.recipe.strMealThumb} radius="md" />
+            {selected.recipe.imageUrls?.[0] && (
+              <Image src={selected.recipe.imageUrls[0]} radius="md" />
+            )}
+            {selected.recipe.servings && (
+              <Text size="sm" c="dimmed">
+                {selected.recipe.servings} portioner
+              </Text>
+            )}
 
             {!cooking ? (
               <>
@@ -263,9 +271,9 @@ export function RecipesPage() {
                   )}
                 </Group>
                 <List>
-                  {selected.recipe.ingredients.map((ing, i) => {
+                  {selected.recipe.ingredients.map((ingredient, i) => {
                     const have = selected.matched.some(
-                      (m) => m.toLowerCase() === ing.name.toLowerCase()
+                      (m) => m.toLowerCase() === ingredient.toLowerCase()
                     )
                     return (
                       <List.Item
@@ -277,7 +285,7 @@ export function RecipesPage() {
                         }
                       >
                         <Text size="sm" c={have ? undefined : 'dimmed'}>
-                          {ing.measure} {ing.name}
+                          {ingredient}
                         </Text>
                       </List.Item>
                     )
@@ -285,9 +293,13 @@ export function RecipesPage() {
                 </List>
                 <Divider />
                 <Text fw={600}>Instruktioner</Text>
-                <Text size="sm" style={{ whiteSpace: 'pre-line' }}>
-                  {selected.recipe.strInstructions}
-                </Text>
+                <List type="ordered">
+                  {selected.recipe.instructions.map((step, i) => (
+                    <List.Item key={i}>
+                      <Text size="sm">{step}</Text>
+                    </List.Item>
+                  ))}
+                </List>
               </>
             ) : cookDone ? (
               <Alert color="green" icon={<IconCheck size={16} />}>

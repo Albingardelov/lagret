@@ -1,5 +1,4 @@
 import type { Recipe } from '../types'
-import { translateToEnglish } from './ingredientTranslations'
 
 export interface RecipeMatch {
   recipe: Recipe
@@ -10,14 +9,7 @@ export interface RecipeMatch {
 
 /** Normalizes an ingredient name for fuzzy comparison */
 export function normalizeIngredient(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ')
-    .replace(/ies$/, 'y') // berries → berry
-    .replace(/ves$/, 'f') // halves → half
-    .replace(/oes$/, 'o') // tomatoes → tomato
-    .replace(/s$/, '') // eggs → egg
+  return name.toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
 /** Returns true if two ingredient names are considered the same */
@@ -32,12 +24,12 @@ export function matchRecipe(recipe: Recipe, inventoryNames: string[]): RecipeMat
   const matched: string[] = []
   const missing: string[] = []
 
-  for (const ing of recipe.ingredients) {
-    const found = inventoryNames.some((inv) => ingredientsMatch(ing.name, translateToEnglish(inv)))
+  for (const ingredient of recipe.ingredients) {
+    const found = inventoryNames.some((inv) => ingredientsMatch(ingredient, inv))
     if (found) {
-      matched.push(ing.name)
+      matched.push(ingredient)
     } else {
-      missing.push(ing.name)
+      missing.push(ingredient)
     }
   }
 
@@ -52,7 +44,7 @@ export function matchRecipes(recipes: Recipe[], inventoryNames: string[]): Recip
   return recipes.map((r) => matchRecipe(r, inventoryNames)).sort((a, b) => b.score - a.score)
 }
 
-// Sessionscache för TheMealDB-anrop
+// Session cache for recipe lookups
 const sessionCache = new Map<string, unknown>()
 
 export function getCached<T>(key: string): T | null {
