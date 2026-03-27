@@ -25,14 +25,18 @@ export interface InventoryItem {
 }
 
 export interface Recipe {
-  idMeal: string
-  strMeal: string
-  strMealThumb: string
-  strCategory: string
-  strArea: string
-  strInstructions: string
-  strYoutube?: string
-  ingredients: { name: string; measure: string }[]
+  id: number
+  url: string
+  slug: string | null
+  name: string | null
+  description: string | null
+  ingredients: string[]
+  instructions: string[]
+  imageUrls: string[]
+  cookTime: string | null
+  prepTime: string | null
+  totalTime: string | null
+  servings: string | null
 }
 
 export interface Household {
@@ -50,19 +54,4 @@ export interface ShoppingItem {
   category?: string
   isBought: boolean
   createdAt: string
-}
-
-export interface MealDBResponse {
-  meals: MealDBMeal[] | null
-}
-
-export interface MealDBMeal {
-  idMeal: string
-  strMeal: string
-  strMealThumb: string
-  strCategory: string
-  strArea: string
-  strInstructions: string
-  strYoutube: string
-  [key: string]: string
 }
