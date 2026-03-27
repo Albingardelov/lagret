@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { AppShell, UnstyledButton, Stack, Text, ActionIcon, Group } from '@mantine/core'
+import { AppShell, UnstyledButton, Text, ActionIcon, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
 import { useAuthStore } from '../store/authStore'
@@ -31,25 +31,59 @@ export function AppLayout() {
   }
 
   return (
-    <AppShell footer={{ height: 64 }} header={{ height: 48 }} padding="md">
-      <AppShell.Header px="md">
-        <Group h="100%" justify="flex-end">
-          <ActionIcon variant="subtle" onClick={handleSignOut} aria-label="Logga ut">
+    <AppShell footer={{ height: 72 }} header={{ height: 56 }} padding={0}>
+      <AppShell.Header
+        px="lg"
+        style={{
+          background: '#f8fbee',
+          boxShadow: '0 1px 16px rgba(25, 29, 22, 0.05)',
+        }}
+      >
+        <Group h="100%" justify="space-between">
+          <Text
+            style={{
+              fontFamily: '"Epilogue", sans-serif',
+              fontWeight: 900,
+              fontSize: 22,
+              color: '#53642e',
+              letterSpacing: '-0.5px',
+              lineHeight: 1,
+            }}
+          >
+            Lagret
+          </Text>
+          <ActionIcon
+            variant="subtle"
+            color="sage"
+            onClick={handleSignOut}
+            aria-label="Logga ut"
+            size="lg"
+          >
             <IconLogout size={18} />
           </ActionIcon>
         </Group>
       </AppShell.Header>
+
       <AppShell.Main>
         <Outlet />
         <OfflineBanner />
       </AppShell.Main>
-      <AppShell.Footer>
-        <Stack
-          gap={0}
+
+      <AppShell.Footer
+        style={{
+          background: 'rgba(248, 251, 238, 0.92)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          boxShadow: '0 -4px 32px rgba(25, 29, 22, 0.08)',
+        }}
+      >
+        <div
           style={{
             display: 'grid',
             gridTemplateColumns: `repeat(${NAV_ITEMS.length}, 1fr)`,
             height: '100%',
+            padding: '8px 8px 4px',
+            gap: 4,
           }}
         >
           {NAV_ITEMS.map(({ path, label, icon: Icon }) => {
@@ -63,31 +97,31 @@ export function AppLayout() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 2,
-                  color: active ? 'var(--mantine-color-coral-6)' : 'var(--mantine-color-dimmed)',
-                  position: 'relative',
+                  gap: 3,
+                  borderRadius: 18,
+                  background: active ? '#53642e' : 'transparent',
+                  color: active ? '#ffffff' : '#7a8a6a',
+                  transition: 'background 0.18s ease, color 0.18s ease',
+                  padding: '6px 0',
                 }}
               >
-                {active && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 6,
-                      width: 36,
-                      height: 36,
-                      borderRadius: 10,
-                      background: 'var(--mantine-color-coral-0)',
-                    }}
-                  />
-                )}
-                <Icon size={22} stroke={active ? 2 : 1.5} style={{ position: 'relative' }} />
-                <Text size="xs" fw={active ? 700 : 400} style={{ position: 'relative' }}>
+                <Icon size={20} stroke={active ? 2 : 1.5} />
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 9,
+                    fontWeight: active ? 600 : 400,
+                    letterSpacing: '0.06em',
+                    textTransform: 'uppercase',
+                    lineHeight: 1,
+                  }}
+                >
                   {label}
                 </Text>
               </UnstyledButton>
             )
           })}
-        </Stack>
+        </div>
       </AppShell.Footer>
     </AppShell>
   )

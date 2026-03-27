@@ -22,6 +22,7 @@ import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegist
 import { useLocationsStore } from '../store/locationsStore'
 import { ITEM_CATEGORIES } from '../lib/categories'
 import { suggestExpiryDate } from '../lib/storageDurations'
+import { UNITS_FLAT } from '../lib/units'
 
 interface Props {
   opened: boolean
@@ -190,7 +191,13 @@ export function AddItemModal({
             />
             <Group grow>
               <NumberInput label="Antal" min={0} step={0.5} {...form.getInputProps('quantity')} />
-              <TextInput label="Enhet" placeholder="st, kg, l..." {...form.getInputProps('unit')} />
+              <Select
+                label="Enhet"
+                data={UNITS_FLAT}
+                searchable
+                allowDeselect={false}
+                {...form.getInputProps('unit')}
+              />
             </Group>
             <Select
               label="Förvaringsplats"

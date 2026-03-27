@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center, Chip } from '@mantine/core'
+import { Tabs, Button, Stack, Text, Group, Loader, Center, ScrollArea, Box } from '@mantine/core'
 import {
   IconPlus,
   IconFridge,
@@ -20,9 +20,168 @@ import { NotificationBanner } from '../components/NotificationBanner'
 import type { LocationIcon } from '../types'
 
 const ICON_MAP: Record<LocationIcon, React.ReactNode> = {
-  pantry: <IconBox size={16} />,
-  fridge: <IconFridge size={16} />,
-  freezer: <IconSnowflake size={16} />,
+  pantry: <IconBox size={15} />,
+  fridge: <IconFridge size={15} />,
+  freezer: <IconSnowflake size={15} />,
+}
+
+// Unsplash photo IDs for each category — no API key needed via images.unsplash.com
+const CATEGORY_IMAGES: Record<string, string> = {
+  Mejeri: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=160&h=160&fit=crop&q=80',
+  Kött: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=160&h=160&fit=crop&q=80',
+  'Fisk & skaldjur':
+    'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=160&h=160&fit=crop&q=80',
+  Grönsaker:
+    'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=160&h=160&fit=crop&q=80',
+  Frukt: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=160&h=160&fit=crop&q=80',
+  'Pasta & ris':
+    'https://images.unsplash.com/photo-1551892374-ecf8a916e814?w=160&h=160&fit=crop&q=80',
+  Bakning: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=160&h=160&fit=crop&q=80',
+  Frukost: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=160&h=160&fit=crop&q=80',
+  Konserver:
+    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=160&h=160&fit=crop&q=80',
+  Snacks: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=160&h=160&fit=crop&q=80',
+  Dryck: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=160&h=160&fit=crop&q=80',
+  Skafferi:
+    'https://images.unsplash.com/photo-1601493700631-2851524994e3?w=160&h=160&fit=crop&q=80',
+  'Såser & kryddor':
+    'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=160&h=160&fit=crop&q=80',
+  'Örter & kryddor':
+    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=160&h=160&fit=crop&q=80',
+  Bröd: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=160&h=160&fit=crop&q=80',
+}
+
+const CATEGORY_COLORS: Record<string, string> = {
+  Mejeri: '#74b9ff',
+  Kött: '#ff7675',
+  'Fisk & skaldjur': '#00cec9',
+  Grönsaker: '#55efc4',
+  Frukt: '#fdcb6e',
+  'Pasta & ris': '#fab1a0',
+  Bakning: '#e17055',
+  Frukost: '#ffeaa7',
+  Konserver: '#a29bfe',
+  Snacks: '#fd79a8',
+  Dryck: '#00b894',
+  Skafferi: '#b2bec3',
+  'Såser & kryddor': '#e84393',
+  'Örter & kryddor': '#6ab04c',
+}
+
+interface CategoryButtonProps {
+  label: string
+  imageUrl?: string
+  count: number
+  active: boolean
+  color?: string
+  onClick: () => void
+}
+
+function CategoryButton({ label, imageUrl, count, active, onClick }: CategoryButtonProps) {
+  if (imageUrl) {
+    return (
+      <Box
+        onClick={onClick}
+        style={{
+          borderRadius: 18,
+          overflow: 'hidden',
+          width: 80,
+          flexShrink: 0,
+          cursor: 'pointer',
+          position: 'relative',
+          userSelect: 'none',
+          outline: active ? '2.5px solid #53642e' : '2.5px solid transparent',
+          outlineOffset: 2,
+          transition: 'outline-color 0.15s ease',
+        }}
+      >
+        <img
+          src={imageUrl}
+          alt={label}
+          style={{ width: '100%', height: 70, objectFit: 'cover', display: 'block' }}
+        />
+        <Box
+          style={{
+            background: active ? '#53642e' : 'rgba(25,29,22,0.55)',
+            padding: '5px 6px 6px',
+            transition: 'background 0.15s ease',
+          }}
+        >
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 10,
+              fontWeight: 600,
+              color: '#ffffff',
+              letterSpacing: '0.01em',
+              lineHeight: 1.2,
+              textAlign: 'center',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {label}
+          </Text>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 10,
+              color: 'rgba(255,255,255,0.65)',
+              lineHeight: 1,
+              textAlign: 'center',
+            }}
+          >
+            {count}
+          </Text>
+        </Box>
+      </Box>
+    )
+  }
+
+  // "Alla"-knapp utan bild
+  return (
+    <Box
+      onClick={onClick}
+      style={{
+        borderRadius: 18,
+        background: active ? '#53642e' : '#ecefe3',
+        padding: '10px 18px',
+        cursor: 'pointer',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 3,
+        transition: 'background 0.15s ease',
+        flexShrink: 0,
+        userSelect: 'none',
+        height: 98,
+      }}
+    >
+      <Text
+        style={{
+          fontFamily: '"Manrope", sans-serif',
+          fontSize: 13,
+          fontWeight: 700,
+          color: active ? '#ffffff' : '#191d16',
+          lineHeight: 1.2,
+        }}
+      >
+        {label}
+      </Text>
+      <Text
+        style={{
+          fontFamily: '"Manrope", sans-serif',
+          fontSize: 11,
+          color: active ? 'rgba(255,255,255,0.7)' : '#7a8a6a',
+          lineHeight: 1,
+        }}
+      >
+        {count}
+      </Text>
+    </Box>
+  )
 }
 
 export function InventoryPage() {
@@ -34,6 +193,7 @@ export function InventoryPage() {
     getByLocation,
     getExpiringSoon,
     subscribeRealtime,
+    items,
   } = useInventoryStore()
   const { locations, fetchLocations } = useLocationsStore()
   const [modalOpen, setModalOpen] = useState(false)
@@ -54,48 +214,131 @@ export function InventoryPage() {
   const effectiveTab = useMemo(() => activeTab || locations[0]?.id || '', [activeTab, locations])
 
   return (
-    <Stack p="md">
+    <Stack gap={0}>
       <NotificationBanner />
-      {expiring.length > 0 && (
-        <Group gap="xs">
-          <IconAlertTriangle size={16} color="var(--mantine-color-orange-6)" />
-          <Text size="sm" c="orange">
-            {expiring.length} vara{expiring.length > 1 ? 'r' : ''} går ut inom 3 dagar
-          </Text>
-        </Group>
-      )}
 
-      <Group justify="space-between">
-        <Text fw={700} size="xl">
-          Lagret
+      {/* Hero header */}
+      <Box px="md" pt="lg" pb="sm">
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: '#889a5e',
+            marginBottom: 4,
+          }}
+        >
+          Current stock
         </Text>
-        <Group gap="xs">
-          <Button
-            variant="light"
-            leftSection={<IconCooker size={16} />}
-            onClick={() => setCookingOpen(true)}
+        <Group justify="space-between" align="flex-end">
+          <Text
+            style={{
+              fontFamily: '"Epilogue", sans-serif',
+              fontWeight: 900,
+              fontSize: 30,
+              color: '#191d16',
+              lineHeight: 1.1,
+              letterSpacing: '-0.5px',
+            }}
           >
-            Laga mat
-          </Button>
-          <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
-            Lägg till
-          </Button>
+            Råvaruöversikt
+          </Text>
+          <Group gap="xs">
+            <Button
+              variant="subtle"
+              color="sage"
+              leftSection={<IconCooker size={16} />}
+              onClick={() => setCookingOpen(true)}
+              size="sm"
+              style={{ fontFamily: '"Manrope", sans-serif' }}
+            >
+              Laga mat
+            </Button>
+            <Button
+              leftSection={<IconPlus size={16} />}
+              onClick={() => setModalOpen(true)}
+              size="sm"
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
+                border: 'none',
+              }}
+            >
+              Lägg till
+            </Button>
+          </Group>
         </Group>
-      </Group>
 
+        {/* Stats row */}
+        <Group gap="md" mt={6}>
+          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#7a8a6a' }}>
+            {items.length} varor totalt
+          </Text>
+          {expiring.length > 0 && (
+            <Group gap={4} align="center">
+              <IconAlertTriangle size={13} color="#c07030" />
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 13,
+                  color: '#c07030',
+                  fontWeight: 600,
+                }}
+              >
+                {expiring.length} utgår snart
+              </Text>
+            </Group>
+          )}
+        </Group>
+      </Box>
+
+      {/* Location tabs + items */}
       {loading ? (
         <Center h={200}>
-          <Loader />
+          <Loader color="sage" />
         </Center>
       ) : (
-        <Tabs value={effectiveTab} onChange={(v) => setActiveTab(v ?? '')}>
+        <Tabs
+          value={effectiveTab}
+          onChange={(v) => setActiveTab(v ?? '')}
+          styles={{
+            tab: {
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 13,
+              fontWeight: 500,
+            },
+            list: {
+              paddingLeft: 16,
+              paddingRight: 16,
+              borderBottom: '1px solid #ecefe3',
+            },
+          }}
+        >
           <Tabs.List>
             {locations.map((loc) => (
               <Tabs.Tab key={loc.id} value={loc.id} leftSection={ICON_MAP[loc.icon]}>
                 {loc.name}
-                <Badge ml={6} size="xs" variant="light">
+                <Box
+                  component="span"
+                  ml={6}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 18,
+                    height: 18,
+                    borderRadius: '50%',
+                    background: effectiveTab === loc.id ? '#53642e' : '#ecefe3',
+                    color: effectiveTab === loc.id ? '#ffffff' : '#7a8a6a',
+                    fontSize: 10,
+                    fontWeight: 600,
+                    fontFamily: '"Manrope", sans-serif',
+                  }}
+                >
                   {getByLocation(loc.id).length}
-                </Badge>
+                </Box>
               </Tabs.Tab>
             ))}
           </Tabs.List>
@@ -114,47 +357,59 @@ export function InventoryPage() {
 
             return (
               <Tabs.Panel key={loc.id} value={loc.id} pt="md">
-                <Stack gap="xs">
+                <Stack gap="md">
+                  {/* Category filter buttons */}
                   {categories.length > 0 && (
-                    <Group gap="xs" wrap="wrap">
-                      <Chip
-                        size="xs"
-                        checked={activeFilter === null}
-                        onChange={() => setFilter(null)}
-                      >
-                        Alla
-                      </Chip>
-                      {categories.map((cat) => (
-                        <Chip
-                          key={cat}
-                          size="xs"
-                          checked={activeFilter === cat}
-                          onChange={() => setFilter(activeFilter === cat ? null : cat)}
-                        >
-                          {cat}
-                        </Chip>
-                      ))}
-                    </Group>
+                    <ScrollArea scrollbarSize={0} px="md">
+                      <Group gap="xs" wrap="nowrap" pb={4}>
+                        <CategoryButton
+                          label="Alla"
+                          count={allItems.length}
+                          active={activeFilter === null}
+                          onClick={() => setFilter(null)}
+                        />
+                        {categories.map((cat) => (
+                          <CategoryButton
+                            key={cat}
+                            label={cat}
+                            imageUrl={CATEGORY_IMAGES[cat]}
+                            count={allItems.filter((i) => i.category === cat).length}
+                            active={activeFilter === cat}
+                            color={CATEGORY_COLORS[cat]}
+                            onClick={() => setFilter(activeFilter === cat ? null : cat)}
+                          />
+                        ))}
+                      </Group>
+                    </ScrollArea>
                   )}
 
+                  {/* Item cards */}
                   {filtered.length === 0 ? (
                     <Center py="xl">
                       <Stack align="center" gap="xs">
-                        <IconPackage size={40} opacity={0.25} />
-                        <Text c="dimmed" size="sm">
+                        <IconPackage size={40} opacity={0.2} color="#53642e" />
+                        <Text
+                          style={{
+                            fontFamily: '"Manrope", sans-serif',
+                            color: '#a8b4a0',
+                            fontSize: 14,
+                          }}
+                        >
                           Inga varor här ännu
                         </Text>
                       </Stack>
                     </Center>
                   ) : (
-                    filtered.map((item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        onEdit={setEditItem}
-                        onDelete={deleteItem}
-                      />
-                    ))
+                    <Stack gap="sm" px="md" pb="md">
+                      {filtered.map((item) => (
+                        <ItemCard
+                          key={item.id}
+                          item={item}
+                          onEdit={setEditItem}
+                          onDelete={deleteItem}
+                        />
+                      ))}
+                    </Stack>
                   )}
                 </Stack>
               </Tabs.Panel>

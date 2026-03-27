@@ -11,25 +11,40 @@ import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
 
 const theme = createTheme({
-  primaryColor: 'coral',
-  colors: {
-    coral: [
-      '#fff3f0',
-      '#ffe3dd',
-      '#ffc4b5',
-      '#ffa08a',
-      '#ff7d62',
-      '#ff6348',
-      '#e84a2f',
-      '#c93820',
-      '#a02714',
-      '#73180a',
-    ],
+  primaryColor: 'sage',
+  fontFamily: '"Manrope", sans-serif',
+  fontFamilyMonospace: 'ui-monospace, Consolas, monospace',
+  headings: {
+    fontFamily: '"Epilogue", sans-serif',
+    fontWeight: '700',
   },
-  defaultRadius: 'md',
+  colors: {
+    sage: [
+      '#f8fbee',
+      '#ecefe3',
+      '#d5dbc0',
+      '#bcc89c',
+      '#a4b479',
+      '#889a5e',
+      '#53642e',
+      '#47551f',
+      '#394415',
+      '#2c340d',
+    ] as [string, string, string, string, string, string, string, string, string, string],
+  },
+  defaultRadius: 'xl',
   components: {
     Button: {
-      defaultProps: { radius: 'md' },
+      defaultProps: { radius: 'xl' },
+    },
+    ActionIcon: {
+      defaultProps: { radius: 'xl' },
+    },
+    Badge: {
+      defaultProps: { radius: 'xl' },
+    },
+    Chip: {
+      defaultProps: { radius: 'xl' },
     },
   },
 })

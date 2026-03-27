@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { ITEM_CATEGORIES } from '../lib/categories'
+import { UNITS_FLAT } from '../lib/units'
 import type { InventoryItem } from '../types'
 
 interface Props {
@@ -77,7 +78,13 @@ export function EditItemModal({ item, onClose }: Props) {
           <TextInput label="Namn" required {...form.getInputProps('name')} />
           <Group grow>
             <NumberInput label="Antal" min={0} step={0.5} {...form.getInputProps('quantity')} />
-            <TextInput label="Enhet" placeholder="st, kg, l..." {...form.getInputProps('unit')} />
+            <Select
+              label="Enhet"
+              data={UNITS_FLAT}
+              searchable
+              allowDeselect={false}
+              {...form.getInputProps('unit')}
+            />
           </Group>
           <Select
             label="Förvaringsplats"
