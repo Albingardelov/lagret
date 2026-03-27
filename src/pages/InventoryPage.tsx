@@ -7,12 +7,14 @@ import {
   IconSnowflake,
   IconAlertTriangle,
   IconPackage,
+  IconCooker,
 } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { ItemCard } from '../components/ItemCard'
 import { AddItemModal } from '../components/AddItemModal'
 import { EditItemModal } from '../components/EditItemModal'
+import { CookingMode } from '../components/CookingMode'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
 import type { LocationIcon } from '../types'
@@ -37,6 +39,7 @@ export function InventoryPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState(null as import('../types').InventoryItem | null)
   const [activeTab, setActiveTab] = useState<string>('')
+  const [cookingOpen, setCookingOpen] = useState(false)
   const [filters, setFilters] = useState<Record<string, string | null>>({})
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
@@ -66,9 +69,18 @@ export function InventoryPage() {
         <Text fw={700} size="xl">
           Lagret
         </Text>
-        <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
-          Lägg till
-        </Button>
+        <Group gap="xs">
+          <Button
+            variant="light"
+            leftSection={<IconCooker size={16} />}
+            onClick={() => setCookingOpen(true)}
+          >
+            Laga mat
+          </Button>
+          <Button leftSection={<IconPlus size={16} />} onClick={() => setModalOpen(true)}>
+            Lägg till
+          </Button>
+        </Group>
       </Group>
 
       {loading ? (
@@ -157,6 +169,7 @@ export function InventoryPage() {
         defaultLocation={effectiveTab}
       />
       <EditItemModal item={editItem} onClose={() => setEditItem(null)} />
+      <CookingMode opened={cookingOpen} onClose={() => setCookingOpen(false)} />
     </Stack>
   )
 }
