@@ -34,6 +34,13 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
               Bäst före: {dayjs(item.expiryDate).format('D MMM YYYY')}
             </Badge>
           )}
+          {item.minQuantity !== undefined &&
+            item.minQuantity > 0 &&
+            item.quantity < item.minQuantity && (
+              <Badge color="red" size="sm" variant="light">
+                Lågt lager – min {item.minQuantity} {item.unit}
+              </Badge>
+            )}
         </Stack>
         <Group gap={4}>
           <ActionIcon

@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
 import { useHouseholdStore } from './householdStore'
+import { useShoppingStore } from './shoppingStore'
 import type { InventoryItem } from '../types'
 
 function mapItem(row: Record<string, unknown>): InventoryItem {
@@ -13,6 +14,7 @@ function mapItem(row: Record<string, unknown>): InventoryItem {
     location: row.location as string,
     expiryDate: (row.expiry_date as string) ?? undefined,
     category: (row.category as string) ?? undefined,
+    minQuantity: (row.min_quantity as number) ?? undefined,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -67,6 +69,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       location: item.location,
       expiry_date: item.expiryDate ?? null,
       category: item.category ?? null,
+      min_quantity: item.minQuantity ?? null,
       created_at: now,
       updated_at: now,
     })
@@ -90,6 +93,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       location: item.location,
       expiry_date: item.expiryDate ?? null,
       category: item.category ?? null,
+      min_quantity: item.minQuantity ?? null,
       created_at: now,
       updated_at: now,
     }))
@@ -111,6 +115,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (updates.expiryDate !== undefined) dbUpdates.expiry_date = updates.expiryDate ?? null
     if (updates.category !== undefined) dbUpdates.category = updates.category ?? null
     if (updates.barcode !== undefined) dbUpdates.barcode = updates.barcode ?? null
+    if (updates.minQuantity !== undefined) dbUpdates.min_quantity = updates.minQuantity ?? null
     const { data, error } = await supabase
       .from('inventory')
       .update(dbUpdates)
@@ -118,9 +123,24 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       .select()
       .single()
     if (!error && data) {
+      const updated = mapItem(data as Record<string, unknown>)
       set((s) => ({
-        items: s.items.map((i) => (i.id === id ? mapItem(data as Record<string, unknown>) : i)),
+        items: s.items.map((i) => (i.id === id ? updated : i)),
       }))
+      // Auto-add to shopping list if quantity dropped below minimum
+      if (
+        updated.minQuantity !== undefined &&
+        updated.minQuantity > 0 &&
+        updated.quantity < updated.minQuantity
+      ) {
+        const shopping = useShoppingStore.getState()
+        const alreadyPending = shopping.items.some(
+          (i) => !i.isBought && i.name.toLowerCase() === updated.name.toLowerCase()
+        )
+        if (!alreadyPending) {
+          shopping.addItem(updated.name).catch(() => {})
+        }
+      }
     }
   },
 

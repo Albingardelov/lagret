@@ -19,6 +19,7 @@ export interface InventoryItem {
   expiryDate?: string // ISO date string
   imageUrl?: string
   category?: string
+  minQuantity?: number
   createdAt: string
   updatedAt: string
 }

@@ -26,6 +26,7 @@ export function EditItemModal({ item, onClose }: Props) {
       location: '',
       expiryDate: null as Date | null,
       category: '',
+      minQuantity: null as number | null,
     },
   })
 
@@ -38,6 +39,7 @@ export function EditItemModal({ item, onClose }: Props) {
         location: item.location,
         expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
         category: item.category ?? '',
+        minQuantity: item.minQuantity ?? null,
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,6 +59,7 @@ export function EditItemModal({ item, onClose }: Props) {
         location: values.location,
         expiryDate,
         category: values.category || undefined,
+        minQuantity: values.minQuantity ?? undefined,
       })
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : 'Något gick fel')
@@ -94,6 +97,14 @@ export function EditItemModal({ item, onClose }: Props) {
             clearable
             searchable
             {...form.getInputProps('category')}
+          />
+          <NumberInput
+            label="Minimumnivå"
+            description="Läggs automatiskt i inköpslistan när antalet understiger detta"
+            placeholder="Inget minimum"
+            min={0}
+            step={1}
+            {...form.getInputProps('minQuantity')}
           />
 
           {submitError && (
