@@ -9,6 +9,23 @@ interface ItemCardProps {
   onDelete: (id: string) => void
 }
 
+const CATEGORY_COLORS: Record<string, string> = {
+  Mejeri: '#74b9ff',
+  Kött: '#ff7675',
+  'Fisk & skaldjur': '#00cec9',
+  Grönsaker: '#55efc4',
+  Frukt: '#fdcb6e',
+  'Pasta & ris': '#fab1a0',
+  Bakning: '#e17055',
+  Frukost: '#ffeaa7',
+  Konserver: '#a29bfe',
+  Snacks: '#fd79a8',
+  Dryck: '#00b894',
+  Skafferi: '#b2bec3',
+  'Såser & kryddor': '#e84393',
+  'Örter & kryddor': '#6ab04c',
+}
+
 function expiryColor(dateStr?: string): string {
   if (!dateStr) return 'gray'
   const diff = dayjs(dateStr).diff(dayjs(), 'day')
@@ -20,9 +37,18 @@ function expiryColor(dateStr?: string): string {
 
 export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
   const color = expiryColor(item.expiryDate)
+  const categoryColor = item.category ? (CATEGORY_COLORS[item.category] ?? '#dfe6e9') : undefined
 
   return (
-    <Card shadow="xs" padding="sm" radius="md" withBorder>
+    <Card
+      shadow="xs"
+      padding="sm"
+      radius="md"
+      withBorder
+      style={{
+        borderLeft: categoryColor ? `4px solid ${categoryColor}` : undefined,
+      }}
+    >
       <Group justify="space-between" align="flex-start">
         <Stack gap={2} style={{ flex: 1 }}>
           <Text fw={600}>{item.name}</Text>

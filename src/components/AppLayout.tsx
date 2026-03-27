@@ -64,11 +64,24 @@ export function AppLayout() {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 2,
-                  color: active ? 'var(--mantine-color-blue-6)' : 'var(--mantine-color-dimmed)',
+                  color: active ? 'var(--mantine-color-coral-6)' : 'var(--mantine-color-dimmed)',
+                  position: 'relative',
                 }}
               >
-                <Icon size={22} stroke={active ? 2 : 1.5} />
-                <Text size="xs" fw={active ? 600 : 400}>
+                {active && (
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: 6,
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      background: 'var(--mantine-color-coral-0)',
+                    }}
+                  />
+                )}
+                <Icon size={22} stroke={active ? 2 : 1.5} style={{ position: 'relative' }} />
+                <Text size="xs" fw={active ? 700 : 400} style={{ position: 'relative' }}>
                   {label}
                 </Text>
               </UnstyledButton>
