@@ -21,6 +21,7 @@ import { Scanner } from './Scanner'
 import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
 import { useLocationsStore } from '../store/locationsStore'
 import { ITEM_CATEGORIES } from '../lib/categories'
+import { suggestExpiryDate } from '../lib/storageDurations'
 
 interface Props {
   opened: boolean
@@ -67,6 +68,14 @@ export function AddItemModal({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened])
+
+  // Auto-suggest expiry date when location or category changes
+  useEffect(() => {
+    const locationType = locations.find((l) => l.id === form.values.location)?.icon
+    const suggested = suggestExpiryDate(form.values.category || undefined, locationType)
+    if (suggested) form.setFieldValue('expiryDate', suggested)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.values.location, form.values.category])
 
   const handleBarcode = async (code: string) => {
     form.setFieldValue('barcode', code)
