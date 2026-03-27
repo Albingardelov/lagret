@@ -191,7 +191,16 @@ const TRANSLATIONS: Record<string, string> = {
  */
 export function translateToEnglish(swedish: string): string {
   const lower = swedish.toLowerCase().trim()
-  return TRANSLATIONS[lower] ?? swedish
+  if (TRANSLATIONS[lower]) return TRANSLATIONS[lower]
+
+  // Fallback: find the longest known key contained in the name.
+  // Handles compound words like "baksmör" (contains "smör") or
+  // "ekologisk mjölk" (contains "mjölk").
+  const match = Object.keys(TRANSLATIONS)
+    .filter((key) => key.length >= 3 && lower.includes(key))
+    .sort((a, b) => b.length - a.length)[0]
+
+  return match ? TRANSLATIONS[match] : swedish
 }
 
 /**
