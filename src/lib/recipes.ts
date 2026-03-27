@@ -63,8 +63,12 @@ export async function suggestRecipes(ingredientNames: string[]): Promise<Recipe[
 
   const recipeMap = new Map<string, { recipe: Recipe; matchCount: number }>()
 
+  // Translate all names to English and deduplicate before searching,
+  // so e.g. "mjölk" and "lättmjölk" (both → "milk") only generate one API call.
+  const uniqueEnglish = [...new Set(ingredientNames.map(translateToEnglish))]
+
   await Promise.all(
-    ingredientNames.slice(0, 5).map(async (ingredient) => {
+    uniqueEnglish.map(async (ingredient) => {
       const recipes = await searchRecipesByIngredient(ingredient)
       for (const recipe of recipes) {
         const existing = recipeMap.get(recipe.idMeal)
