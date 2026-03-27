@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center } from '@mantine/core'
+import { Tabs, Button, Stack, Text, Group, Badge, Loader, Center, Chip } from '@mantine/core'
 import {
   IconPlus,
   IconFridge,
@@ -37,6 +37,7 @@ export function InventoryPage() {
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState(null as import('../types').InventoryItem | null)
   const [activeTab, setActiveTab] = useState<string>('')
+  const [filters, setFilters] = useState<Record<string, string | null>>({})
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
@@ -87,31 +88,66 @@ export function InventoryPage() {
             ))}
           </Tabs.List>
 
-          {locations.map((loc) => (
-            <Tabs.Panel key={loc.id} value={loc.id} pt="md">
-              <Stack gap="xs">
-                {getByLocation(loc.id).length === 0 ? (
-                  <Center py="xl">
-                    <Stack align="center" gap="xs">
-                      <IconPackage size={40} opacity={0.25} />
-                      <Text c="dimmed" size="sm">
-                        Inga varor här ännu
-                      </Text>
-                    </Stack>
-                  </Center>
-                ) : (
-                  getByLocation(loc.id).map((item) => (
-                    <ItemCard
-                      key={item.id}
-                      item={item}
-                      onEdit={setEditItem}
-                      onDelete={deleteItem}
-                    />
-                  ))
-                )}
-              </Stack>
-            </Tabs.Panel>
-          ))}
+          {locations.map((loc) => {
+            const allItems = getByLocation(loc.id)
+            const categories = [
+              ...new Set(allItems.map((i) => i.category).filter(Boolean)),
+            ] as string[]
+            const activeFilter = filters[loc.id] ?? null
+            const setFilter = (val: string | null) =>
+              setFilters((prev) => ({ ...prev, [loc.id]: val }))
+            const filtered = activeFilter
+              ? allItems.filter((i) => i.category === activeFilter)
+              : allItems
+
+            return (
+              <Tabs.Panel key={loc.id} value={loc.id} pt="md">
+                <Stack gap="xs">
+                  {categories.length > 0 && (
+                    <Group gap="xs" wrap="wrap">
+                      <Chip
+                        size="xs"
+                        checked={activeFilter === null}
+                        onChange={() => setFilter(null)}
+                      >
+                        Alla
+                      </Chip>
+                      {categories.map((cat) => (
+                        <Chip
+                          key={cat}
+                          size="xs"
+                          checked={activeFilter === cat}
+                          onChange={() => setFilter(activeFilter === cat ? null : cat)}
+                        >
+                          {cat}
+                        </Chip>
+                      ))}
+                    </Group>
+                  )}
+
+                  {filtered.length === 0 ? (
+                    <Center py="xl">
+                      <Stack align="center" gap="xs">
+                        <IconPackage size={40} opacity={0.25} />
+                        <Text c="dimmed" size="sm">
+                          Inga varor här ännu
+                        </Text>
+                      </Stack>
+                    </Center>
+                  ) : (
+                    filtered.map((item) => (
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        onEdit={setEditItem}
+                        onDelete={deleteItem}
+                      />
+                    ))
+                  )}
+                </Stack>
+              </Tabs.Panel>
+            )
+          })}
         </Tabs>
       )}
 
