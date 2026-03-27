@@ -69,10 +69,12 @@ export function AddItemModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened])
 
-  // Auto-suggest expiry date when location or category changes
+  // Auto-suggest expiry date when location or category changes.
+  // Uses the already-entered packaging date as base if available, otherwise today.
   useEffect(() => {
     const locationType = locations.find((l) => l.id === form.values.location)?.icon
-    const suggested = suggestExpiryDate(form.values.category || undefined, locationType)
+    const base = form.values.expiryDate instanceof Date ? form.values.expiryDate : undefined
+    const suggested = suggestExpiryDate(form.values.category || undefined, locationType, base)
     if (suggested) form.setFieldValue('expiryDate', suggested)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.values.location, form.values.category])

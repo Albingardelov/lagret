@@ -21,15 +21,20 @@ export const STORAGE_DAYS: Partial<Record<string, Record<LocationIcon, number>>>
   'Örter & kryddor': { fridge: 7, freezer: 180, pantry: 365 },
 }
 
-/** Returns a suggested expiry Date given a category and location type, or null if unknown. */
+/**
+ * Returns a suggested expiry Date given a category and location type.
+ * If baseDate is provided (e.g. the date on the packaging), days are added on top of that.
+ * Otherwise today is used as the base.
+ */
 export function suggestExpiryDate(
   category: string | undefined,
-  locationType: LocationIcon | undefined
+  locationType: LocationIcon | undefined,
+  baseDate?: Date
 ): Date | null {
   if (!category || !locationType) return null
   const days = STORAGE_DAYS[category]?.[locationType]
   if (!days) return null
-  const date = new Date()
+  const date = new Date(baseDate ?? new Date())
   date.setDate(date.getDate() + days)
   return date
 }
