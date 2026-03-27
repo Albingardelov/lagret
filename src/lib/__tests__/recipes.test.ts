@@ -1,110 +1,152 @@
-import { describe, it, expect, vi } from 'vitest'
-import { server } from '../../test/mocks/server'
-import { http, HttpResponse } from 'msw'
-import {
-  searchRecipesByIngredient,
-  searchRecipesByName,
-  getRecipeById,
-  suggestRecipes,
-} from '../recipes'
-import { MOCK_MEAL } from '../../test/mocks/handlers/mealdb'
+// @vitest-environment node
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-const BASE = 'https://www.themealdb.com/api/json/v1/1'
+// Mock supabase before importing recipes
+const { mockRpc, mockSelect, mockEq, mockSingle } = vi.hoisted(() => ({
+  mockRpc: vi.fn(),
+  mockSelect: vi.fn(),
+  mockEq: vi.fn(),
+  mockSingle: vi.fn(),
+}))
+
+vi.mock('../../lib/supabase', () => ({
+  supabase: {
+    rpc: mockRpc,
+    from: vi.fn(() => ({
+      select: mockSelect.mockReturnValue({
+        eq: mockEq.mockReturnValue({
+          single: mockSingle,
+          limit: vi.fn().mockReturnValue({
+            data: [],
+            error: null,
+          }),
+        }),
+        textSearch: vi.fn().mockReturnValue({
+          limit: vi.fn().mockReturnValue({
+            data: [],
+            error: null,
+          }),
+        }),
+      }),
+    })),
+  },
+}))
+
+import { searchRecipes, getRecipeById, getRecipeBySlug, suggestRecipes } from '../recipes'
+
+const MOCK_DB_ROW = {
+  id: 1,
+  url: 'https://www.ica.se/recept/test-1/',
+  slug: 'test-1',
+  name: 'Testrecept',
+  description: 'Ett testrecept',
+  ingredients: ['200 g pasta', '1 burk krossade tomater'],
+  instructions: ['Koka pastan.', 'Häll på tomatsåsen.'],
+  image_urls: ['https://example.com/image.jpg'],
+  cook_time: 'PT20M',
+  prep_time: 'PT10M',
+  total_time: 'PT30M',
+  servings: '4',
+}
+
+describe('searchRecipes', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('calls search_recipes RPC and maps results', async () => {
+    mockRpc.mockResolvedValue({ data: [MOCK_DB_ROW], error: null })
+
+    const results = await searchRecipes('pasta')
+    expect(mockRpc).toHaveBeenCalledWith('search_recipes', { query: 'pasta', lim: 20 })
+    expect(results).toHaveLength(1)
+    expect(results[0].imageUrls).toEqual(['https://example.com/image.jpg'])
+    expect(results[0].cookTime).toBe('PT20M')
+  })
+
+  it('returns [] on error', async () => {
+    mockRpc.mockResolvedValue({ data: null, error: { message: 'fail' } })
+
+    const results = await searchRecipes('pasta')
+    expect(results).toEqual([])
+  })
+
+  it('returns [] for empty query', async () => {
+    const results = await searchRecipes('')
+    expect(mockRpc).not.toHaveBeenCalled()
+    expect(results).toEqual([])
+  })
+})
 
 describe('getRecipeById', () => {
-  it('returnerar recept med korrekt parsade ingredienser', async () => {
-    const recipe = await getRecipeById('52772')
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns mapped recipe for valid id', async () => {
+    mockSingle.mockResolvedValue({ data: MOCK_DB_ROW, error: null })
+
+    const recipe = await getRecipeById(1)
     expect(recipe).not.toBeNull()
-    expect(recipe!.idMeal).toBe('52772')
-    expect(recipe!.strMeal).toBe('Teriyaki Chicken Casserole')
-    expect(recipe!.ingredients).toHaveLength(3)
-    expect(recipe!.ingredients[0]).toEqual({ name: 'soy sauce', measure: '3/4 cup' })
+    expect(recipe!.name).toBe('Testrecept')
+    expect(recipe!.ingredients).toEqual(['200 g pasta', '1 burk krossade tomater'])
   })
 
-  it('hoppar över tomma ingredienser', async () => {
-    const recipe = await getRecipeById('52772')
-    // MOCK_MEAL har 3 ingredienser + 17 tomma – bara 3 ska parsas
-    expect(recipe!.ingredients.every((i) => i.name.length > 0)).toBe(true)
-  })
+  it('returns null for unknown id', async () => {
+    mockSingle.mockResolvedValue({ data: null, error: { message: 'not found' } })
 
-  it('returnerar null för okänt id', async () => {
-    const recipe = await getRecipeById('00000')
+    const recipe = await getRecipeById(99999)
     expect(recipe).toBeNull()
   })
 })
 
-describe('searchRecipesByIngredient', () => {
-  it('returnerar recept för känd ingrediens', async () => {
-    const results = await searchRecipesByIngredient('chicken')
-    expect(results.length).toBeGreaterThan(0)
-    expect(results[0].idMeal).toBe(MOCK_MEAL.idMeal)
+describe('getRecipeBySlug', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
   })
 
-  it('returnerar [] när meals är null', async () => {
-    const results = await searchRecipesByIngredient('unknown-ingredient-xyz')
-    expect(results).toEqual([])
+  it('returns mapped recipe for valid slug', async () => {
+    mockSingle.mockResolvedValue({ data: MOCK_DB_ROW, error: null })
+
+    const recipe = await getRecipeBySlug('test-1')
+    expect(recipe).not.toBeNull()
+    expect(recipe!.slug).toBe('test-1')
   })
 
-  it('begränsar till max 10 detaljhämtningar', async () => {
-    // Returnera 15 partiella recept från filter.php
-    server.use(
-      http.get(`${BASE}/filter.php`, () =>
-        HttpResponse.json({
-          meals: Array.from({ length: 15 }, (_, i) => ({
-            idMeal: `id-${i}`,
-            strMeal: `Meal ${i}`,
-            strMealThumb: '',
-          })),
-        })
-      )
-    )
-    const lookupSpy = vi.fn(() => HttpResponse.json({ meals: [MOCK_MEAL] }))
-    server.use(http.get(`${BASE}/lookup.php`, lookupSpy))
+  it('returns null for unknown slug', async () => {
+    mockSingle.mockResolvedValue({ data: null, error: { message: 'not found' } })
 
-    const results = await searchRecipesByIngredient('chicken')
-    expect(lookupSpy).toHaveBeenCalledTimes(10)
-    expect(results).toHaveLength(10)
-  })
-})
-
-describe('searchRecipesByName', () => {
-  it('returnerar matchande recept', async () => {
-    const results = await searchRecipesByName('chicken')
-    expect(results).toHaveLength(1)
-    expect(results[0].strMeal).toBe('Teriyaki Chicken Casserole')
-  })
-
-  it('returnerar [] när meals är null', async () => {
-    const results = await searchRecipesByName('noresult')
-    expect(results).toEqual([])
+    const recipe = await getRecipeBySlug('nonexistent')
+    expect(recipe).toBeNull()
   })
 })
 
 describe('suggestRecipes', () => {
-  it('returnerar [] vid tomt ingrediensinlägg', async () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('returns [] for empty ingredients', async () => {
     const results = await suggestRecipes([])
+    expect(mockRpc).not.toHaveBeenCalled()
     expect(results).toEqual([])
   })
 
-  it('returnerar recept sorterade efter matchningspoäng', async () => {
-    // Samma recept matchas av två ingredienser → matchCount 2
-    const results = await suggestRecipes(['chicken', 'soy sauce'])
-    expect(results.length).toBeGreaterThan(0)
-    // Returnerade recept ska vara unika (deduplicerade)
-    const ids = results.map((r) => r.idMeal)
-    expect(new Set(ids).size).toBe(ids.length)
-  })
+  it('calls match_recipes_by_ingredients RPC and fetches full recipes', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        { id: 1, name: 'Testrecept', slug: 'test-1', image_urls: ['img.jpg'], match_count: 2 },
+      ],
+      error: null,
+    })
+    mockSingle.mockResolvedValue({ data: MOCK_DB_ROW, error: null })
 
-  it('anropar max 5 ingrediens-sökningar parallellt', async () => {
-    const filterSpy = vi.fn(() =>
-      HttpResponse.json({
-        meals: [{ idMeal: MOCK_MEAL.idMeal, strMeal: MOCK_MEAL.strMeal, strMealThumb: '' }],
-      })
-    )
-    server.use(http.get(`${BASE}/filter.php`, filterSpy))
-    server.use(http.get(`${BASE}/lookup.php`, () => HttpResponse.json({ meals: [MOCK_MEAL] })))
-
-    await suggestRecipes(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
-    expect(filterSpy).toHaveBeenCalledTimes(5)
+    const results = await suggestRecipes(['pasta', 'tomater'])
+    expect(mockRpc).toHaveBeenCalledWith('match_recipes_by_ingredients', {
+      search_ingredients: ['pasta', 'tomater'],
+      lim: 20,
+    })
+    expect(results).toHaveLength(1)
+    expect(results[0].name).toBe('Testrecept')
   })
 })
