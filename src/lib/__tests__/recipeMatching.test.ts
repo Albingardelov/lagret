@@ -3,57 +3,43 @@ import { normalizeIngredient, matchRecipe, matchRecipes } from '../recipeMatchin
 import type { Recipe } from '../../types'
 
 const BASE_RECIPE: Recipe = {
-  idMeal: 'r1',
-  strMeal: 'Pasta Bolognese',
-  strMealThumb: '',
-  strCategory: 'Pasta',
-  strArea: 'Italian',
-  strInstructions: '',
-  ingredients: [
-    { name: 'Pasta', measure: '200g' },
-    { name: 'Tomatoes', measure: '2' },
-    { name: 'Beef', measure: '300g' },
-    { name: 'Onion', measure: '1' },
-  ],
+  id: 1,
+  url: 'https://example.com/pasta-bolognese',
+  slug: 'pasta-bolognese',
+  name: 'Pasta Bolognese',
+  description: 'Klassisk pasta bolognese',
+  ingredients: ['200 g pasta', '2 tomater', '300 g nötfärs', '1 lök'],
+  instructions: ['Koka pastan.', 'Stek färsen.'],
+  imageUrls: [],
+  cookTime: null,
+  prepTime: null,
+  totalTime: null,
+  servings: '4',
 }
 
 describe('normalizeIngredient', () => {
   it('lowercasar och trimmar', () => {
-    expect(normalizeIngredient('  Tomato  ')).toBe('tomato')
+    expect(normalizeIngredient('  Tomat  ')).toBe('tomat')
   })
 
-  it('tar bort plural -s', () => {
-    expect(normalizeIngredient('Eggs')).toBe('egg')
-    expect(normalizeIngredient('Tomatoes')).toBe('tomato')
-  })
-
-  it('hanterar -ies → -y', () => {
-    expect(normalizeIngredient('Berries')).toBe('berry')
-    expect(normalizeIngredient('Cherries')).toBe('cherry')
-  })
-
-  it('hanterar -ves → -f', () => {
-    expect(normalizeIngredient('Halves')).toBe('half')
-  })
-
-  it('"Tomatoes" normaliseras till "tomato"', () => {
-    expect(normalizeIngredient('Tomatoes')).toBe('tomato')
+  it('kollapsar mellanslag', () => {
+    expect(normalizeIngredient('gul  lök')).toBe('gul lök')
   })
 })
 
 describe('matchRecipe', () => {
   it('matchar ingredienser mot lager och beräknar poäng', () => {
-    const inventory = ['pasta', 'beef', 'salt']
+    const inventory = ['pasta', 'nötfärs', 'salt']
     const result = matchRecipe(BASE_RECIPE, inventory)
-    expect(result.matched).toContain('Pasta')
-    expect(result.matched).toContain('Beef')
-    expect(result.missing).toContain('Tomatoes')
-    expect(result.missing).toContain('Onion')
+    expect(result.matched).toContain('200 g pasta')
+    expect(result.matched).toContain('300 g nötfärs')
+    expect(result.missing).toContain('2 tomater')
+    expect(result.missing).toContain('1 lök')
     expect(result.score).toBeCloseTo(0.5)
   })
 
   it('returnerar score 1 när allt finns', () => {
-    const inventory = ['pasta', 'tomato', 'beef', 'onion']
+    const inventory = ['pasta', 'tomat', 'nötfärs', 'lök']
     const result = matchRecipe(BASE_RECIPE, inventory)
     expect(result.score).toBe(1)
     expect(result.missing).toHaveLength(0)
@@ -66,7 +52,7 @@ describe('matchRecipe', () => {
   })
 
   it('matchar case-insensitivt', () => {
-    const result = matchRecipe(BASE_RECIPE, ['PASTA', 'BEEF', 'ONION', 'TOMATO'])
+    const result = matchRecipe(BASE_RECIPE, ['PASTA', 'TOMAT', 'NÖTFÄRS', 'LÖK'])
     expect(result.score).toBe(1)
   })
 
@@ -81,29 +67,26 @@ describe('matchRecipes', () => {
   it('sorterar recept efter poäng fallande', () => {
     const r2: Recipe = {
       ...BASE_RECIPE,
-      idMeal: 'r2',
-      strMeal: 'Enkel pasta',
-      ingredients: [{ name: 'Pasta', measure: '200g' }],
+      id: 2,
+      slug: 'enkel-pasta',
+      name: 'Enkel pasta',
+      ingredients: ['200 g pasta'],
     }
-    const inventory = ['pasta', 'tomato', 'beef', 'onion']
+    const inventory = ['pasta', 'tomat', 'nötfärs', 'lök']
     const results = matchRecipes([BASE_RECIPE, r2], inventory)
-    // r2 har score 1 (1/1), BASE_RECIPE score 1 (4/4) – båda 1 men ordning kan variera
-    // Testa bara att båda är med
     expect(results).toHaveLength(2)
   })
 
   it('det receptet med flest matchande ingredienser sorteras först', () => {
     const lowMatch: Recipe = {
       ...BASE_RECIPE,
-      idMeal: 'r3',
-      strMeal: 'Okänt recept',
-      ingredients: [
-        { name: 'Unicorn', measure: '1' },
-        { name: 'Dragon', measure: '1' },
-      ],
+      id: 3,
+      slug: 'okant-recept',
+      name: 'Okänt recept',
+      ingredients: ['1 enhörning', '1 drake'],
     }
-    const inventory = ['pasta', 'tomato', 'beef', 'onion']
+    const inventory = ['pasta', 'tomat', 'nötfärs', 'lök']
     const results = matchRecipes([lowMatch, BASE_RECIPE], inventory)
-    expect(results[0].recipe.idMeal).toBe('r1')
+    expect(results[0].recipe.id).toBe(1)
   })
 })
