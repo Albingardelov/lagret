@@ -25,7 +25,7 @@ import {
   Popover,
   NativeSelect,
 } from '@mantine/core'
-import { IconSearch, IconPlus } from '@tabler/icons-react'
+import { IconSearch, IconPlus, IconChevronLeft } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { AddItemModal } from './AddItemModal'
@@ -90,13 +90,13 @@ export function CookingMode({ opened, onClose }: Props) {
     setEditingUnit(null)
   }
 
-  const bg = '#f5f0e8'
+  const bg = '#f7f8f4'
   const cardBg = '#ffffff'
-  const chipActive = '#e8956d'
-  const chipInactive = '#e8e0d0'
-  const badgeBg = '#e8e0d0'
-  const btnBg = '#f0ece6'
-  const locationColor = '#999'
+  const chipActive = '#889a5e'
+  const chipInactive = '#e8eee0'
+  const badgeBg = '#ecefe3'
+  const btnBg = '#f2f4ed'
+  const locationColor = '#889a5e'
 
   return (
     <>
@@ -112,14 +112,48 @@ export function CookingMode({ opened, onClose }: Props) {
         }}
       >
         <Stack gap="md" h="100%">
-          {/* Header */}
-          <Box>
-            <Text fw={800} size="28px" lh={1.1} c="#1a1a1a">
-              Improvisera i köket
+          {/* Sticky nav bar */}
+          <Box
+            style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              background: bg,
+              borderBottom: '1px solid #e8eee0',
+              margin: '-16px -16px 0',
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <UnstyledButton
+              onClick={onClose}
+              aria-label="Tillbaka"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                color: '#53642e',
+                fontWeight: 600,
+                fontSize: 14,
+              }}
+            >
+              <IconChevronLeft size={20} stroke={2.5} />
+              <Text fw={600} size="sm" c="#53642e">
+                Tillbaka
+              </Text>
+            </UnstyledButton>
+            <Text
+              fw={700}
+              size="lg"
+              c="#2c340d"
+              style={{ fontFamily: '"Epilogue", sans-serif', flex: 1, textAlign: 'center' }}
+            >
+              Laga mat
             </Text>
-            <Text size="sm" c="#888" mt={4}>
-              Uppdatera ditt lager medan du skapar magi vid spisen.
-            </Text>
+            {/* Spacer to balance the back button */}
+            <Box style={{ width: 80 }} />
           </Box>
 
           {/* Search */}
@@ -203,7 +237,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           padding: '3px 12px',
                         }}
                       >
-                        <Text fw={600} size="sm" c="#6b5a3e">
+                        <Text fw={600} size="sm" c="#53642e">
                           {formatQty(item.quantity)} {item.unit}
                         </Text>
                       </Box>
@@ -225,12 +259,12 @@ export function CookingMode({ opened, onClose }: Props) {
                             aria-label="byt enhet"
                             onClick={() => setEditingUnit(editingUnit === item.id ? null : item.id)}
                             style={{
-                              background: '#ede8df',
+                              background: '#d5dbc0',
                               borderRadius: 999,
                               padding: '2px 10px',
                               fontSize: 11,
                               fontWeight: 700,
-                              color: '#6b5a3e',
+                              color: '#47551f',
                               letterSpacing: '0.05em',
                             }}
                           >
@@ -375,7 +409,7 @@ export function CookingMode({ opened, onClose }: Props) {
               <UnstyledButton
                 onClick={() => setAddItemOpen(true)}
                 style={{
-                  border: '2px dashed #c8bfb0',
+                  border: '2px dashed #bcc89c',
                   borderRadius: 16,
                   padding: '20px 16px',
                   textAlign: 'center',
@@ -388,15 +422,15 @@ export function CookingMode({ opened, onClose }: Props) {
                       width: 36,
                       height: 36,
                       borderRadius: '50%',
-                      background: '#e8e0d0',
+                      background: '#d5dbc0',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
                     }}
                   >
-                    <IconPlus size={18} color="#6b5a3e" />
+                    <IconPlus size={18} color="#53642e" />
                   </Box>
-                  <Text size="xs" fw={700} c="#6b5a3e" style={{ letterSpacing: '0.1em' }}>
+                  <Text size="xs" fw={700} c="#53642e" style={{ letterSpacing: '0.1em' }}>
                     LÄGG TILL INGREDIENS
                   </Text>
                 </Stack>

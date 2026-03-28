@@ -102,7 +102,7 @@ describe('formatQty', () => {
 describe('CookingMode', () => {
   it('renderar rubrik', () => {
     render(<CookingMode opened onClose={vi.fn()} />)
-    expect(screen.getByText('Improvisera i köket')).toBeInTheDocument()
+    expect(screen.getByText('Laga mat')).toBeInTheDocument()
   })
 
   it('renderar varunamn', () => {
