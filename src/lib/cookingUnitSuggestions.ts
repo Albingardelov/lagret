@@ -47,7 +47,7 @@ export function suggestCookingUnit(name: string, storedUnit: string): string {
 
   // Flour, sugar, grains, dried legumes, dairy liquids, stock → dl
   if (
-    /mjöl|socker|ris|havre|cornflakes|müsli|flingor|gryn|bulgur|couscous|quinoa|linser|ärtor|kikärtor|bönor|mjölk|grädde|filmjölk|yoghurt|kvarg|fil(?:mjölk)?|buljong|pasta|spaghetti|penne|makaroner|lasagne|nudlar/.test(
+    /mjöl|socker|ris|havre|cornflakes|müsli|flingor|gryn|bulgur|couscous|quinoa|linser|ärtor|kikärtor|bönor|mjölk|grädde|filmjölk|yoghurt|kvarg|fil(?:mjölk)?|buljong(?!tärning)|pasta|spaghetti|penne|makaroner|lasagne|nudlar/.test(
       n
     )
   ) {
