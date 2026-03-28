@@ -31,6 +31,7 @@ import {
 } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useShoppingStore } from '../store/shoppingStore'
+import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { suggestRecipes, searchRecipes, getRecentRecipes } from '../lib/recipes'
 import {
   matchRecipes,
@@ -201,8 +202,17 @@ export function RecipesPage() {
     if (!selected || selected.missing.length === 0) return
     setAddingToList(true)
     try {
+      const recipeName = selected.recipe.name
       await Promise.all(
-        selected.missing.map((name) => addShoppingItem(name, selected.recipe.name ?? undefined))
+        selected.missing.map((ingredient) => {
+          const parsed = parseShoppingInput(ingredient)
+          const name = parsed.name || ingredient
+          const note =
+            parsed.quantity !== 1 || parsed.unit !== 'st'
+              ? `${parsed.quantity} ${parsed.unit} — ${recipeName}`
+              : (recipeName ?? undefined)
+          return addShoppingItem(name, 1, 'st', note)
+        })
       )
       setAddedToList(true)
     } finally {
