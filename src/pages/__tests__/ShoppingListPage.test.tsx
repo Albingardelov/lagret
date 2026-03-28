@@ -7,6 +7,8 @@ const ITEM_1: ShoppingItem = {
   id: 'shop-1',
   householdId: 'hh-1',
   name: 'Mjölk',
+  quantity: 1,
+  unit: 'st',
   note: undefined,
   isBought: false,
   createdAt: '2026-03-26T00:00:00Z',
@@ -15,6 +17,8 @@ const ITEM_2: ShoppingItem = {
   id: 'shop-2',
   householdId: 'hh-1',
   name: 'Bröd',
+  quantity: 1,
+  unit: 'st',
   note: 'Surdeg',
   isBought: true,
   createdAt: '2026-03-26T00:00:00Z',
@@ -43,6 +47,14 @@ vi.mock('../../store/shoppingStore', () => ({
 
 vi.mock('../../lib/categories', () => ({
   ITEM_CATEGORIES: [{ value: 'dairy', label: 'Mejeri' }],
+}))
+
+vi.mock('../../lib/units', () => ({
+  UNITS_FLAT: [{ group: 'Styck', items: [{ value: 'st', label: 'st' }] }],
+}))
+
+vi.mock('../../lib/parseShoppingInput', () => ({
+  parseShoppingInput: (input: string) => ({ quantity: 1, unit: 'st', name: input }),
 }))
 
 // Mock AddItemModal used for inventory add
@@ -88,7 +100,7 @@ describe('ShoppingListPage', () => {
     // Click submit button
     const submitBtn = screen.getByRole('button', { name: /Lägg till$/i })
     await user.click(submitBtn)
-    expect(mockAddItem).toHaveBeenCalledWith('Ägg', undefined, undefined)
+    expect(mockAddItem).toHaveBeenCalledWith('Ägg', 1, 'st', undefined, undefined)
   })
 
   it('anropar toggleBought vid klick på checkbox', async () => {
