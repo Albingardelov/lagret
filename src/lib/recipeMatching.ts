@@ -7,6 +7,11 @@ export interface RecipeMatch {
   score: number // 0–1
 }
 
+/** Flattens all ingredient groups into a single string array */
+export function getAllIngredients(recipe: Recipe): string[] {
+  return recipe.ingredientGroups.flatMap((g) => g.items)
+}
+
 /** Normalizes an ingredient name for fuzzy comparison */
 export function normalizeIngredient(name: string): string {
   return name.toLowerCase().trim().replace(/\s+/g, ' ')
@@ -23,8 +28,9 @@ export function ingredientsMatch(a: string, b: string): boolean {
 export function matchRecipe(recipe: Recipe, inventoryNames: string[]): RecipeMatch {
   const matched: string[] = []
   const missing: string[] = []
+  const allIngredients = getAllIngredients(recipe)
 
-  for (const ingredient of recipe.ingredients) {
+  for (const ingredient of allIngredients) {
     const found = inventoryNames.some((inv) => ingredientsMatch(ingredient, inv))
     if (found) {
       matched.push(ingredient)
@@ -33,7 +39,7 @@ export function matchRecipe(recipe: Recipe, inventoryNames: string[]): RecipeMat
     }
   }
 
-  const total = recipe.ingredients.length
+  const total = allIngredients.length
   const score = total > 0 ? matched.length / total : 0
 
   return { recipe, matched, missing, score }
