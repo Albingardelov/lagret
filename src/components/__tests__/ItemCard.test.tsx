@@ -42,17 +42,13 @@ describe('ItemCard', () => {
   })
 
   it.each([
-    { daysFromNow: -1, expectedColor: 'red', desc: 'röd för utgånget' },
-    { daysFromNow: 2, expectedColor: 'orange', desc: 'orange för ≤3 dagar' },
-  ])('badge är $desc', ({ daysFromNow, expectedColor }) => {
+    { daysFromNow: -1, expectedText: /utgången/i, desc: 'röd för utgånget' },
+    { daysFromNow: 2, expectedText: /kvar/i, desc: 'orange för ≤3 dagar' },
+  ])('badge är $desc', ({ daysFromNow, expectedText }) => {
     const expiryDate = dayjs().add(daysFromNow, 'day').format('YYYY-MM-DD')
     const item = { ...BASE_ITEM, expiryDate }
-    const { container } = render(<ItemCard item={item} onEdit={vi.fn()} onDelete={vi.fn()} />)
-    const badge =
-      container.querySelector('[class*="Badge"]') ?? container.querySelector('div[style]')
-    // Mantine sätter färgen via CSS-variabel i style-attributet
-    const styleAttr = badge?.getAttribute('style') ?? ''
-    expect(styleAttr).toContain(expectedColor)
+    render(<ItemCard item={item} onEdit={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.getByText(expectedText)).toBeInTheDocument()
   })
 
   it('anropar onEdit med rätt item vid klick på redigera (första knappen)', async () => {

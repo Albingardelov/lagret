@@ -11,8 +11,9 @@ import {
   ActionIcon,
   Checkbox,
   Alert,
+  UnstyledButton,
 } from '@mantine/core'
-import { IconPlus, IconTrash, IconPackage, IconCheck } from '@tabler/icons-react'
+import { IconPlus, IconTrash, IconPackage, IconCheck, IconSearch } from '@tabler/icons-react'
 import { useShoppingStore } from '../store/shoppingStore'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
@@ -22,6 +23,10 @@ import { ITEM_CATEGORIES } from '../lib/categories'
 import { UNITS_FLAT } from '../lib/units'
 import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { BottomSheet } from '../components/BottomSheet'
+
+const BG = '#F7F2EB'
+const TERRA = '#B5432A'
+const CARD_BG = '#FFFFFF'
 
 export function ShoppingListPage() {
   const {
@@ -119,7 +124,7 @@ export function ShoppingListPage() {
     }
   }
 
-  // Group pending items by note (recipe name) for visual grouping
+  // Group pending items by note (recipe/category) for visual grouping
   const pendingByNote = (() => {
     const groups: { note: string; items: typeof pending }[] = []
     const noteMap = new Map<string, typeof pending>()
@@ -128,7 +133,6 @@ export function ShoppingListPage() {
       if (!noteMap.has(key)) noteMap.set(key, [])
       noteMap.get(key)!.push(item)
     }
-    // Items without note first, then grouped by note
     const noNote = noteMap.get('') ?? []
     if (noNote.length > 0) groups.push({ note: '', items: noNote })
     for (const [note, items] of noteMap) {
@@ -138,15 +142,15 @@ export function ShoppingListPage() {
   })()
 
   return (
-    <Stack gap={0}>
+    <Stack gap={0} style={{ background: BG, minHeight: '100%', paddingBottom: 100 }}>
       {/* Header */}
-      <Box px="md" pt="lg" pb="sm">
+      <Box px="md" pt="lg" pb="md">
         <Text
           style={{
             fontFamily: '"Epilogue", sans-serif',
             fontWeight: 900,
-            fontSize: 28,
-            color: '#191d16',
+            fontSize: 30,
+            color: '#1C1410',
             lineHeight: 1.1,
             letterSpacing: '-0.5px',
           }}
@@ -157,36 +161,56 @@ export function ShoppingListPage() {
           style={{
             fontFamily: '"Manrope", sans-serif',
             fontSize: 13,
-            color: '#506148',
+            color: '#7A6A5A',
             marginTop: 4,
           }}
         >
-          {pending.length} att handla{bought.length > 0 ? ` · ${bought.length} köpta` : ''}
+          Organisera din handling och fyll på förrådet.
         </Text>
       </Box>
 
-      {/* FAB — floating add button */}
-      <Box
-        style={{
-          position: 'fixed',
-          bottom: 88,
-          right: 20,
-          zIndex: 100,
-        }}
-      >
-        <ActionIcon
-          size={52}
-          radius="50%"
-          onClick={() => setDetailsOpen(true)}
-          style={{
-            background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
-            border: 'none',
-            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 1.5px rgba(248,251,238,0.92)',
-          }}
-          aria-label="Lägg till vara"
-        >
-          <IconPlus size={24} color="#fff" />
-        </ActionIcon>
+      {/* Add bar */}
+      <Box px="md" pb="md">
+        <Group gap={8} wrap="nowrap">
+          <UnstyledButton
+            onClick={() => setDetailsOpen(true)}
+            aria-label="Öppna inmatningsfält"
+            style={{
+              flex: 1,
+              background: CARD_BG,
+              borderRadius: 14,
+              padding: '12px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+            }}
+          >
+            <IconSearch size={16} color="#9A8A7A" />
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 14,
+                color: '#9A8A7A',
+              }}
+            >
+              Lägg till vara manuellt...
+            </Text>
+          </UnstyledButton>
+          <ActionIcon
+            size={46}
+            radius={12}
+            onClick={() => setDetailsOpen(true)}
+            style={{
+              background: TERRA,
+              flexShrink: 0,
+              boxShadow: '0 2px 8px rgba(181,67,42,0.3)',
+            }}
+            aria-label="Lägg till vara"
+          >
+            <IconPlus size={22} color="#fff" />
+          </ActionIcon>
+        </Group>
       </Box>
 
       {loading && (
@@ -195,122 +219,168 @@ export function ShoppingListPage() {
         </Text>
       )}
 
-      {/* Pending items grouped by note/recipe */}
+      {/* Pending items grouped by note */}
       <Stack gap={0} px="md">
         {pendingByNote.map(({ note, items: groupItems }) => (
-          <Box key={note || '__no_note__'}>
+          <Box key={note || '__no_note__'} mb={note ? 'md' : 0}>
             {note && (
-              <Group gap={6} mt="sm" mb={4}>
-                <Box
-                  style={{
-                    width: 3,
-                    height: 14,
-                    borderRadius: 2,
-                    background: '#889a5e',
-                    flexShrink: 0,
-                  }}
-                />
+              <Group gap={6} mb={6} mt={4}>
                 <Text
                   style={{
                     fontFamily: '"Manrope", sans-serif',
                     fontSize: 11,
                     fontWeight: 700,
-                    color: '#53642e',
-                    letterSpacing: '0.03em',
+                    color: '#7A6A5A',
+                    letterSpacing: '0.1em',
                     textTransform: 'uppercase',
                   }}
                 >
                   {note}
                 </Text>
+                <Box
+                  style={{
+                    background: '#E8E0D8',
+                    borderRadius: 20,
+                    padding: '1px 8px',
+                  }}
+                >
+                  <Text style={{ fontSize: 10, fontWeight: 700, color: '#7A6A5A' }}>
+                    {groupItems.length} vara{groupItems.length !== 1 ? 'r' : ''}
+                  </Text>
+                </Box>
               </Group>
             )}
-            {groupItems.map((item, idx) => (
-              <Box
-                key={item.id}
-                py={10}
-                style={{
-                  borderBottom:
-                    idx < groupItems.length - 1 ? '1px solid #ecefe3' : '1px solid #dde3d3',
-                }}
-              >
-                <Checkbox
-                  checked={false}
-                  onChange={() => toggleBought(item.id)}
-                  styles={{
-                    body: { alignItems: 'center' },
-                    label: { paddingLeft: 8 },
-                    input: {
-                      borderRadius: 6,
-                      border: '1.5px solid #c5ccb8',
-                    },
+            <Stack gap={6}>
+              {groupItems.map((item) => (
+                <Box
+                  key={item.id}
+                  style={{
+                    background: CARD_BG,
+                    borderRadius: 14,
+                    padding: '12px 16px',
+                    boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
                   }}
-                  label={
-                    <Text
+                >
+                  <Group justify="space-between" wrap="nowrap">
+                    <Checkbox
+                      checked={false}
+                      onChange={() => toggleBought(item.id)}
+                      styles={{
+                        body: { alignItems: 'center' },
+                        label: { paddingLeft: 10 },
+                        input: {
+                          borderRadius: 6,
+                          border: '1.5px solid #D0C4B8',
+                          cursor: 'pointer',
+                        },
+                      }}
+                      label={
+                        <Box>
+                          <Text
+                            style={{
+                              fontFamily: '"Manrope", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: '#1C1410',
+                              lineHeight: 1.3,
+                            }}
+                          >
+                            {item.name}
+                          </Text>
+                          {(item.quantity !== 1 || item.unit !== 'st') && (
+                            <Text
+                              style={{
+                                fontFamily: '"Manrope", sans-serif',
+                                fontSize: 12,
+                                color: '#7A6A5A',
+                                lineHeight: 1.2,
+                              }}
+                            >
+                              {item.quantity} {item.unit}
+                            </Text>
+                          )}
+                        </Box>
+                      }
+                    />
+                    <Box
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 14,
-                        fontWeight: 500,
-                        color: '#191d16',
+                        width: 20,
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: 3,
+                        alignItems: 'center',
+                        flexShrink: 0,
                       }}
                     >
-                      {item.quantity !== 1 || item.unit !== 'st'
-                        ? `${item.quantity} ${item.unit} `
-                        : ''}
-                      {item.name}
-                    </Text>
-                  }
-                />
-              </Box>
-            ))}
+                      {[0, 1, 2].map((i) => (
+                        <Box
+                          key={i}
+                          style={{
+                            width: 3,
+                            height: 3,
+                            borderRadius: '50%',
+                            background: '#C8B8A8',
+                          }}
+                        />
+                      ))}
+                    </Box>
+                  </Group>
+                </Box>
+              ))}
+            </Stack>
           </Box>
         ))}
       </Stack>
 
       {/* Bought items */}
       {bought.length > 0 && (
-        <Box mt="md">
-          <Group justify="space-between" px="md" mb={6}>
-            <Text
-              style={{
-                fontFamily: '"Manrope", sans-serif',
-                fontSize: 12,
-                fontWeight: 700,
-                color: '#5c6b57',
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-              }}
-            >
-              Köpta varor
-            </Text>
-            <Group gap={8}>
-              <Button
-                size="compact-xs"
-                variant="light"
-                color="green"
-                leftSection={<IconPackage size={13} />}
-                onClick={openBulkWizard}
-                style={{ fontFamily: '"Manrope", sans-serif', fontWeight: 600 }}
+        <Box mt="md" px="md">
+          <Group justify="space-between" mb={8}>
+            <Group gap={6}>
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: '#7A6A5A',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase',
+                }}
               >
-                Lägg in i lagret
-              </Button>
-              <ActionIcon
-                variant="subtle"
-                color="red"
-                size="sm"
-                onClick={clearBought}
-                aria-label="Rensa köpta varor"
+                Köpta varor
+              </Text>
+              <Box
+                style={{
+                  background: '#E8E0D8',
+                  borderRadius: 20,
+                  padding: '1px 8px',
+                }}
               >
-                <IconTrash size={14} />
-              </ActionIcon>
+                <Text style={{ fontSize: 10, fontWeight: 700, color: '#7A6A5A' }}>
+                  {bought.length}
+                </Text>
+              </Box>
             </Group>
+            <ActionIcon
+              variant="subtle"
+              size="sm"
+              onClick={clearBought}
+              aria-label="Rensa köpta varor"
+              style={{ color: '#9A8A7A' }}
+            >
+              <IconTrash size={14} />
+            </ActionIcon>
           </Group>
-          <Stack gap={0} px="md">
-            {bought.map((item, idx) => (
+          <Stack gap={6}>
+            {bought.map((item) => (
               <Box
                 key={item.id}
-                py={8}
                 style={{
-                  borderBottom: idx < bought.length - 1 ? '1px solid #ecefe3' : undefined,
+                  background: CARD_BG,
+                  borderRadius: 14,
+                  padding: '12px 16px',
+                  boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+                  opacity: 0.7,
                 }}
               >
                 <Group justify="space-between" wrap="nowrap">
@@ -319,51 +389,62 @@ export function ShoppingListPage() {
                     onChange={() => toggleBought(item.id)}
                     styles={{
                       body: { alignItems: 'center' },
-                      label: { paddingLeft: 8 },
+                      label: { paddingLeft: 10 },
                       input: {
                         borderRadius: 6,
-                        background: '#889a5e',
-                        borderColor: '#889a5e',
+                        background: TERRA,
+                        borderColor: TERRA,
+                        cursor: 'pointer',
                       },
                     }}
                     label={
-                      <Stack gap={0}>
+                      <Box>
                         <Text
                           style={{
                             fontFamily: '"Manrope", sans-serif',
                             fontSize: 14,
-                            fontWeight: 500,
-                            color: '#5c6b57',
+                            fontWeight: 600,
+                            color: '#7A6A5A',
                             textDecoration: 'line-through',
+                            lineHeight: 1.3,
                           }}
                         >
-                          {item.quantity !== 1 || item.unit !== 'st'
-                            ? `${item.quantity} ${item.unit} `
-                            : ''}
                           {item.name}
                         </Text>
+                        {(item.quantity !== 1 || item.unit !== 'st') && (
+                          <Text
+                            style={{
+                              fontFamily: '"Manrope", sans-serif',
+                              fontSize: 12,
+                              color: '#9A8A7A',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {item.quantity} {item.unit}
+                          </Text>
+                        )}
                         {item.note && (
                           <Text
                             style={{
                               fontFamily: '"Manrope", sans-serif',
                               fontSize: 11,
-                              color: '#5a6955',
+                              color: '#9A8A7A',
+                              lineHeight: 1.2,
                             }}
                           >
                             {item.note}
                           </Text>
                         )}
-                      </Stack>
+                      </Box>
                     }
                   />
                   <ActionIcon
-                    size={28}
+                    size={30}
                     radius={8}
                     variant="light"
-                    color="green"
                     onClick={() => setInventoryItem({ id: item.id, name: item.name })}
                     aria-label="Lägg i lagret"
-                    title="Lägg i lagret"
+                    style={{ background: '#EDE8E2', color: '#4A3728', flexShrink: 0 }}
                   >
                     <IconPackage size={14} />
                   </ActionIcon>
@@ -377,15 +458,57 @@ export function ShoppingListPage() {
       {/* Empty state */}
       {!loading && pending.length === 0 && bought.length === 0 && (
         <Box py="xl" style={{ textAlign: 'center' }}>
+          <Text style={{ fontSize: 36, marginBottom: 8 }}>🛒</Text>
           <Text
             style={{
               fontFamily: '"Manrope", sans-serif',
               fontSize: 14,
-              color: '#5c6b57',
+              color: '#7A6A5A',
+              fontWeight: 600,
             }}
           >
             Inköpslistan är tom
           </Text>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 13,
+              color: '#9A8A7A',
+              marginTop: 4,
+            }}
+          >
+            Tryck på + för att lägga till varor
+          </Text>
+        </Box>
+      )}
+
+      {/* Sticky CTA — only show when there are bought items */}
+      {bought.length > 0 && (
+        <Box
+          style={{
+            position: 'fixed',
+            bottom: 76,
+            left: 16,
+            right: 16,
+            zIndex: 100,
+          }}
+        >
+          <Button
+            fullWidth
+            size="lg"
+            radius="xl"
+            leftSection={<IconPackage size={18} />}
+            onClick={openBulkWizard}
+            style={{
+              background: TERRA,
+              boxShadow: '0 4px 20px rgba(181,67,42,0.4)',
+              fontFamily: '"Manrope", sans-serif',
+              fontWeight: 700,
+              fontSize: 15,
+            }}
+          >
+            Köp och flytta till lagret
+          </Button>
         </Box>
       )}
 
@@ -442,11 +565,7 @@ export function ShoppingListPage() {
       </BottomSheet>
 
       {/* Bulk add to inventory wizard */}
-      <BottomSheet
-        opened={bulkOpen}
-        onClose={() => setBulkOpen(false)}
-        title="Lägg in varor i lagret"
-      >
+      <BottomSheet opened={bulkOpen} onClose={() => setBulkOpen(false)} title="Flytta till lagret">
         {bulkDone ? (
           <Alert color="green" icon={<IconCheck size={16} />}>
             Alla varor har lagts in i lagret!
@@ -457,7 +576,7 @@ export function ShoppingListPage() {
               style={{
                 fontFamily: '"Manrope", sans-serif',
                 fontSize: 13,
-                color: '#506148',
+                color: '#7A6A5A',
               }}
             >
               Välj förvaringsplats för varje vara
@@ -467,7 +586,7 @@ export function ShoppingListPage() {
                 key={item.id}
                 py="sm"
                 style={{
-                  borderBottom: idx < bought.length - 1 ? '1px solid #ecefe3' : undefined,
+                  borderBottom: idx < bought.length - 1 ? '1px solid #EDE8E2' : undefined,
                 }}
               >
                 <Text
@@ -475,7 +594,7 @@ export function ShoppingListPage() {
                     fontFamily: '"Manrope", sans-serif',
                     fontSize: 14,
                     fontWeight: 600,
-                    color: '#191d16',
+                    color: '#1C1410',
                   }}
                 >
                   {item.quantity !== 1 || item.unit !== 'st'
@@ -488,7 +607,7 @@ export function ShoppingListPage() {
                     style={{
                       fontFamily: '"Manrope", sans-serif',
                       fontSize: 11,
-                      color: '#5c6b57',
+                      color: '#7A6A5A',
                       marginBottom: 6,
                     }}
                   >

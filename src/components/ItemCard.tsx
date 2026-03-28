@@ -1,5 +1,21 @@
-import { Text, Group, ActionIcon, Box, Badge } from '@mantine/core'
-import { IconTrash, IconEdit } from '@tabler/icons-react'
+import { Text, Group, ActionIcon, Box } from '@mantine/core'
+import {
+  IconTrash,
+  IconEdit,
+  IconMilk,
+  IconMeat,
+  IconFish,
+  IconLeaf,
+  IconApple,
+  IconGrain,
+  IconBread,
+  IconEgg,
+  IconBottle,
+  IconPackage,
+  IconFlame,
+  IconSalt,
+  IconPlant,
+} from '@tabler/icons-react'
 import dayjs from 'dayjs'
 import type { InventoryItem } from '../types'
 
@@ -9,180 +25,221 @@ interface ItemCardProps {
   onDelete: (id: string) => void
 }
 
-const CATEGORY_GRADIENTS: Record<string, string> = {
-  Mejeri: 'linear-gradient(135deg, #2c5282 0%, #4a9eda 100%)',
-  Kött: 'linear-gradient(135deg, #742a2a 0%, #c0504d 100%)',
-  'Fisk & skaldjur': 'linear-gradient(135deg, #1a4a5e 0%, #2a9d9d 100%)',
-  Grönsaker: 'linear-gradient(135deg, #1a4731 0%, #3a8a64 100%)',
-  Frukt: 'linear-gradient(135deg, #7c3c00 0%, #d4854a 100%)',
-  'Pasta & ris': 'linear-gradient(135deg, #7a3520 0%, #c4795a 100%)',
-  Bakning: 'linear-gradient(135deg, #4a2e1a 0%, #9a6042 100%)',
-  Frukost: 'linear-gradient(135deg, #7a5200 0%, #c4962a 100%)',
-  Konserver: 'linear-gradient(135deg, #2d1f6e 0%, #6b5abf 100%)',
-  Snacks: 'linear-gradient(135deg, #6b0f3a 0%, #c44880 100%)',
-  Dryck: 'linear-gradient(135deg, #004d40 0%, #009688 100%)',
-  Skafferi: 'linear-gradient(135deg, #2e3d47 0%, #607d8b 100%)',
-  'Såser & kryddor': 'linear-gradient(135deg, #5c0e35 0%, #b52e6a 100%)',
-  'Örter & kryddor': 'linear-gradient(135deg, #1b5e20 0%, #4caf50 100%)',
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  Mejeri: <IconMilk size={18} />,
+  Kött: <IconMeat size={18} />,
+  'Fisk & skaldjur': <IconFish size={18} />,
+  Grönsaker: <IconPlant size={18} />,
+  Frukt: <IconApple size={18} />,
+  'Pasta & ris': <IconGrain size={18} />,
+  Bakning: <IconFlame size={18} />,
+  Frukost: <IconEgg size={18} />,
+  Konserver: <IconPackage size={18} />,
+  Snacks: <IconPackage size={18} />,
+  Dryck: <IconBottle size={18} />,
+  Skafferi: <IconPackage size={18} />,
+  'Såser & kryddor': <IconSalt size={18} />,
+  'Örter & kryddor': <IconLeaf size={18} />,
+  Bröd: <IconBread size={18} />,
 }
 
-const DEFAULT_GRADIENT = 'linear-gradient(135deg, #3a4820 0%, #6e8242 100%)'
+const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
+  Mejeri: { bg: '#EBF3FB', icon: '#2A80C4' },
+  Kött: { bg: '#FBEAEA', icon: '#C42A2A' },
+  'Fisk & skaldjur': { bg: '#E8F6F6', icon: '#1A9090' },
+  Grönsaker: { bg: '#E8F5EE', icon: '#1A8A4A' },
+  Frukt: { bg: '#FEF3E8', icon: '#C47820' },
+  'Pasta & ris': { bg: '#FDF0EC', icon: '#B54A2A' },
+  Bakning: { bg: '#FBF0E8', icon: '#A05025' },
+  Frukost: { bg: '#FEFAE8', icon: '#C4A020' },
+  Konserver: { bg: '#F0EEF8', icon: '#5A4AAA' },
+  Snacks: { bg: '#FBEAF3', icon: '#A42A6A' },
+  Dryck: { bg: '#E8F8F4', icon: '#1A9070' },
+  Skafferi: { bg: '#EEF0F2', icon: '#5A6670' },
+  'Såser & kryddor': { bg: '#FBEAF3', icon: '#982260' },
+  'Örter & kryddor': { bg: '#EAF5EA', icon: '#2A8A2A' },
+  Bröd: { bg: '#FBF0E8', icon: '#A06030' },
+}
+
+const DEFAULT_ICON_STYLE = { bg: '#F0EEE8', icon: '#7A6A5A' }
 
 function expiryStatus(dateStr?: string) {
   if (!dateStr) return null
   const diff = dayjs(dateStr).diff(dayjs(), 'day')
-  if (diff < 0) return { label: 'Utgången', color: 'red' }
-  if (diff === 0) return { label: 'Utgår idag', color: 'orange' }
-  if (diff <= 3) return { label: `${diff}d kvar`, color: 'orange' }
-  return null
+  if (diff < 0)
+    return { label: 'Utgången', borderColor: '#DC2626', badgeBg: '#FEE2E2', badgeText: '#991B1B' }
+  if (diff === 0)
+    return { label: 'Idag', borderColor: '#EA580C', badgeBg: '#FFEDD5', badgeText: '#9A3412' }
+  if (diff <= 3)
+    return {
+      label: `${diff} dag${diff === 1 ? '' : 'ar'} kvar`,
+      borderColor: '#EA580C',
+      badgeBg: '#FFEDD5',
+      badgeText: '#9A3412',
+    }
+  if (diff <= 7)
+    return {
+      label: `${diff} dagar kvar`,
+      borderColor: '#16A34A',
+      badgeBg: '#DCFCE7',
+      badgeText: '#166534',
+    }
+  return { label: 'Fräscht', borderColor: '#16A34A', badgeBg: '#DCFCE7', badgeText: '#166534' }
 }
 
 export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
-  const gradient = item.category
-    ? (CATEGORY_GRADIENTS[item.category] ?? DEFAULT_GRADIENT)
-    : DEFAULT_GRADIENT
   const expiry = expiryStatus(item.expiryDate)
   const isLowStock =
     item.minQuantity !== undefined && item.minQuantity > 0 && item.quantity < item.minQuantity
+  const iconStyle = item.category
+    ? (CATEGORY_COLORS[item.category] ?? DEFAULT_ICON_STYLE)
+    : DEFAULT_ICON_STYLE
+  const icon = item.category ? (
+    (CATEGORY_ICONS[item.category] ?? <IconPackage size={18} />)
+  ) : (
+    <IconPackage size={18} />
+  )
+  const borderColor = expiry?.borderColor ?? 'transparent'
 
   return (
     <Box
       style={{
-        borderRadius: 16,
+        background: '#FFFFFF',
+        borderRadius: 14,
         overflow: 'hidden',
-        height: 90,
-        position: 'relative',
-        background: gradient,
-        flexShrink: 0,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        padding: '12px 12px 12px 0',
+        boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+        borderLeft: `4px solid ${borderColor}`,
+        paddingLeft: 12,
       }}
     >
-      {/* Food photo if available */}
-      {item.imageUrl && (
-        <img
-          src={item.imageUrl}
-          alt={item.name}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-          }}
-        />
-      )}
-
-      {/* Dark gradient overlay for text legibility */}
+      {/* Category icon circle */}
       <Box
         style={{
-          position: 'absolute',
-          inset: 0,
-          background:
-            'linear-gradient(to top, rgba(10,14,8,0.80) 0%, rgba(10,14,8,0.20) 55%, transparent 100%)',
-        }}
-      />
-
-      {/* Top-right: quantity + actions */}
-      <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} align="center">
-        <Box
-          style={{
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: 10,
-            padding: '3px 10px',
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: '"Manrope", sans-serif',
-              fontSize: 12,
-              fontWeight: 600,
-              color: '#ffffff',
-              lineHeight: 1.4,
-            }}
-          >
-            {item.quantity} {item.unit}
-          </Text>
-        </Box>
-        <ActionIcon
-          variant="filled"
-          onClick={() => onEdit(item)}
-          aria-label={`Redigera ${item.name}`}
-          size="sm"
-          style={{
-            background: 'rgba(255,255,255,0.18)',
-            backdropFilter: 'blur(8px)',
-            color: '#ffffff',
-          }}
-        >
-          <IconEdit size={13} />
-        </ActionIcon>
-        <ActionIcon
-          variant="filled"
-          onClick={() => onDelete(item.id)}
-          aria-label={`Ta bort ${item.name}`}
-          size="sm"
-          style={{
-            background: 'rgba(220,80,60,0.5)',
-            backdropFilter: 'blur(8px)',
-            color: '#ffffff',
-          }}
-        >
-          <IconTrash size={13} />
-        </ActionIcon>
-      </Group>
-
-      {/* Bottom: name + category + badges */}
-      <Box
-        style={{
-          position: 'absolute',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          padding: '8px 12px',
+          width: 42,
+          height: 42,
+          borderRadius: 12,
+          background: iconStyle.bg,
+          color: iconStyle.icon,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexShrink: 0,
         }}
       >
-        <Group justify="space-between" align="flex-end" wrap="nowrap">
-          <Box style={{ minWidth: 0 }}>
+        {icon}
+      </Box>
+
+      {/* Main content */}
+      <Box style={{ flex: 1, minWidth: 0 }}>
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 14,
+            fontWeight: 600,
+            color: '#1C1410',
+            lineHeight: 1.3,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {item.name}
+        </Text>
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 12,
+            color: '#7A6A5A',
+            lineHeight: 1.3,
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {item.quantity} {item.unit}
+          {item.category ? ` · ${item.category}` : ''}
+        </Text>
+      </Box>
+
+      {/* Right side: expiry badge + actions */}
+      <Box
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-end',
+          gap: 4,
+          flexShrink: 0,
+        }}
+      >
+        {expiry && (
+          <Box
+            data-testid="expiry-badge"
+            style={{
+              background: expiry.badgeBg,
+              borderRadius: 6,
+              padding: '2px 7px',
+            }}
+          >
             <Text
-              fw={700}
-              truncate
               style={{
-                fontFamily: '"Epilogue", sans-serif',
-                fontSize: 15,
-                color: '#ffffff',
-                lineHeight: 1.2,
-                letterSpacing: '-0.2px',
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 10,
+                fontWeight: 700,
+                color: expiry.badgeText,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+                whiteSpace: 'nowrap',
               }}
             >
-              {item.name}
+              {expiry.label}
             </Text>
-            {item.category && (
-              <Text
-                style={{
-                  fontFamily: '"Manrope", sans-serif',
-                  fontSize: 10,
-                  color: 'rgba(255,255,255,0.65)',
-                  letterSpacing: '0.1em',
-                  textTransform: 'uppercase',
-                  lineHeight: 1.4,
-                }}
-              >
-                {item.category}
-              </Text>
-            )}
           </Box>
-          <Group gap={4} style={{ flexShrink: 0 }}>
-            {expiry && (
-              <Badge size="xs" color={expiry.color} variant="filled" radius="xl">
-                {expiry.label}
-              </Badge>
-            )}
-            {isLowStock && (
-              <Badge size="xs" color="red" variant="light" radius="xl">
-                Lågt lager
-              </Badge>
-            )}
-          </Group>
+        )}
+        {isLowStock && (
+          <Box
+            style={{
+              background: '#FEE2E2',
+              borderRadius: 6,
+              padding: '2px 7px',
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 10,
+                fontWeight: 700,
+                color: '#991B1B',
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Lågt lager
+            </Text>
+          </Box>
+        )}
+        <Group gap={4} mt={2}>
+          <ActionIcon
+            size={28}
+            variant="subtle"
+            onClick={() => onEdit(item)}
+            aria-label={`Redigera ${item.name}`}
+            style={{ color: '#7A6A5A' }}
+          >
+            <IconEdit size={14} />
+          </ActionIcon>
+          <ActionIcon
+            size={28}
+            variant="subtle"
+            onClick={() => onDelete(item.id)}
+            aria-label={`Ta bort ${item.name}`}
+            style={{ color: '#C42A2A' }}
+          >
+            <IconTrash size={14} />
+          </ActionIcon>
         </Group>
       </Box>
     </Box>

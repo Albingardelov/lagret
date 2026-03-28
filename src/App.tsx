@@ -11,7 +11,7 @@ import '@mantine/dates/styles.css'
 import '@mantine/notifications/styles.css'
 
 const theme = createTheme({
-  primaryColor: 'sage',
+  primaryColor: 'terra',
   fontFamily: '"Manrope", sans-serif',
   fontFamilyMonospace: 'ui-monospace, Consolas, monospace',
   headings: {
@@ -19,29 +19,29 @@ const theme = createTheme({
     fontWeight: '700',
   },
   colors: {
-    sage: [
-      '#f8fbee',
-      '#ecefe3',
-      '#d5dbc0',
-      '#bcc89c',
-      '#a4b479',
-      '#889a5e',
-      '#53642e',
-      '#47551f',
-      '#394415',
-      '#2c340d',
+    terra: [
+      '#FEF4EE',
+      '#FBDFD2',
+      '#F5B99F',
+      '#ED8D6C',
+      '#E36842',
+      '#D4522E',
+      '#B5432A',
+      '#963520',
+      '#772919',
+      '#591D12',
     ] as [string, string, string, string, string, string, string, string, string, string],
   },
-  defaultRadius: 'xl',
+  defaultRadius: 'md',
   components: {
     Button: {
       defaultProps: { radius: 'xl' },
     },
     ActionIcon: {
-      defaultProps: { radius: 'xl' },
+      defaultProps: { radius: 'md' },
     },
     Badge: {
-      defaultProps: { radius: 'xl' },
+      defaultProps: { radius: 'sm' },
     },
     Chip: {
       defaultProps: { radius: 'xl' },

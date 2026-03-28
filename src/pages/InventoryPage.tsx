@@ -6,19 +6,11 @@ import {
   Group,
   Loader,
   Center,
-  ScrollArea,
   Box,
   ActionIcon,
+  UnstyledButton,
 } from '@mantine/core'
-import {
-  IconPlus,
-  IconFridge,
-  IconBox,
-  IconSnowflake,
-  IconAlertTriangle,
-  IconPackage,
-  IconCooker,
-} from '@tabler/icons-react'
+import { IconPlus, IconAlertTriangle, IconCooker, IconBarcode } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { ItemCard } from '../components/ItemCard'
@@ -29,188 +21,26 @@ import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
 import type { LocationIcon } from '../types'
 
-const ICON_MAP: Record<LocationIcon, React.ReactNode> = {
-  pantry: <IconBox size={15} />,
-  fridge: <IconFridge size={15} />,
-  freezer: <IconSnowflake size={15} />,
-}
+const BG = '#F7F2EB'
+const TERRA = '#B5432A'
 
-// Unsplash photo IDs for each category — no API key needed via images.unsplash.com
-const CATEGORY_IMAGES: Record<string, string> = {
-  Mejeri: 'https://images.unsplash.com/photo-1628088062854-d1870b4553da?w=160&h=160&fit=crop&q=80',
-  Kött: 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=160&h=160&fit=crop&q=80',
-  'Fisk & skaldjur':
-    'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=160&h=160&fit=crop&q=80',
-  Grönsaker:
-    'https://images.unsplash.com/photo-1540420773420-3366772f4999?w=160&h=160&fit=crop&q=80',
-  Frukt: 'https://images.unsplash.com/photo-1610832958506-aa56368176cf?w=160&h=160&fit=crop&q=80',
-  'Pasta & ris':
-    'https://images.unsplash.com/photo-1551892374-ecf8a916e814?w=160&h=160&fit=crop&q=80',
-  Bakning: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=160&h=160&fit=crop&q=80',
-  Frukost: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=160&h=160&fit=crop&q=80',
-  Konserver:
-    'https://images.unsplash.com/photo-1584568694244-14fbdf83bd30?w=160&h=160&fit=crop&q=80',
-  Snacks: 'https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=160&h=160&fit=crop&q=80',
-  Dryck: 'https://images.unsplash.com/photo-1544145945-f90425340c7e?w=160&h=160&fit=crop&q=80',
-  Skafferi:
-    'https://images.unsplash.com/photo-1601493700631-2851524994e3?w=160&h=160&fit=crop&q=80',
-  'Såser & kryddor':
-    'https://images.unsplash.com/photo-1599084993091-1cb5c0721cc6?w=160&h=160&fit=crop&q=80',
-  'Örter & kryddor':
-    'https://images.unsplash.com/photo-1416879595882-3373a0480b5b?w=160&h=160&fit=crop&q=80',
-  Bröd: 'https://images.unsplash.com/photo-1549931319-a545dcf3bc73?w=160&h=160&fit=crop&q=80',
-}
+type TabKey = 'all' | LocationIcon
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Mejeri: '#74b9ff',
-  Kött: '#ff7675',
-  'Fisk & skaldjur': '#00cec9',
-  Grönsaker: '#55efc4',
-  Frukt: '#fdcb6e',
-  'Pasta & ris': '#fab1a0',
-  Bakning: '#e17055',
-  Frukost: '#ffeaa7',
-  Konserver: '#a29bfe',
-  Snacks: '#fd79a8',
-  Dryck: '#00b894',
-  Skafferi: '#b2bec3',
-  'Såser & kryddor': '#e84393',
-  'Örter & kryddor': '#6ab04c',
-}
-
-interface CategoryButtonProps {
-  label: string
-  imageUrl?: string
-  count: number
-  active: boolean
-  color?: string
-  onClick: () => void
-}
-
-function CategoryButton({ label, imageUrl, count, active, onClick }: CategoryButtonProps) {
-  if (imageUrl) {
-    return (
-      <Box
-        onClick={onClick}
-        style={{
-          borderRadius: 18,
-          overflow: 'hidden',
-          width: 80,
-          flexShrink: 0,
-          cursor: 'pointer',
-          position: 'relative',
-          userSelect: 'none',
-          outline: active ? '2.5px solid #53642e' : '2.5px solid transparent',
-          outlineOffset: 2,
-          transition: 'outline-color 0.15s ease',
-        }}
-      >
-        <img
-          src={imageUrl}
-          alt={label}
-          style={{ width: '100%', height: 70, objectFit: 'cover', display: 'block' }}
-        />
-        <Box
-          style={{
-            background: active ? '#53642e' : 'rgba(25,29,22,0.55)',
-            padding: '5px 6px 6px',
-            transition: 'background 0.15s ease',
-          }}
-        >
-          <Text
-            style={{
-              fontFamily: '"Manrope", sans-serif',
-              fontSize: 10,
-              fontWeight: 600,
-              color: '#ffffff',
-              letterSpacing: '0.01em',
-              lineHeight: 1.2,
-              textAlign: 'center',
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-            }}
-          >
-            {label}
-          </Text>
-          <Text
-            style={{
-              fontFamily: '"Manrope", sans-serif',
-              fontSize: 10,
-              color: 'rgba(255,255,255,0.65)',
-              lineHeight: 1,
-              textAlign: 'center',
-            }}
-          >
-            {count}
-          </Text>
-        </Box>
-      </Box>
-    )
-  }
-
-  // "Alla"-knapp utan bild
-  return (
-    <Box
-      onClick={onClick}
-      style={{
-        borderRadius: 18,
-        background: active ? '#53642e' : '#ecefe3',
-        padding: '10px 18px',
-        cursor: 'pointer',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 3,
-        transition: 'background 0.15s ease',
-        flexShrink: 0,
-        userSelect: 'none',
-        height: 98,
-      }}
-    >
-      <Text
-        style={{
-          fontFamily: '"Manrope", sans-serif',
-          fontSize: 13,
-          fontWeight: 700,
-          color: active ? '#ffffff' : '#191d16',
-          lineHeight: 1.2,
-        }}
-      >
-        {label}
-      </Text>
-      <Text
-        style={{
-          fontFamily: '"Manrope", sans-serif',
-          fontSize: 11,
-          color: active ? 'rgba(255,255,255,0.7)' : '#506148',
-          lineHeight: 1,
-        }}
-      >
-        {count}
-      </Text>
-    </Box>
-  )
+const TAB_LABELS: Record<TabKey, string> = {
+  all: 'Allt',
+  fridge: 'Kyl',
+  freezer: 'Frys',
+  pantry: 'Skafferi',
 }
 
 export function InventoryPage() {
-  const {
-    loading,
-    error,
-    fetchItems,
-    deleteItem,
-    getByLocation,
-    getExpiringSoon,
-    subscribeRealtime,
-    items,
-  } = useInventoryStore()
+  const { loading, error, fetchItems, deleteItem, getExpiringSoon, subscribeRealtime, items } =
+    useInventoryStore()
   const { locations, fetchLocations } = useLocationsStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState(null as import('../types').InventoryItem | null)
-  const [activeTab, setActiveTab] = useState<string>('')
+  const [activeTab, setActiveTab] = useState<TabKey>('all')
   const [cookingOpen, setCookingOpen] = useState(false)
-  const [filters, setFilters] = useState<Record<string, string | null>>({})
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
 
@@ -221,65 +51,92 @@ export function InventoryPage() {
     return unsubscribe
   }, [fetchItems, fetchLocations, subscribeRealtime])
 
-  const effectiveTab = useMemo(() => activeTab || locations[0]?.id || '', [activeTab, locations])
+  // Derive which location icon types actually exist
+  const availableIcons = useMemo(() => {
+    const icons = new Set(locations.map((l) => l.icon as LocationIcon))
+    return icons
+  }, [locations])
+
+  // Build location-id → icon map
+  const locationIconMap = useMemo(() => {
+    const m: Record<string, LocationIcon> = {}
+    for (const loc of locations) m[loc.id] = loc.icon as LocationIcon
+    return m
+  }, [locations])
+
+  // Build location-id → name map
+  const locationNameMap = useMemo(() => {
+    const m: Record<string, string> = {}
+    for (const loc of locations) m[loc.id] = loc.name
+    return m
+  }, [locations])
+
+  const filteredItems = useMemo(() => {
+    let result = [...items]
+    if (activeTab !== 'all') {
+      result = result.filter((item) => locationIconMap[item.location] === activeTab)
+    }
+    // Sort: expiring first, then zero-stock last
+    return result.sort((a, b) => {
+      const aExpiry = a.expiryDate ? new Date(a.expiryDate).getTime() : Infinity
+      const bExpiry = b.expiryDate ? new Date(b.expiryDate).getTime() : Infinity
+      if (a.quantity === 0 && b.quantity !== 0) return 1
+      if (a.quantity !== 0 && b.quantity === 0) return -1
+      return aExpiry - bExpiry
+    })
+  }, [items, activeTab, locationIconMap])
+
+  const tabs: TabKey[] = [
+    'all',
+    ...(['fridge', 'freezer', 'pantry'] as LocationIcon[]).filter((t) => availableIcons.has(t)),
+  ]
 
   return (
-    <Stack gap={0}>
+    <Stack gap={0} style={{ background: BG, minHeight: '100%' }}>
       <NotificationBanner />
 
       {/* Hero header */}
-      <Box px="md" pt="lg" pb="sm">
+      <Box px="md" pt="lg" pb="md">
         <Text
           style={{
             fontFamily: '"Manrope", sans-serif',
             fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: '0.1em',
+            fontWeight: 700,
+            letterSpacing: '0.12em',
             textTransform: 'uppercase',
-            color: '#53642e',
-            marginBottom: 4,
+            color: TERRA,
+            marginBottom: 6,
           }}
         >
-          Nuvarande lager
+          Välkommen tillbaka
         </Text>
-        <Group justify="space-between" align="flex-end">
-          <Text
-            style={{
-              fontFamily: '"Epilogue", sans-serif',
-              fontWeight: 900,
-              fontSize: 30,
-              color: '#191d16',
-              lineHeight: 1.1,
-              letterSpacing: '-0.5px',
-            }}
-          >
-            Råvaruöversikt
-          </Text>
-          <Button
-            variant="subtle"
-            color="sage"
-            leftSection={<IconCooker size={16} />}
-            onClick={() => setCookingOpen(true)}
-            size="sm"
-            style={{ fontFamily: '"Manrope", sans-serif' }}
-          >
-            Laga mat
-          </Button>
-        </Group>
+        <Text
+          style={{
+            fontFamily: '"Epilogue", sans-serif',
+            fontWeight: 900,
+            fontSize: 28,
+            color: '#1C1410',
+            lineHeight: 1.15,
+            letterSpacing: '-0.5px',
+            marginBottom: 2,
+          }}
+        >
+          Håll koll på dina <em style={{ color: TERRA, fontStyle: 'italic' }}>råvaror.</em>
+        </Text>
 
         {/* Stats row */}
-        <Group gap="md" mt={6}>
-          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#506148' }}>
+        <Group gap="sm" mt={8} align="center">
+          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#7A6A5A' }}>
             {items.length} varor totalt
           </Text>
           {expiring.length > 0 && (
             <Group gap={4} align="center">
-              <IconAlertTriangle size={13} color="#c07030" />
+              <IconAlertTriangle size={13} color="#EA580C" />
               <Text
                 style={{
                   fontFamily: '"Manrope", sans-serif',
                   fontSize: 13,
-                  color: '#c07030',
+                  color: '#EA580C',
                   fontWeight: 600,
                 }}
               >
@@ -288,159 +145,145 @@ export function InventoryPage() {
             </Group>
           )}
         </Group>
+
+        {/* INSKANNING chip + Laga mat button */}
+        <Group gap={8} mt={12}>
+          <UnstyledButton
+            onClick={() => setModalOpen(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              background: '#E8E0D8',
+              borderRadius: 20,
+              padding: '7px 14px',
+            }}
+          >
+            <IconBarcode size={14} color="#4A3728" />
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 12,
+                fontWeight: 700,
+                color: '#4A3728',
+                letterSpacing: '0.06em',
+                textTransform: 'uppercase',
+              }}
+            >
+              Inskanning
+            </Text>
+          </UnstyledButton>
+          <Button
+            variant="subtle"
+            size="xs"
+            leftSection={<IconCooker size={14} />}
+            onClick={() => setCookingOpen(true)}
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              color: TERRA,
+              fontWeight: 600,
+            }}
+          >
+            Laga mat
+          </Button>
+        </Group>
       </Box>
 
-      {/* Location pills + items */}
-      {loading ? (
-        <Center h={200}>
-          <Loader color="sage" />
-        </Center>
-      ) : (
-        <>
-          <ScrollArea
-            scrollbarSize={0}
-            px="md"
-            pb={4}
-            style={{ borderBottom: '1px solid #ecefe3' }}
-          >
-            <Group gap={8} wrap="nowrap" py={10}>
-              {locations.map((loc) => {
-                const active = effectiveTab === loc.id
-                const count = getByLocation(loc.id).length
-                return (
-                  <Box
-                    key={loc.id}
-                    onClick={() => setActiveTab(loc.id)}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      padding: '7px 14px',
-                      borderRadius: 20,
-                      background: active ? '#53642e' : '#ecefe3',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      transition: 'background 0.15s ease',
-                      userSelect: 'none',
-                    }}
-                  >
-                    <Box style={{ color: active ? '#ffffff' : '#506148', display: 'flex' }}>
-                      {ICON_MAP[loc.icon]}
-                    </Box>
-                    <Text
-                      style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 13,
-                        fontWeight: 600,
-                        color: active ? '#ffffff' : '#191d16',
-                        whiteSpace: 'nowrap',
-                        lineHeight: 1,
-                      }}
-                    >
-                      {loc.name}
-                    </Text>
-                    <Box
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        minWidth: 18,
-                        height: 18,
-                        borderRadius: '50%',
-                        background: active ? 'rgba(255,255,255,0.2)' : 'rgba(83,100,46,0.12)',
-                        color: active ? '#ffffff' : '#506148',
-                        fontSize: 10,
-                        fontWeight: 700,
-                        fontFamily: '"Manrope", sans-serif',
-                      }}
-                    >
-                      {count}
-                    </Box>
-                  </Box>
-                )
-              })}
-            </Group>
-          </ScrollArea>
-
-          {locations.map((loc) => {
-            if (loc.id !== effectiveTab) return null
-            const allItems = getByLocation(loc.id)
-            const categories = [
-              ...new Set(allItems.map((i) => i.category).filter(Boolean)),
-            ] as string[]
-            const activeFilter = filters[loc.id] ?? null
-            const setFilter = (val: string | null) =>
-              setFilters((prev) => ({ ...prev, [loc.id]: val }))
-            const filtered = activeFilter
-              ? allItems.filter((i) => i.category === activeFilter)
-              : allItems
-
+      {/* Filter tabs */}
+      <Box
+        style={{
+          borderBottom: '1px solid rgba(180,160,140,0.25)',
+          paddingBottom: 0,
+          paddingLeft: 16,
+          paddingRight: 16,
+        }}
+      >
+        <Group gap={0} wrap="nowrap">
+          {tabs.map((tab) => {
+            const active = activeTab === tab
             return (
-              <Stack key={loc.id} gap="md" pt="md">
-                {/* Category filter buttons */}
-                {categories.length > 0 && (
-                  <ScrollArea scrollbarSize={0} px="md">
-                    <Group gap="xs" wrap="nowrap" pb={4}>
-                      <CategoryButton
-                        label="Alla"
-                        count={allItems.length}
-                        active={activeFilter === null}
-                        onClick={() => setFilter(null)}
-                      />
-                      {categories.map((cat) => (
-                        <CategoryButton
-                          key={cat}
-                          label={cat}
-                          imageUrl={CATEGORY_IMAGES[cat]}
-                          count={allItems.filter((i) => i.category === cat).length}
-                          active={activeFilter === cat}
-                          color={CATEGORY_COLORS[cat]}
-                          onClick={() => setFilter(activeFilter === cat ? null : cat)}
-                        />
-                      ))}
-                    </Group>
-                  </ScrollArea>
+              <UnstyledButton
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                style={{
+                  padding: '10px 16px',
+                  position: 'relative',
+                  flexShrink: 0,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 14,
+                    fontWeight: active ? 700 : 500,
+                    color: active ? TERRA : '#7A6A5A',
+                    lineHeight: 1,
+                    transition: 'color 0.15s ease',
+                  }}
+                >
+                  {TAB_LABELS[tab]}
+                </Text>
+                {active && (
+                  <Box
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 16,
+                      right: 16,
+                      height: 2,
+                      borderRadius: 2,
+                      background: TERRA,
+                    }}
+                  />
                 )}
-
-                {/* Item cards */}
-                {filtered.length === 0 ? (
-                  <Center py="xl">
-                    <Stack align="center" gap="xs">
-                      <IconPackage size={40} opacity={0.2} color="#53642e" />
-                      <Text
-                        style={{
-                          fontFamily: '"Manrope", sans-serif',
-                          color: '#5c6b57',
-                          fontSize: 14,
-                        }}
-                      >
-                        Inga varor här ännu
-                      </Text>
-                    </Stack>
-                  </Center>
-                ) : (
-                  <Stack gap="sm" px="md" pb={80}>
-                    {filtered.map((item) => (
-                      <ItemCard
-                        key={item.id}
-                        item={item}
-                        onEdit={setEditItem}
-                        onDelete={deleteItem}
-                      />
-                    ))}
-                  </Stack>
-                )}
-              </Stack>
+              </UnstyledButton>
             )
           })}
-        </>
+        </Group>
+      </Box>
+
+      {/* Items */}
+      {loading ? (
+        <Center h={200}>
+          <Loader color="terra" />
+        </Center>
+      ) : filteredItems.length === 0 ? (
+        <Center py="xl">
+          <Stack align="center" gap="xs">
+            <Text style={{ fontSize: 32 }}>🥬</Text>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                color: '#7A6A5A',
+                fontSize: 14,
+                fontWeight: 600,
+              }}
+            >
+              Inga varor här ännu
+            </Text>
+          </Stack>
+        </Center>
+      ) : (
+        <Stack gap="xs" px="md" pt="md" pb={100}>
+          {filteredItems.map((item) => (
+            <ItemCard
+              key={item.id}
+              item={{
+                ...item,
+                category: item.category ?? locationNameMap[item.location] ?? undefined,
+              }}
+              onEdit={setEditItem}
+              onDelete={deleteItem}
+            />
+          ))}
+        </Stack>
       )}
 
-      {/* FAB — floating add button */}
+      {/* FAB */}
       <Box
         style={{
           position: 'fixed',
-          bottom: 88,
+          bottom: 84,
           right: 20,
           zIndex: 100,
         }}
@@ -450,9 +293,9 @@ export function InventoryPage() {
           radius="50%"
           onClick={() => setModalOpen(true)}
           style={{
-            background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
+            background: TERRA,
             border: 'none',
-            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 1.5px rgba(248,251,238,0.92)',
+            boxShadow: '0 4px 16px rgba(181,67,42,0.4), 0 0 0 1.5px rgba(247,242,235,0.9)',
           }}
           aria-label="Lägg till vara"
         >
@@ -463,7 +306,7 @@ export function InventoryPage() {
       <AddItemModal
         opened={modalOpen}
         onClose={() => setModalOpen(false)}
-        defaultLocation={effectiveTab}
+        defaultLocation={locations[0]?.id ?? ''}
       />
       <EditItemModal item={editItem} onClose={() => setEditItem(null)} />
       <CookingMode opened={cookingOpen} onClose={() => setCookingOpen(false)} />

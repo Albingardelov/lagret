@@ -220,53 +220,131 @@ export function RecipesPage() {
     }
   }
 
-  return (
-    <Box style={{ maxWidth: 680, margin: '0 auto' }}>
-      <Stack p="md">
-        <Text fw={700} size="xl">
-          Recept
-        </Text>
+  const TERRA = '#B5432A'
+  const BG = '#F7F2EB'
 
-        <Box px="md">
-          <Group gap={8}>
-            <TextInput
-              placeholder="Sök recept..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.currentTarget.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-              style={{ flex: 1 }}
-              styles={{
-                input: {
-                  fontFamily: '"Manrope", sans-serif',
-                  borderRadius: 12,
-                  border: '1.5px solid #dde3d3',
-                  background: '#f8fbee',
-                },
-              }}
-              rightSection={
-                <ActionIcon variant="subtle" onClick={handleSearch} loading={loading} size="sm">
-                  <IconSearch size={16} />
-                </ActionIcon>
-              }
-            />
-          </Group>
+  return (
+    <Box style={{ maxWidth: 680, margin: '0 auto', background: BG, minHeight: '100%' }}>
+      <Stack gap={0}>
+        {/* Header */}
+        <Box px="md" pt="lg" pb="sm">
+          <Text
+            style={{
+              fontFamily: '"Epilogue", sans-serif',
+              fontWeight: 900,
+              fontSize: 28,
+              color: '#1C1410',
+              lineHeight: 1.1,
+              letterSpacing: '-0.5px',
+            }}
+          >
+            Recept
+          </Text>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 13,
+              color: '#7A6A5A',
+              marginTop: 4,
+            }}
+          >
+            Baserat på ditt lager
+          </Text>
         </Box>
 
-        {/* Sticky bottom action bar */}
-        <Box
-          style={{
-            position: 'fixed',
-            bottom: 72,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            padding: '10px 16px',
-            background: 'rgba(248, 251, 238, 0.92)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderTop: '1px solid #ecefe3',
-          }}
-        >
+        <Box px="md" pb="md">
+          <TextInput
+            placeholder="Sök recept, ingredienser..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.currentTarget.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            radius="xl"
+            styles={{
+              input: {
+                fontFamily: '"Manrope", sans-serif',
+                background: '#FFFFFF',
+                border: '1.5px solid #E8E0D8',
+                fontSize: 14,
+              },
+            }}
+            rightSection={
+              <ActionIcon
+                variant="subtle"
+                onClick={handleSearch}
+                loading={loading}
+                size="sm"
+                style={{ color: TERRA }}
+              >
+                <IconSearch size={16} />
+              </ActionIcon>
+            }
+          />
+        </Box>
+
+        {/* Hero CTA card */}
+        <Box px="md" pb="md">
+          <Box
+            style={{
+              background: TERRA,
+              borderRadius: 18,
+              padding: '20px',
+              position: 'relative',
+              overflow: 'hidden',
+            }}
+          >
+            <Box
+              style={{
+                position: 'absolute',
+                top: -30,
+                right: -30,
+                width: 120,
+                height: 120,
+                borderRadius: '50%',
+                background: 'rgba(255,255,255,0.08)',
+              }}
+            />
+            <Text
+              style={{
+                fontFamily: '"Epilogue", sans-serif',
+                fontWeight: 800,
+                fontSize: 18,
+                color: '#FFFFFF',
+                lineHeight: 1.3,
+                marginBottom: 6,
+              }}
+            >
+              Vad ska vi äta idag?
+            </Text>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 13,
+                color: 'rgba(255,255,255,0.8)',
+                marginBottom: 14,
+              }}
+            >
+              Vi matchar innehållet i ditt skafferi med de mest populära recepten.
+            </Text>
+            <Button
+              size="sm"
+              radius="xl"
+              leftSection={<IconChefHat size={15} />}
+              onClick={handleSuggest}
+              loading={loading}
+              style={{
+                background: '#FFFFFF',
+                color: TERRA,
+                fontFamily: '"Manrope", sans-serif',
+                fontWeight: 700,
+              }}
+            >
+              Föreslå recept baserat på mitt lager
+            </Button>
+          </Box>
+        </Box>
+
+        {/* Sticky bottom action bar — hidden since we have hero CTA now */}
+        <Box style={{ display: 'none' }}>
           <Button
             fullWidth
             leftSection={<IconChefHat size={18} />}
@@ -276,7 +354,7 @@ export function RecipesPage() {
             style={{
               fontFamily: '"Manrope", sans-serif',
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
+              background: TERRA,
               border: 'none',
             }}
           >
@@ -285,7 +363,7 @@ export function RecipesPage() {
         </Box>
 
         {matches.length > 0 && (
-          <ScrollArea scrollbarSize={0} px="md">
+          <ScrollArea scrollbarSize={0} px="md" pb="sm">
             <Group gap={8} wrap="nowrap" py={4}>
               {(
                 [
@@ -305,7 +383,7 @@ export function RecipesPage() {
                       alignItems: 'center',
                       padding: '7px 14px',
                       borderRadius: 20,
-                      background: active ? '#53642e' : '#ecefe3',
+                      background: active ? TERRA : '#EDE8E2',
                       cursor: 'pointer',
                       flexShrink: 0,
                       transition: 'background 0.15s ease',
@@ -317,7 +395,7 @@ export function RecipesPage() {
                         fontFamily: '"Manrope", sans-serif',
                         fontSize: 13,
                         fontWeight: 600,
-                        color: active ? '#ffffff' : '#191d16',
+                        color: active ? '#ffffff' : '#4A3728',
                         whiteSpace: 'nowrap',
                         lineHeight: 1,
                       }}
@@ -336,10 +414,9 @@ export function RecipesPage() {
             <Loader />
           </Center>
         ) : (
-          <Stack gap="sm" px="md" pb={80}>
+          <Stack gap="sm" px="md" pb={40}>
             {filtered.map((m) => {
               const isFav = favorites.has(m.recipe.id)
-              const allCount = getAllIngredients(m.recipe).length
               return (
                 <Card
                   key={m.recipe.id}
@@ -349,23 +426,23 @@ export function RecipesPage() {
                   style={{
                     cursor: 'pointer',
                     overflow: 'hidden',
-                    border: '1.5px solid #ecefe3',
+                    background: '#FFFFFF',
+                    border: 'none',
+                    boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
                     transition: 'box-shadow 0.15s ease',
                   }}
                   onClick={() => setSelected(m)}
                 >
                   {m.recipe.imageUrls?.[0] && (
                     <div style={{ position: 'relative' }}>
-                      <Image src={m.recipe.imageUrls[0]} h={160} style={{ display: 'block' }} />
+                      <Image src={m.recipe.imageUrls[0]} h={180} style={{ display: 'block' }} />
                       {/* Gradient overlay */}
                       <div
                         style={{
                           position: 'absolute',
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          height: 60,
-                          background: 'linear-gradient(transparent, rgba(25,29,22,0.5))',
+                          inset: 0,
+                          background:
+                            'linear-gradient(to top, rgba(28,20,16,0.65) 0%, rgba(28,20,16,0.1) 50%, transparent 100%)',
                         }}
                       />
                       {/* Favorite button */}
@@ -387,7 +464,7 @@ export function RecipesPage() {
                         aria-label={isFav ? 'Ta bort favorit' : 'Spara som favorit'}
                       >
                         {isFav ? (
-                          <IconHeartFilled size={16} color="#e03131" />
+                          <IconHeartFilled size={16} color={TERRA} />
                         ) : (
                           <IconHeart size={16} color="#666" />
                         )}
@@ -403,10 +480,10 @@ export function RecipesPage() {
                           left: 10,
                           background:
                             m.score >= 1
-                              ? 'rgba(64,160,43,0.9)'
+                              ? 'rgba(22,163,74,0.9)'
                               : m.score >= 0.6
-                                ? 'rgba(224,160,43,0.9)'
-                                : 'rgba(180,60,60,0.85)',
+                                ? 'rgba(234,88,12,0.9)'
+                                : 'rgba(181,67,42,0.85)',
                           color: '#fff',
                           backdropFilter: 'blur(8px)',
                           fontFamily: '"Manrope", sans-serif',
@@ -414,7 +491,9 @@ export function RecipesPage() {
                           fontSize: 11,
                         }}
                       >
-                        {m.matched.length}/{allCount} ingredienser
+                        {m.score >= 1
+                          ? 'Du har allt'
+                          : `Saknar ${m.missing.length} ingrediens${m.missing.length !== 1 ? 'er' : ''}`}
                       </Badge>
                       {m.recipe.totalTime && (
                         <Badge
@@ -424,8 +503,8 @@ export function RecipesPage() {
                             position: 'absolute',
                             bottom: 10,
                             right: 10,
-                            background: 'rgba(255,255,255,0.85)',
-                            color: '#191d16',
+                            background: 'rgba(255,255,255,0.9)',
+                            color: '#1C1410',
                             backdropFilter: 'blur(8px)',
                             fontFamily: '"Manrope", sans-serif',
                             fontWeight: 600,
@@ -440,10 +519,10 @@ export function RecipesPage() {
                   <div style={{ padding: '12px 14px 14px' }}>
                     <Text
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: '"Epilogue", sans-serif',
                         fontWeight: 700,
-                        fontSize: 15,
-                        color: '#191d16',
+                        fontSize: 16,
+                        color: '#1C1410',
                         lineHeight: 1.3,
                       }}
                     >
@@ -454,7 +533,7 @@ export function RecipesPage() {
                         style={{
                           fontFamily: '"Manrope", sans-serif',
                           fontSize: 12,
-                          color: '#5c6b57',
+                          color: '#7A6A5A',
                           marginTop: 4,
                         }}
                       >

@@ -1,24 +1,32 @@
 import { useEffect } from 'react'
-import { AppShell, UnstyledButton, Text, ActionIcon, Group } from '@mantine/core'
+import { AppShell, UnstyledButton, Text, Box, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
-import { useAuthStore } from '../store/authStore'
+import {
+  IconBox,
+  IconBook2,
+  IconShoppingCart,
+  IconHome,
+  IconMenu2,
+  IconScan,
+} from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
 import { useExpiryNotifications } from '../hooks/useExpiryNotifications'
 
 const NAV_ITEMS = [
-  { path: '/', label: 'Lager', icon: IconBox },
+  { path: '/', label: 'Lagret', icon: IconBox },
   { path: '/recipes', label: 'Recept', icon: IconBook2 },
   { path: '/shopping', label: 'Inköp', icon: IconShoppingCart },
   { path: '/household', label: 'Hushåll', icon: IconHome },
 ]
 
+const BG = '#F7F2EB'
+const TERRA = '#B5432A'
+
 export function AppLayout() {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const signOut = useAuthStore((s) => s.signOut)
   const fetchHousehold = useHouseholdStore((s) => s.fetchHousehold)
   const household = useHouseholdStore((s) => s.household)
   const fetchLocations = useLocationsStore((s) => s.fetchLocations)
@@ -32,42 +40,41 @@ export function AppLayout() {
     if (household) fetchLocations()
   }, [household, fetchLocations])
 
-  const handleSignOut = async () => {
-    await signOut()
-    navigate('/login', { replace: true })
-  }
-
   return (
-    <AppShell footer={{ height: 72 }} header={{ height: 56 }} padding={0}>
+    <AppShell
+      footer={{ height: 68 }}
+      header={{ height: 52 }}
+      padding={0}
+      styles={{ main: { background: BG } }}
+    >
       <AppShell.Header
-        px="lg"
         style={{
-          background: '#f8fbee',
-          boxShadow: '0 1px 16px rgba(25, 29, 22, 0.05)',
+          background: BG,
+          borderBottom: '1px solid rgba(180,160,140,0.18)',
+          boxShadow: 'none',
         }}
       >
-        <Group h="100%" justify="space-between">
+        <Group h="100%" px="md" justify="space-between" align="center">
+          <UnstyledButton aria-label="Meny" style={{ color: '#4A3728', display: 'flex' }}>
+            <IconMenu2 size={22} stroke={1.8} />
+          </UnstyledButton>
+
           <Text
             style={{
               fontFamily: '"Epilogue", sans-serif',
               fontWeight: 900,
               fontSize: 22,
-              color: '#53642e',
-              letterSpacing: '-0.5px',
+              color: TERRA,
+              letterSpacing: '-0.4px',
               lineHeight: 1,
             }}
           >
             Lagret
           </Text>
-          <ActionIcon
-            variant="subtle"
-            color="sage"
-            onClick={handleSignOut}
-            aria-label="Logga ut"
-            size="lg"
-          >
-            <IconLogout size={18} />
-          </ActionIcon>
+
+          <UnstyledButton aria-label="Skanna" style={{ color: '#4A3728', display: 'flex' }}>
+            <IconScan size={22} stroke={1.8} />
+          </UnstyledButton>
         </Group>
       </AppShell.Header>
 
@@ -78,10 +85,10 @@ export function AppLayout() {
 
       <AppShell.Footer
         style={{
-          background: 'rgba(248, 251, 238, 0.92)',
-          backdropFilter: 'blur(24px)',
-          WebkitBackdropFilter: 'blur(24px)',
-          boxShadow: '0 -4px 32px rgba(25, 29, 22, 0.08)',
+          background: 'rgba(247,242,235,0.96)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(180,160,140,0.2)',
         }}
       >
         <div
@@ -89,8 +96,7 @@ export function AppLayout() {
             display: 'grid',
             gridTemplateColumns: `repeat(${NAV_ITEMS.length}, 1fr)`,
             height: '100%',
-            padding: '8px 8px 4px',
-            gap: 4,
+            padding: '6px 4px 4px',
           }}
         >
           {NAV_ITEMS.map(({ path, label, icon: Icon }) => {
@@ -104,27 +110,52 @@ export function AppLayout() {
                   flexDirection: 'column',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  gap: 3,
-                  borderRadius: 18,
-                  background: active ? '#53642e' : 'transparent',
-                  color: active ? '#ffffff' : '#506148',
-                  transition: 'background 0.18s ease, color 0.18s ease',
-                  padding: '6px 0',
+                  gap: 2,
+                  padding: '4px 0',
+                  position: 'relative',
                 }}
               >
-                <Icon size={20} stroke={active ? 2 : 1.5} />
+                <Box
+                  style={{
+                    width: 40,
+                    height: 32,
+                    borderRadius: 10,
+                    background: active ? 'rgba(181,67,42,0.1)' : 'transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'background 0.15s ease',
+                  }}
+                >
+                  <Icon size={20} stroke={active ? 2 : 1.6} color={active ? TERRA : '#6B5D52'} />
+                </Box>
                 <Text
                   style={{
                     fontFamily: '"Manrope", sans-serif',
-                    fontSize: 9,
-                    fontWeight: active ? 600 : 400,
-                    letterSpacing: '0.06em',
-                    textTransform: 'uppercase',
+                    fontSize: 10,
+                    fontWeight: active ? 700 : 500,
+                    letterSpacing: '0.03em',
+                    color: active ? TERRA : '#6B5D52',
                     lineHeight: 1,
+                    textTransform: 'uppercase',
                   }}
                 >
                   {label}
                 </Text>
+                {active && (
+                  <Box
+                    style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      width: 4,
+                      height: 4,
+                      borderRadius: '50%',
+                      background: TERRA,
+                    }}
+                  />
+                )}
               </UnstyledButton>
             )
           })}

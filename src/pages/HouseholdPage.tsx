@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   Button,
-  Paper,
   Group,
   Loader,
   Center,
@@ -14,6 +13,8 @@ import {
   Tooltip,
   Alert,
   Select,
+  Box,
+  UnstyledButton,
 } from '@mantine/core'
 import { BottomSheet } from '../components/BottomSheet'
 import {
@@ -26,16 +27,30 @@ import {
   IconFridge,
   IconBox,
   IconSnowflake,
+  IconChevronRight,
+  IconLogout,
 } from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { useErrorNotification } from '../hooks/useErrorNotification'
+import { useAuthStore } from '../store/authStore'
+import { useNavigate } from 'react-router-dom'
 import type { LocationIcon } from '../types'
+
+const BG = '#F7F2EB'
+const TERRA = '#B5432A'
+const CARD_BG = '#FFFFFF'
 
 const ICON_MAP: Record<LocationIcon, React.ReactNode> = {
   pantry: <IconBox size={16} />,
   fridge: <IconFridge size={16} />,
   freezer: <IconSnowflake size={16} />,
+}
+
+const ICON_COLORS: Record<LocationIcon, { bg: string; color: string }> = {
+  fridge: { bg: '#EBF3FB', color: '#2A80C4' },
+  freezer: { bg: '#EBF3FB', color: '#1A60A4' },
+  pantry: { bg: '#FBF0E8', color: '#A05025' },
 }
 
 const ICON_OPTIONS = [
@@ -58,6 +73,8 @@ export function HouseholdPage() {
   const [editName, setEditName] = useState('')
   const [editIcon, setEditIcon] = useState<LocationIcon>('fridge')
   const [locError, setLocError] = useState<string | null>(null)
+  const signOut = useAuthStore((s) => s.signOut)
+  const navigate = useNavigate()
 
   useErrorNotification(error, 'Hushållsfel')
 
@@ -102,23 +119,67 @@ export function HouseholdPage() {
     }
   }
 
+  const handleSignOut = async () => {
+    await signOut()
+    navigate('/login', { replace: true })
+  }
+
   if (loading) {
     return (
       <Center h="100%">
-        <Loader />
+        <Loader color="terra" />
       </Center>
     )
   }
 
   if (!household) {
     return (
-      <Stack p="md">
-        <Text fw={700} size="xl">
-          Hushåll
-        </Text>
-        <Paper withBorder p="md" radius="md">
+      <Stack p="md" gap="md" style={{ background: BG, minHeight: '100%' }}>
+        <Box pt="sm">
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: TERRA,
+              marginBottom: 6,
+            }}
+          >
+            Kom igång
+          </Text>
+          <Text
+            style={{
+              fontFamily: '"Epilogue", sans-serif',
+              fontWeight: 900,
+              fontSize: 28,
+              color: '#1C1410',
+            }}
+          >
+            Mitt Hushåll
+          </Text>
+        </Box>
+
+        <Box
+          style={{
+            background: CARD_BG,
+            borderRadius: 16,
+            padding: '20px',
+            boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+          }}
+        >
           <Stack>
-            <Text fw={600}>Skapa ett hushåll</Text>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 15,
+                fontWeight: 700,
+                color: '#1C1410',
+              }}
+            >
+              Skapa ett hushåll
+            </Text>
             <TextInput
               placeholder="Hushållets namn"
               value={householdName}
@@ -129,17 +190,34 @@ export function HouseholdPage() {
               disabled={!householdName.trim()}
               loading={loading}
               onClick={() => createHousehold(householdName.trim())}
+              style={{ background: TERRA }}
             >
               Skapa
             </Button>
           </Stack>
-        </Paper>
+        </Box>
 
-        <Divider label="eller" labelPosition="center" />
+        <Divider label="eller" labelPosition="center" color="#D0C4B8" />
 
-        <Paper withBorder p="md" radius="md">
+        <Box
+          style={{
+            background: CARD_BG,
+            borderRadius: 16,
+            padding: '20px',
+            boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+          }}
+        >
           <Stack>
-            <Text fw={600}>Gå med i ett hushåll</Text>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 15,
+                fontWeight: 700,
+                color: '#1C1410',
+              }}
+            >
+              Gå med i ett hushåll
+            </Text>
             <TextInput
               placeholder="Inbjudningskod (8 tecken)"
               value={inviteCode}
@@ -147,102 +225,343 @@ export function HouseholdPage() {
             />
             <Button
               leftSection={<IconDoor size={16} />}
-              variant="default"
+              variant="outline"
               disabled={inviteCode.length !== 8}
               loading={loading}
               onClick={() => joinHousehold(inviteCode)}
+              color="terra"
             >
               Gå med
             </Button>
           </Stack>
-        </Paper>
+        </Box>
       </Stack>
     )
   }
 
   return (
-    <Stack p="md">
-      <Text fw={700} size="xl">
-        Hushåll
-      </Text>
+    <Stack gap={0} style={{ background: BG, minHeight: '100%', paddingBottom: 80 }}>
+      {/* Hero header */}
+      <Box px="md" pt="lg" pb="md">
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: TERRA,
+            marginBottom: 6,
+          }}
+        >
+          Hantera ditt hem
+        </Text>
+        <Text
+          style={{
+            fontFamily: '"Epilogue", sans-serif',
+            fontWeight: 900,
+            fontSize: 28,
+            color: '#1C1410',
+            lineHeight: 1.1,
+            letterSpacing: '-0.5px',
+          }}
+        >
+          Mitt Hushåll
+        </Text>
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 13,
+            color: '#7A6A5A',
+            marginTop: 6,
+          }}
+        >
+          Organisera dina lagringsutrymmen och bjud in familjemedlemmar.
+        </Text>
+      </Box>
 
-      <Paper withBorder p="md" radius="md">
-        <Stack>
-          <Text fw={600}>{household.name}</Text>
-          <Group gap="xs">
-            <Text size="sm" c="dimmed">
-              Inbjudningskod:
-            </Text>
-            <Text size="sm" ff="monospace">
-              {household.inviteCode}
-            </Text>
-            <CopyButton value={household.inviteCode} timeout={2000}>
-              {({ copied, copy }) => (
-                <Tooltip label={copied ? 'Kopierat!' : 'Kopiera'} withArrow>
-                  <ActionIcon variant="subtle" onClick={copy} size="sm">
-                    {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
-                  </ActionIcon>
-                </Tooltip>
-              )}
-            </CopyButton>
-          </Group>
-        </Stack>
-      </Paper>
-
-      <Paper withBorder p="md" radius="md">
-        <Stack>
-          <Group justify="space-between">
-            <Text fw={600}>Förvaringsplatser</Text>
-            <Button
-              size="xs"
-              variant="light"
-              leftSection={<IconPlus size={14} />}
-              onClick={() => {
-                setAddingLocation(true)
-                setLocError(null)
-              }}
-            >
-              Lägg till
-            </Button>
-          </Group>
-
-          {locError && (
-            <Alert color="red" title="Fel">
-              {locError}
-            </Alert>
-          )}
-
-          {locations.map((loc) => (
-            <Group key={loc.id} justify="space-between">
-              <Group gap="xs">
-                {ICON_MAP[loc.icon]}
-                <Text>{loc.name}</Text>
-              </Group>
-              <Group gap={4}>
+      {/* Household card */}
+      <Box
+        mx="md"
+        mb="md"
+        style={{
+          background: TERRA,
+          borderRadius: 18,
+          padding: '20px',
+          position: 'relative',
+          overflow: 'hidden',
+        }}
+      >
+        <Box
+          style={{
+            position: 'absolute',
+            top: -20,
+            right: -20,
+            width: 100,
+            height: 100,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.08)',
+          }}
+        />
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            color: 'rgba(255,255,255,0.7)',
+            textTransform: 'uppercase',
+            marginBottom: 4,
+          }}
+        >
+          Aktivt hushåll
+        </Text>
+        <Text
+          style={{
+            fontFamily: '"Epilogue", sans-serif',
+            fontWeight: 800,
+            fontSize: 22,
+            color: '#FFFFFF',
+            marginBottom: 12,
+          }}
+        >
+          {household.name}
+        </Text>
+        <Group gap="xs" align="center">
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 12,
+              color: 'rgba(255,255,255,0.75)',
+            }}
+          >
+            Inbjudningskod:
+          </Text>
+          <Text
+            style={{
+              fontFamily: 'monospace',
+              fontSize: 13,
+              fontWeight: 700,
+              color: '#FFFFFF',
+              letterSpacing: '0.1em',
+            }}
+          >
+            {household.inviteCode}
+          </Text>
+          <CopyButton value={household.inviteCode} timeout={2000}>
+            {({ copied, copy }) => (
+              <Tooltip label={copied ? 'Kopierat!' : 'Kopiera'} withArrow>
                 <ActionIcon
-                  variant="subtle"
-                  onClick={() => {
-                    setEditingId(loc.id)
-                    setEditName(loc.name)
-                    setEditIcon(loc.icon)
-                    setLocError(null)
+                  variant="filled"
+                  onClick={copy}
+                  size="sm"
+                  style={{
+                    background: 'rgba(255,255,255,0.2)',
+                    color: '#FFFFFF',
+                    borderRadius: 6,
                   }}
                 >
-                  <IconEdit size={16} />
+                  {copied ? <IconCheck size={13} /> : <IconCopy size={13} />}
                 </ActionIcon>
-                <ActionIcon
-                  variant="subtle"
-                  color="red"
-                  onClick={() => handleDeleteLocation(loc.id)}
-                >
-                  <IconTrash size={16} />
-                </ActionIcon>
-              </Group>
-            </Group>
-          ))}
-        </Stack>
-      </Paper>
+              </Tooltip>
+            )}
+          </CopyButton>
+        </Group>
+      </Box>
 
+      {/* Storage locations */}
+      <Box px="md" mb="md">
+        <Group justify="space-between" mb={10}>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#7A6A5A',
+            }}
+          >
+            Dina behållare
+          </Text>
+          <UnstyledButton
+            onClick={() => {
+              setAddingLocation(true)
+              setLocError(null)
+            }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4 }}
+          >
+            <IconPlus size={14} color={TERRA} />
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 13,
+                fontWeight: 600,
+                color: TERRA,
+              }}
+            >
+              Lägg till behållare
+            </Text>
+          </UnstyledButton>
+        </Group>
+
+        {locError && (
+          <Alert color="red" mb="sm">
+            {locError}
+          </Alert>
+        )}
+
+        <Stack gap={6}>
+          {locations.map((loc) => {
+            const iconColors = ICON_COLORS[loc.icon] ?? { bg: '#F0EEE8', color: '#7A6A5A' }
+            return (
+              <Box
+                key={loc.id}
+                style={{
+                  background: CARD_BG,
+                  borderRadius: 14,
+                  padding: '14px 16px',
+                  boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+                }}
+              >
+                <Group justify="space-between" wrap="nowrap">
+                  <Group gap={12} wrap="nowrap">
+                    <Box
+                      style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: 12,
+                        background: iconColors.bg,
+                        color: iconColors.color,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      {ICON_MAP[loc.icon]}
+                    </Box>
+                    <Box>
+                      <Text
+                        style={{
+                          fontFamily: '"Manrope", sans-serif',
+                          fontSize: 14,
+                          fontWeight: 600,
+                          color: '#1C1410',
+                          lineHeight: 1.3,
+                        }}
+                      >
+                        {loc.name}
+                      </Text>
+                    </Box>
+                  </Group>
+                  <Group gap={4} wrap="nowrap">
+                    <ActionIcon
+                      variant="subtle"
+                      size={32}
+                      style={{ color: '#7A6A5A' }}
+                      onClick={() => {
+                        setEditingId(loc.id)
+                        setEditName(loc.name)
+                        setEditIcon(loc.icon)
+                        setLocError(null)
+                      }}
+                    >
+                      <IconEdit size={15} />
+                    </ActionIcon>
+                    <ActionIcon
+                      variant="subtle"
+                      size={32}
+                      style={{ color: '#C42A2A' }}
+                      onClick={() => handleDeleteLocation(loc.id)}
+                    >
+                      <IconTrash size={15} />
+                    </ActionIcon>
+                    <IconChevronRight size={16} color="#C8B8A8" />
+                  </Group>
+                </Group>
+              </Box>
+            )
+          })}
+
+          {locations.length === 0 && (
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 13,
+                color: '#9A8A7A',
+                textAlign: 'center',
+                padding: '16px 0',
+              }}
+            >
+              Inga förvaringsplatser än
+            </Text>
+          )}
+        </Stack>
+      </Box>
+
+      {/* Settings section */}
+      <Box px="md">
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: '#7A6A5A',
+            marginBottom: 10,
+          }}
+        >
+          Inställningar
+        </Text>
+        <Box
+          style={{
+            background: CARD_BG,
+            borderRadius: 14,
+            boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+            overflow: 'hidden',
+          }}
+        >
+          <UnstyledButton
+            onClick={handleSignOut}
+            style={{
+              width: '100%',
+              padding: '14px 16px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+            }}
+          >
+            <Box
+              style={{
+                width: 40,
+                height: 40,
+                borderRadius: 12,
+                background: '#FEE2E2',
+                color: '#C42A2A',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              <IconLogout size={16} />
+            </Box>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 14,
+                fontWeight: 600,
+                color: '#C42A2A',
+              }}
+            >
+              Logga ut
+            </Text>
+          </UnstyledButton>
+        </Box>
+      </Box>
+
+      {/* Add location bottom sheet */}
       <BottomSheet
         opened={addingLocation}
         onClose={() => {
@@ -276,6 +595,7 @@ export function HouseholdPage() {
         </Stack>
       </BottomSheet>
 
+      {/* Edit location bottom sheet */}
       <BottomSheet
         opened={editingId !== null}
         onClose={() => {
