@@ -340,9 +340,9 @@ export function CookingMode({ opened, onClose }: Props) {
                             </Text>
                             <NumberInput
                               min={0.1}
-                              step={getSmallStep(item.unit)}
+                              step={getSmallStep(cookingUnit)}
                               decimalScale={2}
-                              placeholder={`ex. ${getLargeStep(item.unit)}`}
+                              placeholder={`ex. ${getLargeStep(cookingUnit)}`}
                               value={popoverValue}
                               onChange={setPopoverValue}
                               onKeyDown={(e) => {
