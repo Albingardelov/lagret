@@ -24,13 +24,18 @@ export interface InventoryItem {
   updatedAt: string
 }
 
+export interface IngredientGroup {
+  name: string | null
+  items: string[]
+}
+
 export interface Recipe {
   id: number
   url: string
   slug: string | null
   name: string | null
   description: string | null
-  ingredients: string[]
+  ingredientGroups: IngredientGroup[]
   instructions: string[]
   imageUrls: string[]
   cookTime: string | null

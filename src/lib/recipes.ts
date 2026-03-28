@@ -1,13 +1,18 @@
 import { supabase } from './supabase'
 import type { Recipe } from '../types'
 
+interface IngredientGroupRow {
+  name: string | null
+  items: string[]
+}
+
 interface RecipeRow {
   id: number
   url: string
   slug: string | null
   name: string | null
   description: string | null
-  ingredients: string[]
+  ingredient_groups: IngredientGroupRow[]
   instructions: string[]
   image_urls: string[]
   cook_time: string | null
@@ -23,7 +28,7 @@ function mapRecipe(row: RecipeRow): Recipe {
     slug: row.slug,
     name: row.name,
     description: row.description,
-    ingredients: row.ingredients ?? [],
+    ingredientGroups: row.ingredient_groups ?? [],
     instructions: row.instructions ?? [],
     imageUrls: row.image_urls ?? [],
     cookTime: row.cook_time,
@@ -44,7 +49,7 @@ export async function getRecipeById(id: number): Promise<Recipe | null> {
   const { data, error } = await supabase
     .from('recipes')
     .select(
-      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+      'id, url, slug, name, description, ingredient_groups, instructions, image_urls, cook_time, prep_time, total_time, servings'
     )
     .eq('id', id)
     .single()
@@ -56,7 +61,7 @@ export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   const { data, error } = await supabase
     .from('recipes')
     .select(
-      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+      'id, url, slug, name, description, ingredient_groups, instructions, image_urls, cook_time, prep_time, total_time, servings'
     )
     .eq('slug', slug)
     .single()
@@ -68,7 +73,7 @@ export async function getRecentRecipes(limit = 20): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
     .select(
-      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+      'id, url, slug, name, description, ingredient_groups, instructions, image_urls, cook_time, prep_time, total_time, servings'
     )
     .not('name', 'is', null)
     .not('image_urls', 'eq', '[]')

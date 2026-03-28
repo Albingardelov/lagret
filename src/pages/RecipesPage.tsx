@@ -30,8 +30,20 @@ import {
 } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { suggestRecipes, searchRecipes, getRecentRecipes } from '../lib/recipes'
-import { matchRecipes, ingredientsMatch } from '../lib/recipeMatching'
+import { matchRecipes, ingredientsMatch, getAllIngredients } from '../lib/recipeMatching'
 import type { RecipeMatch } from '../lib/recipeMatching'
+import type { IngredientGroup } from '../types'
+
+/** Merge all null-named groups into one, keeping named groups as-is */
+function mergeUnnamedGroups(groups: IngredientGroup[]): IngredientGroup[] {
+  const unnamed = groups.filter((g) => !g.name)
+  const named = groups.filter((g) => g.name)
+  const merged: IngredientGroup[] = []
+  if (unnamed.length > 0) {
+    merged.push({ name: null, items: unnamed.flatMap((g) => g.items) })
+  }
+  return [...merged, ...named]
+}
 
 const FAVORITES_KEY = 'lagret:favorite-recipes'
 
@@ -128,15 +140,34 @@ export function RecipesPage() {
     : []
 
   const openCook = () => {
-    setCookChecked(new Set(matchedInventoryItems.map((i) => i.id)))
+    if (!selected) return
+    const preChecked = new Set<string>()
+    mergeUnnamedGroups(selected.recipe.ingredientGroups).forEach((group, gi) => {
+      group.items.forEach((ingredient, i) => {
+        const hasInInventory = matchedInventoryItems.some((inv) =>
+          ingredientsMatch(ingredient, inv.name)
+        )
+        if (hasInInventory) preChecked.add(`${gi}-${i}`)
+      })
+    })
+    setCookChecked(preChecked)
     setCookDone(false)
     setCooking(true)
   }
 
   const handleCook = async () => {
+    if (!selected) return
+    const toDecrement = new Set<string>()
+    mergeUnnamedGroups(selected.recipe.ingredientGroups).forEach((group, gi) => {
+      group.items.forEach((ingredient, i) => {
+        if (!cookChecked.has(`${gi}-${i}`)) return
+        const inv = matchedInventoryItems.find((it) => ingredientsMatch(ingredient, it.name))
+        if (inv) toDecrement.add(inv.id)
+      })
+    })
     await Promise.all(
       matchedInventoryItems
-        .filter((i) => cookChecked.has(i.id))
+        .filter((i) => toDecrement.has(i.id))
         .map((i) => updateItem(i.id, { quantity: Math.max(0, i.quantity - 1) }))
     )
     setCookDone(true)
@@ -218,7 +249,7 @@ export function RecipesPage() {
                         </Badge>
                       )}
                       <Badge size="xs" color={scoreColor(m.score)} data-testid="score-badge">
-                        {m.matched.length}/{m.recipe.ingredients.length} ingredienser
+                        {m.matched.length}/{getAllIngredients(m.recipe).length} ingredienser
                       </Badge>
                     </Group>
                     {m.missing.length > 0 && (
@@ -272,8 +303,8 @@ export function RecipesPage() {
               <>
                 <Group justify="space-between">
                   <Text fw={600}>
-                    Ingredienser ({selected.matched.length}/{selected.recipe.ingredients.length}{' '}
-                    hemma)
+                    Ingredienser ({selected.matched.length}/
+                    {getAllIngredients(selected.recipe).length} hemma)
                   </Text>
                   {matchedInventoryItems.length > 0 && (
                     <Button
@@ -286,27 +317,36 @@ export function RecipesPage() {
                     </Button>
                   )}
                 </Group>
-                <List>
-                  {selected.recipe.ingredients.map((ingredient, i) => {
-                    const have = selected.matched.some(
-                      (m) => m.toLowerCase() === ingredient.toLowerCase()
-                    )
-                    return (
-                      <List.Item
-                        key={i}
-                        icon={
-                          <ThemeIcon color={have ? 'green' : 'red'} size={16} radius="xl">
-                            <span style={{ fontSize: 10 }}>{have ? '✓' : '✗'}</span>
-                          </ThemeIcon>
-                        }
-                      >
-                        <Text size="sm" c={have ? undefined : 'dimmed'}>
-                          {ingredient}
-                        </Text>
-                      </List.Item>
-                    )
-                  })}
-                </List>
+                {mergeUnnamedGroups(selected.recipe.ingredientGroups).map((group, gi) => (
+                  <Stack key={gi} gap={4}>
+                    {group.name && (
+                      <Text fw={600} size="sm" mt={gi > 0 ? 'xs' : 0}>
+                        {group.name}
+                      </Text>
+                    )}
+                    <List>
+                      {group.items.map((ingredient, i) => {
+                        const have = selected.matched.some(
+                          (m) => m.toLowerCase() === ingredient.toLowerCase()
+                        )
+                        return (
+                          <List.Item
+                            key={i}
+                            icon={
+                              <ThemeIcon color={have ? 'green' : 'red'} size={16} radius="xl">
+                                <span style={{ fontSize: 10 }}>{have ? '✓' : '✗'}</span>
+                              </ThemeIcon>
+                            }
+                          >
+                            <Text size="sm" c={have ? undefined : 'dimmed'}>
+                              {ingredient}
+                            </Text>
+                          </List.Item>
+                        )
+                      })}
+                    </List>
+                  </Stack>
+                ))}
                 <Divider />
                 <Text fw={600}>Instruktioner</Text>
                 <List type="ordered">
@@ -323,34 +363,50 @@ export function RecipesPage() {
               </Alert>
             ) : (
               <>
-                <Text fw={600}>Vilka varor använde du?</Text>
+                <Text fw={600}>Bocka av ingredienser du använt</Text>
                 <Text size="sm" c="dimmed">
-                  Bocka av det du använt — antalet minskas med 1.
+                  Varor från lagret minskas med 1 st.
                 </Text>
-                <Stack gap="xs">
-                  {matchedInventoryItems.map((inv) => (
-                    <Checkbox
-                      key={inv.id}
-                      checked={cookChecked.has(inv.id)}
-                      onChange={() =>
-                        setCookChecked((prev) => {
-                          const next = new Set(prev)
-                          if (next.has(inv.id)) next.delete(inv.id)
-                          else next.add(inv.id)
-                          return next
-                        })
-                      }
-                      label={
-                        <Text size="sm">
-                          {inv.name}{' '}
-                          <Text span c="dimmed">
-                            ({inv.quantity} {inv.unit})
-                          </Text>
-                        </Text>
-                      }
-                    />
-                  ))}
-                </Stack>
+                {mergeUnnamedGroups(selected.recipe.ingredientGroups).map((group, gi) => (
+                  <Stack key={gi} gap="xs">
+                    {group.name && (
+                      <Text fw={600} size="sm" mt={gi > 0 ? 'xs' : 0}>
+                        {group.name}
+                      </Text>
+                    )}
+                    {group.items.map((ingredient, i) => {
+                      const invItem = matchedInventoryItems.find((inv) =>
+                        ingredientsMatch(ingredient, inv.name)
+                      )
+                      const key = `${gi}-${i}`
+                      return (
+                        <Checkbox
+                          key={key}
+                          checked={cookChecked.has(key)}
+                          onChange={() =>
+                            setCookChecked((prev) => {
+                              const next = new Set(prev)
+                              if (next.has(key)) next.delete(key)
+                              else next.add(key)
+                              return next
+                            })
+                          }
+                          label={
+                            <Text size="sm">
+                              {ingredient}
+                              {invItem && (
+                                <Text span c="dimmed">
+                                  {' '}
+                                  ({invItem.quantity} {invItem.unit} i lager)
+                                </Text>
+                              )}
+                            </Text>
+                          }
+                        />
+                      )
+                    })}
+                  </Stack>
+                ))}
                 <Group>
                   <Button variant="subtle" color="gray" onClick={() => setCooking(false)}>
                     Avbryt
