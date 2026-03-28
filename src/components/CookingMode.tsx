@@ -25,7 +25,8 @@ import {
   Popover,
   NativeSelect,
 } from '@mantine/core'
-import { IconSearch, IconPlus, IconChevronLeft } from '@tabler/icons-react'
+import { IconSearch, IconPlus, IconChevronLeft, IconPencil } from '@tabler/icons-react'
+import { notifications } from '@mantine/notifications'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { AddItemModal } from './AddItemModal'
@@ -58,22 +59,31 @@ export function CookingMode({ opened, onClose }: Props) {
   }, [opened])
   /* eslint-enable react-hooks/set-state-in-effect */
 
-  const filtered = useMemo(
-    () =>
-      items.filter((item) => {
-        const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
-        const matchesLocation = !activeLocation || item.location === activeLocation
-        return matchesSearch && matchesLocation
-      }),
-    [items, search, activeLocation]
-  )
+  const filtered = useMemo(() => {
+    const matching = items.filter((item) => {
+      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
+      const matchesLocation = !activeLocation || item.location === activeLocation
+      return matchesSearch && matchesLocation
+    })
+    return [...matching].sort((a, b) => {
+      if (a.quantity === 0 && b.quantity !== 0) return 1
+      if (a.quantity !== 0 && b.quantity === 0) return -1
+      return 0
+    })
+  }, [items, search, activeLocation])
 
   const getLocationName = (locationId: string) =>
     locations.find((l) => l.id === locationId)?.name ?? ''
 
-  const adjust = (id: string, qty: number, step: number) => {
+  const adjust = (id: string, qty: number, step: number, unit: string) => {
     const next = Math.max(0, Math.round((qty - step) * 1000) / 1000)
     updateItem(id, { quantity: next }).catch(() => {})
+    notifications.show({
+      message: `-${formatQty(step)} ${unit} avdraget`,
+      color: 'sage',
+      autoClose: 3000,
+      withCloseButton: true,
+    })
   }
 
   const setCustomStep = (itemId: string, value: number) => {
@@ -268,7 +278,10 @@ export function CookingMode({ opened, onClose }: Props) {
                               letterSpacing: '0.05em',
                             }}
                           >
-                            {unitLabel}
+                            <Group gap={3} align="center" wrap="nowrap">
+                              <span>{unitLabel}</span>
+                              <IconPencil size={9} stroke={2} />
+                            </Group>
                           </UnstyledButton>
                         </Popover.Target>
                         <Popover.Dropdown>
@@ -288,7 +301,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       {/* Small step */}
                       <UnstyledButton
                         disabled={item.quantity === 0}
-                        onClick={() => adjust(item.id, item.quantity, smallStep)}
+                        onClick={() => adjust(item.id, item.quantity, smallStep, cookingUnit)}
                         style={{
                           background: btnBg,
                           borderRadius: 10,
@@ -308,7 +321,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       {/* Large step */}
                       <UnstyledButton
                         disabled={item.quantity === 0}
-                        onClick={() => adjust(item.id, item.quantity, largeStep)}
+                        onClick={() => adjust(item.id, item.quantity, largeStep, cookingUnit)}
                         style={{
                           background: btnBg,
                           borderRadius: 10,
@@ -337,7 +350,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             disabled={item.quantity === 0}
                             onClick={() => {
                               if (customStep !== undefined) {
-                                adjust(item.id, item.quantity, customStep)
+                                adjust(item.id, item.quantity, customStep, cookingUnit)
                               } else {
                                 setPopoverValue('')
                                 setEditingStep(item.id)
@@ -361,9 +374,14 @@ export function CookingMode({ opened, onClose }: Props) {
                                 </Text>
                               </>
                             ) : (
-                              <Text fw={600} size="sm" c="#aaa">
-                                —
-                              </Text>
+                              <>
+                                <Text fw={600} size="sm" c="#aaa">
+                                  —
+                                </Text>
+                                <Text size="xs" c="#bcc89c" style={{ letterSpacing: '0.04em' }}>
+                                  EGET
+                                </Text>
+                              </>
                             )}
                           </UnstyledButton>
                         </Popover.Target>
@@ -404,6 +422,26 @@ export function CookingMode({ opened, onClose }: Props) {
                   </Box>
                 )
               })}
+
+              {/* Empty state */}
+              {filtered.length === 0 && (
+                <Box
+                  style={{
+                    textAlign: 'center',
+                    padding: '48px 16px',
+                  }}
+                >
+                  <Text size="xl" mb={8}>
+                    🥬
+                  </Text>
+                  <Text fw={600} c="#53642e" size="sm">
+                    Inga varor hittades
+                  </Text>
+                  <Text size="xs" c="#889a5e" mt={4}>
+                    Prova ett annat sökord eller byt plats
+                  </Text>
+                </Box>
+              )}
 
               {/* Add item button */}
               <UnstyledButton
