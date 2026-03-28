@@ -1,4 +1,4 @@
-import { Drawer, Modal, ScrollArea } from '@mantine/core'
+import { Drawer, Modal, ScrollArea, Box, Text } from '@mantine/core'
 import { useMediaQuery } from '@mantine/hooks'
 import type { ReactNode } from 'react'
 
@@ -10,6 +10,35 @@ interface BottomSheetProps {
   size?: string
 }
 
+function DragHandle({ title }: { title?: ReactNode }) {
+  return (
+    <Box style={{ width: '100%' }}>
+      <Box
+        style={{
+          width: 36,
+          height: 4,
+          borderRadius: 2,
+          background: '#c5ccb8',
+          margin: '0 auto 8px',
+        }}
+      />
+      {title && (
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontWeight: 700,
+            fontSize: 17,
+            color: '#191d16',
+            textAlign: 'center',
+          }}
+        >
+          {title}
+        </Text>
+      )}
+    </Box>
+  )
+}
+
 export function BottomSheet({ opened, onClose, title, children, size = 'lg' }: BottomSheetProps) {
   const isMobile = useMediaQuery('(max-width: 768px)')
 
@@ -18,22 +47,20 @@ export function BottomSheet({ opened, onClose, title, children, size = 'lg' }: B
       <Drawer
         opened={opened}
         onClose={onClose}
-        title={title}
+        title={<DragHandle title={title} />}
         position="bottom"
         size="92%"
         radius="16px 16px 0 0"
+        withCloseButton={false}
         scrollAreaComponent={ScrollArea.Autosize}
         styles={{
           header: {
-            paddingTop: 12,
+            paddingTop: 10,
             paddingBottom: 8,
             borderBottom: '1px solid #ecefe3',
           },
           title: {
-            fontFamily: '"Manrope", sans-serif',
-            fontWeight: 700,
-            fontSize: 17,
-            color: '#191d16',
+            width: '100%',
           },
           body: {
             paddingTop: 16,
