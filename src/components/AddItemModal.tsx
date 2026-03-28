@@ -20,7 +20,8 @@ import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
 import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
 import { useLocationsStore } from '../store/locationsStore'
-import { ITEM_CATEGORIES } from '../lib/categories'
+import { ITEM_CATEGORIES, CATEGORY_DEFAULT_UNIT, CATEGORY_DEFAULT_QTY } from '../lib/categories'
+import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { suggestExpiryDate } from '../lib/storageDurations'
 import { UNITS_FLAT } from '../lib/units'
 
@@ -67,10 +68,28 @@ export function AddItemModal({
   useEffect(() => {
     if (opened) {
       form.setFieldValue('location', defaultLocation ?? locations[0]?.id ?? '')
-      if (defaultName) form.setFieldValue('name', defaultName)
+      if (defaultName) {
+        const parsed = parseShoppingInput(defaultName)
+        form.setFieldValue('name', parsed.name || defaultName)
+        if (parsed.quantity !== 1 || parsed.unit !== 'st') {
+          form.setFieldValue('quantity', parsed.quantity)
+          form.setFieldValue('unit', parsed.unit)
+        }
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [opened])
+
+  // Auto-suggest unit + quantity when category changes
+  useEffect(() => {
+    const cat = form.values.category
+    if (!cat) return
+    const suggestedUnit = CATEGORY_DEFAULT_UNIT[cat]
+    const suggestedQty = CATEGORY_DEFAULT_QTY[cat]
+    if (suggestedUnit) form.setFieldValue('unit', suggestedUnit)
+    if (suggestedQty) form.setFieldValue('quantity', suggestedQty)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.values.category])
 
   // Auto-suggest expiry date when location or category changes.
   // Uses the already-entered packaging date as base if available, otherwise today.

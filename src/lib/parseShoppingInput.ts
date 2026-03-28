@@ -12,7 +12,19 @@ export function parseShoppingInput(input: string): ParsedShoppingInput {
   const trimmed = input.trim()
   if (!trimmed) return { quantity: 1, unit: 'st', name: '' }
 
-  // Pattern: optional number, optional unit, rest is name
+  // Pattern 1: "1200g kycklingfilé" — number+unit glued together
+  for (const unit of ALL_UNITS) {
+    const glued = trimmed.match(new RegExp(`^(\\d+[.,]?\\d*)${unit}\\s+(.+)$`, 'i'))
+    if (glued) {
+      return { quantity: parseFloat(glued[1].replace(',', '.')), unit, name: glued[2].trim() }
+    }
+    const gluedOnly = trimmed.match(new RegExp(`^(\\d+[.,]?\\d*)${unit}$`, 'i'))
+    if (gluedOnly) {
+      return { quantity: parseFloat(gluedOnly[1].replace(',', '.')), unit, name: '' }
+    }
+  }
+
+  // Pattern 2: "2 l mjölk" — number space unit space name
   const match = trimmed.match(/^(\d+[.,]?\d*)\s+(.+)$/)
   if (!match) return { quantity: 1, unit: 'st', name: trimmed }
 

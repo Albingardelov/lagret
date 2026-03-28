@@ -156,31 +156,30 @@ export function CookingMode({ opened, onClose }: Props) {
                 <Box
                   key={item.id}
                   style={{
-                    borderRadius: 12,
-                    border: '1px solid var(--mantine-color-default-border)',
-                    borderLeft: `5px solid ${categoryColor}`,
-                    padding: '10px 14px',
+                    borderRadius: 10,
+                    borderLeft: `4px solid ${categoryColor}`,
+                    padding: '6px 10px',
                     opacity: isEmpty ? 0.4 : 1,
                     background: 'white',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 12,
+                    gap: 8,
                   }}
                 >
                   {/* Name + location */}
-                  <Stack gap={2} style={{ flex: 1, minWidth: 0 }}>
-                    <Text fw={600} size="md" style={{ lineHeight: 1.2 }}>
+                  <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                    <Text fw={600} truncate style={{ fontSize: 13, lineHeight: 1.2 }}>
                       {item.name}
                     </Text>
-                    <Text size="xs" c="dimmed">
+                    <Text style={{ fontSize: 10, color: '#999' }}>
                       {getLocationName(item.location)}
                     </Text>
                   </Stack>
 
                   {/* Quantity + controls */}
-                  <Group gap={6} align="center" wrap="nowrap">
+                  <Group gap={4} align="center" wrap="nowrap">
                     <ActionIcon
-                      size={44}
+                      size={32}
                       radius="xl"
                       variant="light"
                       color="red"
@@ -188,34 +187,27 @@ export function CookingMode({ opened, onClose }: Props) {
                       onClick={() => adjust(item.id, item.quantity, item.unit, -1)}
                       aria-label={`Minska med ${getStep(item.unit)} ${item.unit}`}
                     >
-                      <IconMinus size={18} />
+                      <IconMinus size={14} />
                     </ActionIcon>
 
-                    <Stack gap={0} align="center" style={{ minWidth: 56 }}>
-                      <Text fw={700} size="xl" ta="center" style={{ lineHeight: 1 }}>
+                    <Stack gap={0} align="center" style={{ minWidth: 40 }}>
+                      <Text fw={700} ta="center" style={{ fontSize: 15, lineHeight: 1 }}>
                         {formatQty(item.quantity)}
                       </Text>
-                      <Text size="xs" c="dimmed" ta="center">
+                      <Text ta="center" style={{ fontSize: 10, color: '#999' }}>
                         {item.unit}
-                      </Text>
-                      <Text
-                        c="dimmed"
-                        ta="center"
-                        style={{ opacity: 0.6, marginTop: 2, fontSize: 10 }}
-                      >
-                        ±{formatQty(getStep(item.unit))}
                       </Text>
                     </Stack>
 
                     <ActionIcon
-                      size={44}
+                      size={32}
                       radius="xl"
                       variant="light"
                       color="green"
                       onClick={() => adjust(item.id, item.quantity, item.unit, 1)}
                       aria-label={`Öka med ${getStep(item.unit)} ${item.unit}`}
                     >
-                      <IconPlus size={18} />
+                      <IconPlus size={14} />
                     </ActionIcon>
                   </Group>
 

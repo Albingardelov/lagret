@@ -38,6 +38,20 @@ describe('parseShoppingInput', () => {
     })
   })
 
+  it('parses glued number+unit like 1200g', () => {
+    expect(parseShoppingInput('1200g kycklingfilé')).toEqual({
+      quantity: 1200,
+      unit: 'g',
+      name: 'kycklingfilé',
+    })
+    expect(parseShoppingInput('1,5l mjölk')).toEqual({ quantity: 1.5, unit: 'l', name: 'mjölk' })
+    expect(parseShoppingInput('500ml grädde')).toEqual({
+      quantity: 500,
+      unit: 'ml',
+      name: 'grädde',
+    })
+  })
+
   it('handles all known units', () => {
     expect(parseShoppingInput('2 msk soja')).toEqual({ quantity: 2, unit: 'msk', name: 'soja' })
     expect(parseShoppingInput('1 förp bacon')).toEqual({ quantity: 1, unit: 'förp', name: 'bacon' })
