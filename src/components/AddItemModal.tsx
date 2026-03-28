@@ -45,6 +45,12 @@ export function AddItemModal({
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
   const locations = useLocationsStore((s) => s.locations)
+  const fetchLocations = useLocationsStore((s) => s.fetchLocations)
+
+  useEffect(() => {
+    if (locations.length === 0) fetchLocations()
+  }, [fetchLocations, locations.length])
+
   const [showScanner, setShowScanner] = useState(false)
   const [lookupLoading, setLookupLoading] = useState(false)
   const [lookupFailed, setLookupFailed] = useState(false)
@@ -224,6 +230,8 @@ export function AddItemModal({
             <Select
               label="Förvaringsplats"
               data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
+              searchable
+              allowDeselect={false}
               {...form.getInputProps('location')}
             />
             <DateInput
