@@ -9,9 +9,12 @@ import {
   Box,
   ActionIcon,
   Checkbox,
+  Alert,
 } from '@mantine/core'
-import { IconPlus, IconTrash, IconPackage } from '@tabler/icons-react'
+import { IconPlus, IconTrash, IconPackage, IconCheck } from '@tabler/icons-react'
 import { useShoppingStore } from '../store/shoppingStore'
+import { useInventoryStore } from '../store/inventoryStore'
+import { useLocationsStore } from '../store/locationsStore'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { AddItemModal } from '../components/AddItemModal'
 import { ITEM_CATEGORIES } from '../lib/categories'
@@ -34,6 +37,12 @@ export function ShoppingListPage() {
   const [detailNote, setDetailNote] = useState('')
   const [detailCategory, setDetailCategory] = useState<string | null>(null)
   const [inventoryItem, setInventoryItem] = useState<{ id: string; name: string } | null>(null)
+  const [bulkOpen, setBulkOpen] = useState(false)
+  const [bulkLocations, setBulkLocations] = useState<Record<string, string>>({})
+  const [bulkSubmitting, setBulkSubmitting] = useState(false)
+  const [bulkDone, setBulkDone] = useState(false)
+  const addInventoryItem = useInventoryStore((s) => s.addItem)
+  const locations = useLocationsStore((s) => s.locations)
   useErrorNotification(error, 'Inköpslistefel')
 
   useEffect(() => {
@@ -53,6 +62,37 @@ export function ShoppingListPage() {
     setDetailNote('')
     setDetailCategory(null)
     setDetailsOpen(false)
+  }
+
+  function openBulkWizard() {
+    const defaultLoc = locations[0]?.id ?? ''
+    const locs: Record<string, string> = {}
+    for (const item of bought) {
+      locs[item.id] = defaultLoc
+    }
+    setBulkLocations(locs)
+    setBulkDone(false)
+    setBulkOpen(true)
+  }
+
+  async function handleBulkAdd() {
+    setBulkSubmitting(true)
+    try {
+      for (const item of bought) {
+        const loc = bulkLocations[item.id] || locations[0]?.id
+        if (!loc) continue
+        await addInventoryItem({
+          name: item.name,
+          quantity: 1,
+          unit: 'st',
+          location: loc,
+        })
+        await removeItem(item.id)
+      }
+      setBulkDone(true)
+    } finally {
+      setBulkSubmitting(false)
+    }
   }
 
   // Group pending items by note (recipe name) for visual grouping
@@ -215,15 +255,27 @@ export function ShoppingListPage() {
             >
               Köpta varor
             </Text>
-            <ActionIcon
-              variant="subtle"
-              color="red"
-              size="sm"
-              onClick={clearBought}
-              aria-label="Rensa köpta varor"
-            >
-              <IconTrash size={14} />
-            </ActionIcon>
+            <Group gap={8}>
+              <Button
+                size="compact-xs"
+                variant="light"
+                color="green"
+                leftSection={<IconPackage size={13} />}
+                onClick={openBulkWizard}
+                style={{ fontFamily: '"Manrope", sans-serif', fontWeight: 600 }}
+              >
+                Lägg in i lagret
+              </Button>
+              <ActionIcon
+                variant="subtle"
+                color="red"
+                size="sm"
+                onClick={clearBought}
+                aria-label="Rensa köpta varor"
+              >
+                <IconTrash size={14} />
+              </ActionIcon>
+            </Group>
           </Group>
           <Stack gap={0} px="md">
             {bought.map((item, idx) => (
@@ -339,6 +391,74 @@ export function ShoppingListPage() {
             Lägg till
           </Button>
         </Stack>
+      </BottomSheet>
+
+      {/* Bulk add to inventory wizard */}
+      <BottomSheet
+        opened={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        title="Lägg in varor i lagret"
+      >
+        {bulkDone ? (
+          <Alert color="green" icon={<IconCheck size={16} />}>
+            Alla varor har lagts in i lagret!
+          </Alert>
+        ) : (
+          <Stack>
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 13,
+                color: '#7a8a6a',
+              }}
+            >
+              Välj förvaringsplats för varje vara
+            </Text>
+            {bought.map((item) => (
+              <Group key={item.id} justify="space-between" wrap="nowrap" gap="sm">
+                <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+                  <Text
+                    truncate
+                    style={{
+                      fontFamily: '"Manrope", sans-serif',
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    {item.name}
+                  </Text>
+                  {item.note && (
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 11,
+                        color: '#a8b4a0',
+                      }}
+                    >
+                      {item.note}
+                    </Text>
+                  )}
+                </Stack>
+                <Select
+                  size="xs"
+                  w={140}
+                  data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
+                  value={bulkLocations[item.id] ?? locations[0]?.id ?? ''}
+                  onChange={(v) => setBulkLocations((prev) => ({ ...prev, [item.id]: v ?? '' }))}
+                  allowDeselect={false}
+                />
+              </Group>
+            ))}
+            <Button
+              fullWidth
+              leftSection={<IconPackage size={16} />}
+              onClick={handleBulkAdd}
+              loading={bulkSubmitting}
+            >
+              Lägg in {bought.length} varor i lagret
+            </Button>
+          </Stack>
+        )}
       </BottomSheet>
 
       <AddItemModal
