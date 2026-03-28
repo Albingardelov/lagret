@@ -256,6 +256,9 @@ export function ShoppingListPage() {
                         color: '#191d16',
                       }}
                     >
+                      {item.quantity !== 1 || item.unit !== 'st'
+                        ? `${item.quantity} ${item.unit} `
+                        : ''}
                       {item.name}
                     </Text>
                   }
@@ -337,6 +340,9 @@ export function ShoppingListPage() {
                             textDecoration: 'line-through',
                           }}
                         >
+                          {item.quantity !== 1 || item.unit !== 'st'
+                            ? `${item.quantity} ${item.unit} `
+                            : ''}
                           {item.name}
                         </Text>
                         {item.note && (
@@ -475,6 +481,9 @@ export function ShoppingListPage() {
                     color: '#191d16',
                   }}
                 >
+                  {item.quantity !== 1 || item.unit !== 'st'
+                    ? `${item.quantity} ${item.unit} `
+                    : ''}
                   {item.name}
                 </Text>
                 {item.note && (
