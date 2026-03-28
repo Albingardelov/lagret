@@ -6,7 +6,10 @@ import {
   formatQty,
   loadCustomSteps,
   saveCustomSteps,
+  loadCookingUnits,
+  saveCookingUnits,
 } from './cookingModeUtils'
+import { suggestCookingUnit } from '../lib/cookingUnitSuggestions'
 
 import { useState, useMemo, useEffect } from 'react'
 import {
@@ -20,6 +23,7 @@ import {
   UnstyledButton,
   NumberInput,
   Popover,
+  NativeSelect,
 } from '@mantine/core'
 import { IconSearch, IconPlus } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
@@ -42,10 +46,15 @@ export function CookingMode({ opened, onClose }: Props) {
   const [editingStep, setEditingStep] = useState<string | null>(null)
   const [addItemOpen, setAddItemOpen] = useState(false)
   const [popoverValue, setPopoverValue] = useState<number | string>('')
+  const [cookingUnits, setCookingUnits] = useState<Record<string, string>>({})
+  const [editingUnit, setEditingUnit] = useState<string | null>(null)
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (opened) setCustomSteps(loadCustomSteps())
+    if (opened) {
+      setCustomSteps(loadCustomSteps())
+      setCookingUnits(loadCookingUnits())
+    }
   }, [opened])
   /* eslint-enable react-hooks/set-state-in-effect */
 
@@ -72,6 +81,13 @@ export function CookingMode({ opened, onClose }: Props) {
     setCustomSteps(next)
     saveCustomSteps(next)
     setEditingStep(null)
+  }
+
+  const setCookingUnit = (itemId: string, unit: string) => {
+    const next = { ...cookingUnits, [itemId]: unit }
+    setCookingUnits(next)
+    saveCookingUnits(next)
+    setEditingUnit(null)
   }
 
   const bg = '#f5f0e8'
@@ -150,10 +166,12 @@ export function CookingMode({ opened, onClose }: Props) {
             <Stack gap="md">
               {filtered.map((item) => {
                 const locationName = (getLocationName(item.location) || 'OKÄND').toUpperCase()
-                const smallStep = getSmallStep(item.unit)
-                const largeStep = getLargeStep(item.unit)
+                const cookingUnit =
+                  cookingUnits[item.id] ?? suggestCookingUnit(item.name, item.unit)
+                const smallStep = getSmallStep(cookingUnit)
+                const largeStep = getLargeStep(cookingUnit)
                 const customStep = customSteps[item.id]
-                const unit = item.unit.toUpperCase()
+                const unitLabel = cookingUnit.toUpperCase()
 
                 return (
                   <Box
@@ -191,10 +209,45 @@ export function CookingMode({ opened, onClose }: Props) {
                       </Box>
                     </Group>
 
-                    {/* Item name */}
-                    <Text fw={700} size="xl" c="#1a1a1a" mb={12}>
-                      {item.name}
-                    </Text>
+                    {/* Item name + unit picker */}
+                    <Group justify="space-between" align="center" mb={12}>
+                      <Text fw={700} size="xl" c="#1a1a1a">
+                        {item.name}
+                      </Text>
+                      <Popover
+                        opened={editingUnit === item.id}
+                        onClose={() => setEditingUnit(null)}
+                        position="bottom-end"
+                        withArrow
+                      >
+                        <Popover.Target>
+                          <UnstyledButton
+                            aria-label="byt enhet"
+                            onClick={() => setEditingUnit(editingUnit === item.id ? null : item.id)}
+                            style={{
+                              background: '#ede8df',
+                              borderRadius: 999,
+                              padding: '2px 10px',
+                              fontSize: 11,
+                              fontWeight: 700,
+                              color: '#6b5a3e',
+                              letterSpacing: '0.05em',
+                            }}
+                          >
+                            {unitLabel}
+                          </UnstyledButton>
+                        </Popover.Target>
+                        <Popover.Dropdown>
+                          <NativeSelect
+                            size="xs"
+                            data={['st', 'g', 'kg', 'dl', 'l', 'ml', 'msk', 'tsk', 'krm']}
+                            value={cookingUnit}
+                            onChange={(e) => setCookingUnit(item.id, e.currentTarget.value)}
+                            label="Kokenhet"
+                          />
+                        </Popover.Dropdown>
+                      </Popover>
+                    </Group>
 
                     {/* Decrement buttons */}
                     <Group gap={8} grow>
@@ -214,7 +267,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           -{formatQty(smallStep)}
                         </Text>
                         <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
-                          {unit}
+                          {unitLabel}
                         </Text>
                       </UnstyledButton>
 
@@ -234,7 +287,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           -{formatQty(largeStep)}
                         </Text>
                         <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
-                          {unit}
+                          {unitLabel}
                         </Text>
                       </UnstyledButton>
 
@@ -270,7 +323,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                   -{formatQty(customStep)}
                                 </Text>
                                 <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
-                                  {unit}
+                                  {unitLabel}
                                 </Text>
                               </>
                             ) : (
@@ -283,7 +336,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         <Popover.Dropdown>
                           <Stack gap={8}>
                             <Text size="xs" c="#888">
-                              Ange eget steg ({item.unit})
+                              Ange eget steg ({cookingUnit})
                             </Text>
                             <NumberInput
                               min={0.1}
