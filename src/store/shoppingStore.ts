@@ -8,6 +8,8 @@ function mapItem(row: Record<string, unknown>): ShoppingItem {
     id: row.id as string,
     householdId: row.household_id as string,
     name: row.name as string,
+    quantity: row.quantity as number,
+    unit: row.unit as string,
     note: (row.note as string | null) ?? undefined,
     category: (row.category as string | null) ?? undefined,
     isBought: row.is_bought as boolean,
@@ -20,7 +22,13 @@ interface ShoppingState {
   loading: boolean
   error: string | null
   fetchItems: () => Promise<void>
-  addItem: (name: string, note?: string, category?: string) => Promise<void>
+  addItem: (
+    name: string,
+    quantity?: number,
+    unit?: string,
+    note?: string,
+    category?: string
+  ) => Promise<void>
   removeItem: (id: string) => Promise<void>
   toggleBought: (id: string) => Promise<void>
   clearBought: () => Promise<void>
@@ -48,12 +56,19 @@ export const useShoppingStore = create<ShoppingState>((set, get) => ({
     }
   },
 
-  addItem: async (name, note, category) => {
+  addItem: async (name, quantity, unit, note, category) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) throw new Error('Inget hushåll laddat')
     const { data, error } = await supabase
       .from('shopping_list')
-      .insert({ household_id: householdId, name, note: note ?? null, category: category ?? null })
+      .insert({
+        household_id: householdId,
+        name,
+        quantity: quantity ?? 1,
+        unit: unit ?? 'st',
+        note: note ?? null,
+        category: category ?? null,
+      })
       .select()
       .single()
     if (error) throw new Error(error.message)

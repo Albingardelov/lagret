@@ -55,6 +55,8 @@ export interface ShoppingItem {
   id: string
   householdId: string
   name: string
+  quantity: number
+  unit: string
   note?: string
   category?: string
   isBought: boolean
