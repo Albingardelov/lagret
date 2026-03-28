@@ -12,6 +12,7 @@ Replace the external TheMealDB API with a local `recipes` table (25k scraped Swe
 **Single Supabase project** — the `recipes` table lives alongside the existing app tables (`households`, `inventory`, `shopping_list`, etc.). One client, one auth system, RLS protects recipes for authenticated users only.
 
 Alternatives considered and rejected:
+
 - **Second Supabase client** — unnecessary complexity since we consolidated into one project
 - **Edge Function proxy** — extra latency, cold starts, harder to debug
 - **Foreign Data Wrapper** — sync complexity, data duplication
@@ -136,6 +137,7 @@ No longer needed — recipes and inventory are both in Swedish.
 ### Update `src/pages/RecipesPage.tsx`
 
 Adapt to new types and function signatures:
+
 - `recipe.name` instead of `recipe.strMeal`
 - `recipe.imageUrls[0]` instead of `recipe.strMealThumb`
 - `recipe.instructions` is `string[]` (steps) instead of a single text blob
@@ -147,20 +149,21 @@ Update `.env.local` with new Supabase project URL and anon key (same variable na
 
 ## Files Changed
 
-| Action | File |
-|--------|------|
-| Modify | `src/types/index.ts` — new Recipe type, delete MealDB types |
-| Rewrite | `src/lib/recipes.ts` — Supabase queries instead of MealDB |
-| Modify | `src/lib/recipeMatching.ts` — remove translation, adapt to new type |
-| Delete | `src/lib/ingredientTranslations.ts` |
-| Modify | `src/pages/RecipesPage.tsx` — adapt to new types/functions |
-| Modify | `src/lib/__tests__/recipeMatching.test.ts` — adapt to new type |
-| Modify | `src/lib/__tests__/recipes.test.ts` — mock Supabase instead of fetch |
-| Modify | `.env.local` — new Supabase URL + key |
+| Action  | File                                                                 |
+| ------- | -------------------------------------------------------------------- |
+| Modify  | `src/types/index.ts` — new Recipe type, delete MealDB types          |
+| Rewrite | `src/lib/recipes.ts` — Supabase queries instead of MealDB            |
+| Modify  | `src/lib/recipeMatching.ts` — remove translation, adapt to new type  |
+| Delete  | `src/lib/ingredientTranslations.ts`                                  |
+| Modify  | `src/pages/RecipesPage.tsx` — adapt to new types/functions           |
+| Modify  | `src/lib/__tests__/recipeMatching.test.ts` — adapt to new type       |
+| Modify  | `src/lib/__tests__/recipes.test.ts` — mock Supabase instead of fetch |
+| Modify  | `.env.local` — new Supabase URL + key                                |
 
 ## Database Setup (already done)
 
 All SQL has been executed on the new Supabase project:
+
 1. App tables created (households, household_members, storage_locations, inventory, shopping_list, barcodes)
 2. RLS policies + `is_household_member()` function
 3. Realtime enabled on inventory + shopping_list

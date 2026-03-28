@@ -12,23 +12,24 @@
 
 ## File Structure
 
-| Action | File | Responsibility |
-|--------|------|---------------|
-| Modify | `src/types/index.ts` | Replace MealDB types with new Recipe type |
-| Rewrite | `src/lib/recipes.ts` | Supabase queries instead of MealDB fetch calls |
-| Modify | `src/lib/recipeMatching.ts` | Remove English translation, adapt to `string[]` ingredients |
-| Delete | `src/lib/ingredientTranslations.ts` | No longer needed |
-| Modify | `src/pages/RecipesPage.tsx` | Adapt to new Recipe type and function signatures |
-| Rewrite | `src/lib/__tests__/recipes.test.ts` | Mock Supabase RPC instead of MealDB HTTP |
-| Modify | `src/lib/__tests__/recipeMatching.test.ts` | Update test fixtures to new Recipe type |
-| Rewrite | `src/test/mocks/handlers/mealdb.ts` → `src/test/mocks/handlers/recipes.ts` | Supabase recipe mock handlers |
-| Modify | `src/test/mocks/server.ts` | Import new recipe handlers |
+| Action  | File                                                                       | Responsibility                                              |
+| ------- | -------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| Modify  | `src/types/index.ts`                                                       | Replace MealDB types with new Recipe type                   |
+| Rewrite | `src/lib/recipes.ts`                                                       | Supabase queries instead of MealDB fetch calls              |
+| Modify  | `src/lib/recipeMatching.ts`                                                | Remove English translation, adapt to `string[]` ingredients |
+| Delete  | `src/lib/ingredientTranslations.ts`                                        | No longer needed                                            |
+| Modify  | `src/pages/RecipesPage.tsx`                                                | Adapt to new Recipe type and function signatures            |
+| Rewrite | `src/lib/__tests__/recipes.test.ts`                                        | Mock Supabase RPC instead of MealDB HTTP                    |
+| Modify  | `src/lib/__tests__/recipeMatching.test.ts`                                 | Update test fixtures to new Recipe type                     |
+| Rewrite | `src/test/mocks/handlers/mealdb.ts` → `src/test/mocks/handlers/recipes.ts` | Supabase recipe mock handlers                               |
+| Modify  | `src/test/mocks/server.ts`                                                 | Import new recipe handlers                                  |
 
 ---
 
 ### Task 1: Update Recipe Type
 
 **Files:**
+
 - Modify: `src/types/index.ts:27-68`
 
 - [ ] **Step 1: Replace Recipe and delete MealDB types**
@@ -72,6 +73,7 @@ git commit -m "refactor: replace MealDB types with Supabase Recipe type"
 ### Task 2: Add Recipe Row Mapper to recipes.ts
 
 **Files:**
+
 - Rewrite: `src/lib/recipes.ts`
 
 - [ ] **Step 1: Write the failing test**
@@ -211,11 +213,12 @@ describe('suggestRecipes', () => {
   })
 
   it('calls match_recipes_by_ingredients RPC and fetches full recipes', async () => {
-    mockRpc
-      .mockResolvedValueOnce({
-        data: [{ id: 1, name: 'Testrecept', slug: 'test-1', image_urls: ['img.jpg'], match_count: 2 }],
-        error: null,
-      })
+    mockRpc.mockResolvedValueOnce({
+      data: [
+        { id: 1, name: 'Testrecept', slug: 'test-1', image_urls: ['img.jpg'], match_count: 2 },
+      ],
+      error: null,
+    })
     mockSingle.mockResolvedValue({ data: MOCK_DB_ROW, error: null })
 
     const results = await suggestRecipes(['pasta', 'tomater'])
@@ -285,7 +288,9 @@ export async function searchRecipes(query: string, limit = 20): Promise<Recipe[]
 export async function getRecipeById(id: number): Promise<Recipe | null> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings')
+    .select(
+      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+    )
     .eq('id', id)
     .single()
   if (error || !data) return null
@@ -295,7 +300,9 @@ export async function getRecipeById(id: number): Promise<Recipe | null> {
 export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   const { data, error } = await supabase
     .from('recipes')
-    .select('id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings')
+    .select(
+      'id, url, slug, name, description, ingredients, instructions, image_urls, cook_time, prep_time, total_time, servings'
+    )
     .eq('slug', slug)
     .single()
   if (error || !data) return null
@@ -310,7 +317,13 @@ export async function suggestRecipes(ingredientNames: string[], limit = 20): Pro
   })
   if (error || !data) return []
 
-  const matches = data as { id: number; name: string; slug: string; image_urls: string[]; match_count: number }[]
+  const matches = data as {
+    id: number
+    name: string
+    slug: string
+    image_urls: string[]
+    match_count: number
+  }[]
   const recipes = await Promise.all(matches.map((m) => getRecipeById(m.id)))
   return recipes.filter(Boolean) as Recipe[]
 }
@@ -334,6 +347,7 @@ git commit -m "feat: rewrite recipes lib to query Supabase instead of MealDB"
 ### Task 3: Update recipeMatching for New Recipe Type
 
 **Files:**
+
 - Modify: `src/lib/recipeMatching.ts`
 - Modify: `src/lib/__tests__/recipeMatching.test.ts`
 
@@ -458,10 +472,7 @@ export interface RecipeMatch {
 
 /** Normalizes an ingredient name for fuzzy comparison */
 export function normalizeIngredient(name: string): string {
-  return name
-    .toLowerCase()
-    .trim()
-    .replace(/\s+/g, ' ')
+  return name.toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
 /** Returns true if two ingredient names are considered the same */
@@ -543,6 +554,7 @@ git commit -m "refactor: adapt recipeMatching to Swedish string[] ingredients"
 ### Task 4: Delete ingredientTranslations and Update Test Mocks
 
 **Files:**
+
 - Delete: `src/lib/ingredientTranslations.ts`
 - Delete: `src/test/mocks/handlers/mealdb.ts`
 - Create: `src/test/mocks/handlers/recipes.ts`
@@ -592,7 +604,13 @@ export const recipeHandlers = [
 
   http.post(`${BASE}/rpc/match_recipes_by_ingredients`, () => {
     return HttpResponse.json([
-      { id: 1, name: 'Testrecept', slug: 'test-1', image_urls: ['https://example.com/image.jpg'], match_count: 2 },
+      {
+        id: 1,
+        name: 'Testrecept',
+        slug: 'test-1',
+        image_urls: ['https://example.com/image.jpg'],
+        match_count: 2,
+      },
     ])
   }),
 ]
@@ -635,6 +653,7 @@ git commit -m "refactor: remove MealDB mocks and ingredientTranslations, add rec
 ### Task 5: Update RecipesPage
 
 **Files:**
+
 - Modify: `src/pages/RecipesPage.tsx`
 
 - [ ] **Step 1: Update imports**
@@ -721,75 +740,77 @@ Replace lines 111-115:
 
 ```ts
 const matchedInventoryItems = selected
-  ? items.filter((inv) =>
-      selected.matched.some((m) => ingredientsMatch(m, inv.name))
-    )
+  ? items.filter((inv) => selected.matched.some((m) => ingredientsMatch(m, inv.name)))
   : []
 ```
 
 - [ ] **Step 5: Update recipe card rendering**
 
 Replace the card map in the filtered list (lines 184-228). Key changes:
+
 - `m.recipe.idMeal` → `m.recipe.id`
 - `m.recipe.strMealThumb` → `m.recipe.imageUrls?.[0]`
 - `m.recipe.strMeal` → `m.recipe.name`
 - `m.recipe.strCategory` badge → remove (no category field on new type)
 
 ```tsx
-{filtered.map((m) => {
-  const isFav = favorites.has(m.recipe.id)
-  return (
-    <Card
-      key={m.recipe.id}
-      shadow="xs"
-      radius="md"
-      withBorder
-      style={{ cursor: 'pointer' }}
-      onClick={() => setSelected(m)}
-    >
-      <Group wrap="nowrap">
-        {m.recipe.imageUrls?.[0] && (
-          <Image src={m.recipe.imageUrls[0]} w={64} h={64} radius="md" />
-        )}
-        <Stack gap={2} style={{ flex: 1 }}>
-          <Text fw={600}>{m.recipe.name}</Text>
-          <Group gap={4}>
-            <Badge size="xs" color={scoreColor(m.score)} data-testid="score-badge">
-              {m.matched.length}/{m.recipe.ingredients.length} ingredienser
-            </Badge>
-            {m.recipe.totalTime && (
-              <Badge size="xs" variant="light">
-                {m.recipe.totalTime.replace('PT', '').replace('M', ' min')}
-              </Badge>
-            )}
-          </Group>
-          {m.missing.length > 0 && (
-            <Text size="xs" c="dimmed">
-              Saknas: {m.missing.slice(0, 3).join(', ')}
-              {m.missing.length > 3 ? ` +${m.missing.length - 3}` : ''}
-            </Text>
+{
+  filtered.map((m) => {
+    const isFav = favorites.has(m.recipe.id)
+    return (
+      <Card
+        key={m.recipe.id}
+        shadow="xs"
+        radius="md"
+        withBorder
+        style={{ cursor: 'pointer' }}
+        onClick={() => setSelected(m)}
+      >
+        <Group wrap="nowrap">
+          {m.recipe.imageUrls?.[0] && (
+            <Image src={m.recipe.imageUrls[0]} w={64} h={64} radius="md" />
           )}
-        </Stack>
-        <ActionIcon
-          variant="subtle"
-          color={isFav ? 'red' : 'gray'}
-          onClick={(e) => {
-            e.stopPropagation()
-            toggleFavorite(m.recipe.id)
-          }}
-          aria-label={isFav ? 'Ta bort favorit' : 'Spara som favorit'}
-        >
-          {isFav ? <IconHeartFilled size={18} /> : <IconHeart size={18} />}
-        </ActionIcon>
-      </Group>
-    </Card>
-  )
-})}
+          <Stack gap={2} style={{ flex: 1 }}>
+            <Text fw={600}>{m.recipe.name}</Text>
+            <Group gap={4}>
+              <Badge size="xs" color={scoreColor(m.score)} data-testid="score-badge">
+                {m.matched.length}/{m.recipe.ingredients.length} ingredienser
+              </Badge>
+              {m.recipe.totalTime && (
+                <Badge size="xs" variant="light">
+                  {m.recipe.totalTime.replace('PT', '').replace('M', ' min')}
+                </Badge>
+              )}
+            </Group>
+            {m.missing.length > 0 && (
+              <Text size="xs" c="dimmed">
+                Saknas: {m.missing.slice(0, 3).join(', ')}
+                {m.missing.length > 3 ? ` +${m.missing.length - 3}` : ''}
+              </Text>
+            )}
+          </Stack>
+          <ActionIcon
+            variant="subtle"
+            color={isFav ? 'red' : 'gray'}
+            onClick={(e) => {
+              e.stopPropagation()
+              toggleFavorite(m.recipe.id)
+            }}
+            aria-label={isFav ? 'Ta bort favorit' : 'Spara som favorit'}
+          >
+            {isFav ? <IconHeartFilled size={18} /> : <IconHeart size={18} />}
+          </ActionIcon>
+        </Group>
+      </Card>
+    )
+  })
+}
 ```
 
 - [ ] **Step 6: Update modal rendering**
 
 Replace the Modal section (lines 232-338). Key changes:
+
 - `selected?.recipe.strMeal` → `selected?.recipe.name`
 - `selected.recipe.strMealThumb` → `selected.recipe.imageUrls?.[0]`
 - Ingredients list now renders `string` items directly (no `ing.name`/`ing.measure`)
@@ -809,20 +830,19 @@ Replace the Modal section (lines 232-338). Key changes:
 >
   {selected && (
     <Stack>
-      {selected.recipe.imageUrls?.[0] && (
-        <Image src={selected.recipe.imageUrls[0]} radius="md" />
-      )}
+      {selected.recipe.imageUrls?.[0] && <Image src={selected.recipe.imageUrls[0]} radius="md" />}
 
       {selected.recipe.servings && (
-        <Text size="sm" c="dimmed">{selected.recipe.servings} portioner</Text>
+        <Text size="sm" c="dimmed">
+          {selected.recipe.servings} portioner
+        </Text>
       )}
 
       {!cooking ? (
         <>
           <Group justify="space-between">
             <Text fw={600}>
-              Ingredienser ({selected.matched.length}/{selected.recipe.ingredients.length}{' '}
-              hemma)
+              Ingredienser ({selected.matched.length}/{selected.recipe.ingredients.length} hemma)
             </Text>
             {matchedInventoryItems.length > 0 && (
               <Button
@@ -939,6 +959,7 @@ git commit -m "feat: update RecipesPage to use Supabase recipe data"
 ### Task 6: Update Environment and Final Verification
 
 **Files:**
+
 - Modify: `.env.local`
 
 - [ ] **Step 1: Update .env.local**
@@ -968,6 +989,7 @@ Expected: Build succeeds with no errors.
 Run: `npm run dev`
 
 Manual verification:
+
 1. Open the app in browser
 2. Navigate to Recept page
 3. Search for "pasta" — should return results from Supabase
