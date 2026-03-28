@@ -102,11 +102,11 @@ export function CookingMode({ opened, onClose }: Props) {
 
   const bg = '#f7f8f4'
   const cardBg = '#ffffff'
-  const chipActive = '#889a5e'
+  const chipActive = '#53642e'
   const chipInactive = '#e8eee0'
   const badgeBg = '#ecefe3'
   const btnBg = '#f2f4ed'
-  const locationColor = '#889a5e'
+  const locationColor = '#53642e'
 
   return (
     <>
@@ -378,7 +378,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                 <Text fw={600} size="sm" c="#aaa">
                                   —
                                 </Text>
-                                <Text size="xs" c="#bcc89c" style={{ letterSpacing: '0.04em' }}>
+                                <Text size="xs" c="#506148" style={{ letterSpacing: '0.04em' }}>
                                   EGET
                                 </Text>
                               </>
@@ -437,7 +437,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   <Text fw={600} c="#53642e" size="sm">
                     Inga varor hittades
                   </Text>
-                  <Text size="xs" c="#889a5e" mt={4}>
+                  <Text size="xs" c="#53642e" mt={4}>
                     Prova ett annat sökord eller byt plats
                   </Text>
                 </Box>

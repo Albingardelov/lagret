@@ -157,7 +157,7 @@ export function ShoppingListPage() {
           style={{
             fontFamily: '"Manrope", sans-serif',
             fontSize: 13,
-            color: '#7a8a6a',
+            color: '#506148',
             marginTop: 4,
           }}
         >
@@ -215,7 +215,7 @@ export function ShoppingListPage() {
                     fontFamily: '"Manrope", sans-serif',
                     fontSize: 11,
                     fontWeight: 700,
-                    color: '#889a5e',
+                    color: '#53642e',
                     letterSpacing: '0.03em',
                     textTransform: 'uppercase',
                   }}
@@ -275,7 +275,7 @@ export function ShoppingListPage() {
                 fontFamily: '"Manrope", sans-serif',
                 fontSize: 12,
                 fontWeight: 700,
-                color: '#a8b4a0',
+                color: '#5c6b57',
                 letterSpacing: '0.08em',
                 textTransform: 'uppercase',
               }}
@@ -333,7 +333,7 @@ export function ShoppingListPage() {
                             fontFamily: '"Manrope", sans-serif',
                             fontSize: 14,
                             fontWeight: 500,
-                            color: '#a8b4a0',
+                            color: '#5c6b57',
                             textDecoration: 'line-through',
                           }}
                         >
@@ -347,7 +347,7 @@ export function ShoppingListPage() {
                             style={{
                               fontFamily: '"Manrope", sans-serif',
                               fontSize: 11,
-                              color: '#c5ccb8',
+                              color: '#5a6955',
                             }}
                           >
                             {item.note}
@@ -381,7 +381,7 @@ export function ShoppingListPage() {
             style={{
               fontFamily: '"Manrope", sans-serif',
               fontSize: 14,
-              color: '#a8b4a0',
+              color: '#5c6b57',
             }}
           >
             Inköpslistan är tom
@@ -457,7 +457,7 @@ export function ShoppingListPage() {
               style={{
                 fontFamily: '"Manrope", sans-serif',
                 fontSize: 13,
-                color: '#7a8a6a',
+                color: '#506148',
               }}
             >
               Välj förvaringsplats för varje vara
@@ -488,7 +488,7 @@ export function ShoppingListPage() {
                     style={{
                       fontFamily: '"Manrope", sans-serif',
                       fontSize: 11,
-                      color: '#a8b4a0',
+                      color: '#5c6b57',
                       marginBottom: 6,
                     }}
                   >

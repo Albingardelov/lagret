@@ -107,7 +107,7 @@ export function AppLayout() {
                   gap: 3,
                   borderRadius: 18,
                   background: active ? '#53642e' : 'transparent',
-                  color: active ? '#ffffff' : '#7a8a6a',
+                  color: active ? '#ffffff' : '#506148',
                   transition: 'background 0.18s ease, color 0.18s ease',
                   padding: '6px 0',
                 }}

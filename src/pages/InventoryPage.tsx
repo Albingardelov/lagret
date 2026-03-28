@@ -184,7 +184,7 @@ function CategoryButton({ label, imageUrl, count, active, onClick }: CategoryBut
         style={{
           fontFamily: '"Manrope", sans-serif',
           fontSize: 11,
-          color: active ? 'rgba(255,255,255,0.7)' : '#7a8a6a',
+          color: active ? 'rgba(255,255,255,0.7)' : '#506148',
           lineHeight: 1,
         }}
       >
@@ -236,7 +236,7 @@ export function InventoryPage() {
             fontWeight: 600,
             letterSpacing: '0.1em',
             textTransform: 'uppercase',
-            color: '#889a5e',
+            color: '#53642e',
             marginBottom: 4,
           }}
         >
@@ -269,7 +269,7 @@ export function InventoryPage() {
 
         {/* Stats row */}
         <Group gap="md" mt={6}>
-          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#7a8a6a' }}>
+          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#506148' }}>
             {items.length} varor totalt
           </Text>
           {expiring.length > 0 && (
@@ -324,7 +324,7 @@ export function InventoryPage() {
                       userSelect: 'none',
                     }}
                   >
-                    <Box style={{ color: active ? '#ffffff' : '#7a8a6a', display: 'flex' }}>
+                    <Box style={{ color: active ? '#ffffff' : '#506148', display: 'flex' }}>
                       {ICON_MAP[loc.icon]}
                     </Box>
                     <Text
@@ -348,7 +348,7 @@ export function InventoryPage() {
                         height: 18,
                         borderRadius: '50%',
                         background: active ? 'rgba(255,255,255,0.2)' : 'rgba(83,100,46,0.12)',
-                        color: active ? '#ffffff' : '#7a8a6a',
+                        color: active ? '#ffffff' : '#506148',
                         fontSize: 10,
                         fontWeight: 700,
                         fontFamily: '"Manrope", sans-serif',
@@ -410,7 +410,7 @@ export function InventoryPage() {
                       <Text
                         style={{
                           fontFamily: '"Manrope", sans-serif',
-                          color: '#a8b4a0',
+                          color: '#5c6b57',
                           fontSize: 14,
                         }}
                       >

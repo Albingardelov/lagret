@@ -454,7 +454,7 @@ export function RecipesPage() {
                         style={{
                           fontFamily: '"Manrope", sans-serif',
                           fontSize: 12,
-                          color: '#a8b4a0',
+                          color: '#5c6b57',
                           marginTop: 4,
                         }}
                       >
