@@ -69,3 +69,15 @@ export function loadCustomSteps(): Record<string, number> {
 export function saveCustomSteps(steps: Record<string, number>) {
   localStorage.setItem('cookingMode_steps', JSON.stringify(steps))
 }
+
+export function loadCookingUnits(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem('cookingMode_units') ?? '{}')
+  } catch {
+    return {}
+  }
+}
+
+export function saveCookingUnits(units: Record<string, string>) {
+  localStorage.setItem('cookingMode_units', JSON.stringify(units))
+}
