@@ -105,13 +105,10 @@ export function ShoppingListPage() {
       for (const item of bought) {
         const loc = bulkLocations[item.id] || locations[0]?.id
         if (!loc) continue
-        const cat = item.category
-        const unit = (cat && CATEGORY_DEFAULT_UNIT[cat]) || 'st'
-        const quantity = (cat && CATEGORY_DEFAULT_QTY[cat]) || 1
         await addInventoryItem({
           name: item.name,
-          quantity,
-          unit,
+          quantity: item.quantity,
+          unit: item.unit,
           location: loc,
         })
         await removeItem(item.id)
