@@ -452,7 +452,7 @@ export function InventoryPage() {
           style={{
             background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
             border: 'none',
-            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 3px rgba(248,251,238,0.92)',
+            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 1.5px rgba(248,251,238,0.92)',
           }}
           aria-label="Lägg till vara"
         >

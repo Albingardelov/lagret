@@ -57,8 +57,39 @@ export function CookingMode({ opened, onClose }: Props) {
     })
   }, [items, search, activeCategory])
 
-  const adjust = (id: string, currentQty: number, delta: number) => {
-    const next = Math.max(0, currentQty + delta)
+  const getStep = (unit: string): number => {
+    switch (unit) {
+      case 'kg':
+        return 0.5
+      case 'hg':
+        return 1
+      case 'g':
+        return 50
+      case 'l':
+        return 0.5
+      case 'dl':
+        return 0.5
+      case 'ml':
+        return 50
+      case 'msk':
+        return 1
+      case 'tsk':
+        return 1
+      case 'krm':
+        return 1
+      default:
+        return 1
+    }
+  }
+
+  const formatQty = (qty: number): string => {
+    if (Number.isInteger(qty)) return qty.toString()
+    return qty.toFixed(1).replace(/\.0$/, '')
+  }
+
+  const adjust = (id: string, currentQty: number, unit: string, delta: number) => {
+    const step = getStep(unit)
+    const next = Math.max(0, Math.round((currentQty + delta * step) * 100) / 100)
     updateItem(id, { quantity: next }).catch(() => {})
   }
 
@@ -147,25 +178,32 @@ export function CookingMode({ opened, onClose }: Props) {
                   </Stack>
 
                   {/* Quantity + controls */}
-                  <Group gap="xs" align="center" wrap="nowrap">
+                  <Group gap={6} align="center" wrap="nowrap">
                     <ActionIcon
                       size={44}
                       radius="xl"
                       variant="light"
                       color="red"
                       disabled={isEmpty}
-                      onClick={() => adjust(item.id, item.quantity, -1)}
-                      aria-label="Minska"
+                      onClick={() => adjust(item.id, item.quantity, item.unit, -1)}
+                      aria-label={`Minska med ${getStep(item.unit)} ${item.unit}`}
                     >
                       <IconMinus size={18} />
                     </ActionIcon>
 
-                    <Stack gap={0} align="center" style={{ minWidth: 52 }}>
+                    <Stack gap={0} align="center" style={{ minWidth: 56 }}>
                       <Text fw={700} size="xl" ta="center" style={{ lineHeight: 1 }}>
-                        {item.quantity}
+                        {formatQty(item.quantity)}
                       </Text>
                       <Text size="xs" c="dimmed" ta="center">
                         {item.unit}
+                      </Text>
+                      <Text
+                        c="dimmed"
+                        ta="center"
+                        style={{ opacity: 0.6, marginTop: 2, fontSize: 10 }}
+                      >
+                        ±{formatQty(getStep(item.unit))}
                       </Text>
                     </Stack>
 
@@ -174,8 +212,8 @@ export function CookingMode({ opened, onClose }: Props) {
                       radius="xl"
                       variant="light"
                       color="green"
-                      onClick={() => adjust(item.id, item.quantity, 1)}
-                      aria-label="Öka"
+                      onClick={() => adjust(item.id, item.quantity, item.unit, 1)}
+                      aria-label={`Öka med ${getStep(item.unit)} ${item.unit}`}
                     >
                       <IconPlus size={18} />
                     </ActionIcon>
