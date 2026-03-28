@@ -3,6 +3,7 @@ import {
   Stack,
   Text,
   TextInput,
+  NumberInput,
   Select,
   Button,
   Group,
@@ -18,6 +19,8 @@ import { useLocationsStore } from '../store/locationsStore'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { AddItemModal } from '../components/AddItemModal'
 import { ITEM_CATEGORIES } from '../lib/categories'
+import { UNITS_FLAT } from '../lib/units'
+import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { BottomSheet } from '../components/BottomSheet'
 
 export function ShoppingListPage() {
@@ -34,6 +37,8 @@ export function ShoppingListPage() {
   } = useShoppingStore()
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [detailName, setDetailName] = useState('')
+  const [detailQuantity, setDetailQuantity] = useState<number>(1)
+  const [detailUnit, setDetailUnit] = useState<string>('st')
   const [detailNote, setDetailNote] = useState('')
   const [detailCategory, setDetailCategory] = useState<string | null>(null)
   const [inventoryItem, setInventoryItem] = useState<{ id: string; name: string } | null>(null)
@@ -54,11 +59,30 @@ export function ShoppingListPage() {
   const pending = items.filter((i) => !i.isBought)
   const bought = items.filter((i) => i.isBought)
 
+  function handleNameChange(value: string) {
+    setDetailName(value)
+    const parsed = parseShoppingInput(value)
+    if (parsed.name !== value) {
+      setDetailQuantity(parsed.quantity)
+      setDetailUnit(parsed.unit)
+    }
+  }
+
   async function handleDetailAdd() {
     const trimmed = detailName.trim()
     if (!trimmed) return
-    await addItem(trimmed, detailNote.trim() || undefined, detailCategory ?? undefined)
+    const parsed = parseShoppingInput(trimmed)
+    const name = parsed.name || trimmed
+    await addItem(
+      name,
+      detailQuantity,
+      detailUnit,
+      detailNote.trim() || undefined,
+      detailCategory ?? undefined
+    )
     setDetailName('')
+    setDetailQuantity(1)
+    setDetailUnit('st')
     setDetailNote('')
     setDetailCategory(null)
     setDetailsOpen(false)
@@ -81,10 +105,13 @@ export function ShoppingListPage() {
       for (const item of bought) {
         const loc = bulkLocations[item.id] || locations[0]?.id
         if (!loc) continue
+        const cat = item.category
+        const unit = (cat && CATEGORY_DEFAULT_UNIT[cat]) || 'st'
+        const quantity = (cat && CATEGORY_DEFAULT_QTY[cat]) || 1
         await addInventoryItem({
           name: item.name,
-          quantity: 1,
-          unit: 'st',
+          quantity,
+          unit,
           location: loc,
         })
         await removeItem(item.id)
@@ -157,7 +184,7 @@ export function ShoppingListPage() {
           style={{
             background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
             border: 'none',
-            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 3px rgba(248,251,238,0.92)',
+            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 1.5px rgba(248,251,238,0.92)',
           }}
           aria-label="Lägg till vara"
         >
@@ -368,10 +395,28 @@ export function ShoppingListPage() {
         <Stack>
           <TextInput
             label="Namn"
-            placeholder="T.ex. Mjölk"
+            placeholder="T.ex. 2 kg Mjöl"
             value={detailName}
-            onChange={(e) => setDetailName(e.currentTarget.value)}
+            onChange={(e) => handleNameChange(e.currentTarget.value)}
           />
+          <Group grow>
+            <NumberInput
+              label="Antal"
+              value={detailQuantity}
+              onChange={(v) => setDetailQuantity(typeof v === 'number' ? v : 1)}
+              min={0.01}
+              step={1}
+              decimalScale={2}
+            />
+            <Select
+              label="Enhet"
+              data={UNITS_FLAT}
+              value={detailUnit}
+              onChange={(v) => setDetailUnit(v ?? 'st')}
+              allowDeselect={false}
+              searchable
+            />
+          </Group>
           <Select
             label="Kategori"
             placeholder="Valfritt"
@@ -414,40 +459,45 @@ export function ShoppingListPage() {
             >
               Välj förvaringsplats för varje vara
             </Text>
-            {bought.map((item) => (
-              <Group key={item.id} justify="space-between" wrap="nowrap" gap="sm">
-                <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
+            {bought.map((item, idx) => (
+              <Box
+                key={item.id}
+                py="sm"
+                style={{
+                  borderBottom: idx < bought.length - 1 ? '1px solid #ecefe3' : undefined,
+                }}
+              >
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 14,
+                    fontWeight: 600,
+                    color: '#191d16',
+                  }}
+                >
+                  {item.name}
+                </Text>
+                {item.note && (
                   <Text
-                    truncate
                     style={{
                       fontFamily: '"Manrope", sans-serif',
-                      fontSize: 14,
-                      fontWeight: 500,
+                      fontSize: 11,
+                      color: '#a8b4a0',
+                      marginBottom: 6,
                     }}
                   >
-                    {item.name}
+                    {item.note}
                   </Text>
-                  {item.note && (
-                    <Text
-                      style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 11,
-                        color: '#a8b4a0',
-                      }}
-                    >
-                      {item.note}
-                    </Text>
-                  )}
-                </Stack>
+                )}
                 <Select
                   size="xs"
-                  w={140}
+                  mt={6}
                   data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
                   value={bulkLocations[item.id] ?? locations[0]?.id ?? ''}
                   onChange={(v) => setBulkLocations((prev) => ({ ...prev, [item.id]: v ?? '' }))}
                   allowDeselect={false}
                 />
-              </Group>
+              </Box>
             ))}
             <Button
               fullWidth
