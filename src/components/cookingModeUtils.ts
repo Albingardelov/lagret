@@ -53,6 +53,7 @@ export function getLargeStep(unit: string): number {
 }
 
 export function formatQty(qty: number): string {
+  if (!isFinite(qty)) return '0'
   if (Number.isInteger(qty)) return qty.toString()
   return parseFloat(qty.toFixed(2)).toString()
 }

@@ -41,6 +41,7 @@ export function CookingMode({ opened, onClose }: Props) {
   const [customSteps, setCustomSteps] = useState<Record<string, number>>({})
   const [editingStep, setEditingStep] = useState<string | null>(null)
   const [addItemOpen, setAddItemOpen] = useState(false)
+  const [popoverValue, setPopoverValue] = useState<number | string>('')
 
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
@@ -148,7 +149,7 @@ export function CookingMode({ opened, onClose }: Props) {
           <ScrollArea flex={1} offsetScrollbars>
             <Stack gap="md">
               {filtered.map((item) => {
-                const locationName = getLocationName(item.location).toUpperCase()
+                const locationName = (getLocationName(item.location) || 'OKÄND').toUpperCase()
                 const smallStep = getSmallStep(item.unit)
                 const largeStep = getLargeStep(item.unit)
                 const customStep = customSteps[item.id]
@@ -246,11 +247,12 @@ export function CookingMode({ opened, onClose }: Props) {
                       >
                         <Popover.Target>
                           <UnstyledButton
-                            disabled={item.quantity === 0 && customStep === undefined}
+                            disabled={item.quantity === 0}
                             onClick={() => {
                               if (customStep !== undefined) {
                                 adjust(item.id, item.quantity, customStep)
                               } else {
+                                setPopoverValue('')
                                 setEditingStep(item.id)
                               }
                             }}
@@ -259,7 +261,7 @@ export function CookingMode({ opened, onClose }: Props) {
                               borderRadius: 10,
                               padding: '8px 4px',
                               textAlign: 'center',
-                              opacity: item.quantity === 0 && customStep === undefined ? 0.4 : 1,
+                              opacity: item.quantity === 0 ? 0.4 : 1,
                             }}
                           >
                             {customStep !== undefined ? (
@@ -288,14 +290,22 @@ export function CookingMode({ opened, onClose }: Props) {
                               step={getSmallStep(item.unit)}
                               decimalScale={2}
                               placeholder={`ex. ${getLargeStep(item.unit)}`}
+                              value={popoverValue}
+                              onChange={setPopoverValue}
                               onKeyDown={(e) => {
                                 if (e.key === 'Enter') {
-                                  const v = parseFloat((e.target as HTMLInputElement).value)
+                                  const v =
+                                    typeof popoverValue === 'number'
+                                      ? popoverValue
+                                      : parseFloat(String(popoverValue))
                                   if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
                                 }
                               }}
-                              onBlur={(e) => {
-                                const v = parseFloat(e.target.value)
+                              onBlur={() => {
+                                const v =
+                                  typeof popoverValue === 'number'
+                                    ? popoverValue
+                                    : parseFloat(String(popoverValue))
                                 if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
                               }}
                               styles={{ input: { width: 100 } }}
