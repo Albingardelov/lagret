@@ -10,14 +10,15 @@ test('visar lagersidan med befintliga varor', async ({ authedPage: page }) => {
 
   await expect(page.getByText('Lagret')).toBeVisible()
 
-  // Pasta is in pantry (default tab)
+  // Pasta is in pantry (default tab/pill)
   await expect(page.getByText('Pasta')).toBeVisible()
 })
 
 test('kan lägga till en ny vara', async ({ authedPage: page }) => {
   await page.goto('/')
 
-  await page.getByRole('button', { name: /Lägg till/i }).click()
+  // Click the FAB button
+  await page.getByRole('button', { name: /Lägg till vara/i }).click()
 
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
@@ -25,7 +26,6 @@ test('kan lägga till en ny vara', async ({ authedPage: page }) => {
   await dialog.getByLabel(/Namn/i).fill('Ägg')
   await dialog.getByLabel(/Antal/i).fill('12')
 
-  // Submit button text is "Lägg till" inside the modal form
   await dialog.getByRole('button', { name: /^Lägg till$/i }).click()
 
   await expect(dialog).not.toBeVisible()
@@ -34,8 +34,8 @@ test('kan lägga till en ny vara', async ({ authedPage: page }) => {
 test('kan ta bort en vara', async ({ authedPage: page }) => {
   await page.goto('/')
 
-  // Switch to fridge tab to see Mjölk
-  await page.getByRole('tab', { name: /Kylskåp/i }).click()
+  // Click Kylskåp pill to see Mjölk
+  await page.getByText('Kylskåp').click()
 
   const deleteButton = page.getByRole('button', { name: /Ta bort Mjölk/i })
   await expect(deleteButton).toBeVisible()
@@ -47,10 +47,8 @@ test('kan ta bort en vara', async ({ authedPage: page }) => {
 test('visar tomt meddelande när lokation saknar varor', async ({ authedPage: page }) => {
   await page.goto('/')
 
-  // Switch to freezer - should be empty
-  await page.getByRole('tab', { name: /Frys/i }).click()
+  // Click Frys pill - should be empty
+  await page.getByText('Frys').click()
 
-  // Scope to the visible tab panel to avoid strict mode violation
-  const freezerPanel = page.getByRole('tabpanel', { name: /Frys/i })
-  await expect(freezerPanel.getByText('Tomt här!')).toBeVisible()
+  await expect(page.getByText('Inga varor här ännu')).toBeVisible()
 })

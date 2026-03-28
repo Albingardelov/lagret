@@ -64,8 +64,8 @@ describe('AuthGuard', () => {
     expect(screen.getByText('Skyddat innehåll')).toBeInTheDocument()
   })
 
-  it('anropar initialize vid mount', async () => {
+  it('anropar inte initialize (det görs i App.tsx)', async () => {
     await setupAndRender({ user: { id: 'user-1' }, loading: false })
-    expect(mockInitialize).toHaveBeenCalled()
+    expect(mockInitialize).not.toHaveBeenCalled()
   })
 })

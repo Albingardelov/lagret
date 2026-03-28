@@ -3,10 +3,33 @@ import { render, screen, waitFor } from '../../test/utils'
 import { AddItemModal } from '../AddItemModal'
 
 const mockAddItem = vi.fn()
+const mockAddItems = vi.fn()
 
 vi.mock('../../store/inventoryStore', () => ({
-  useInventoryStore: (selector: (s: { addItem: typeof mockAddItem }) => unknown) =>
-    selector({ addItem: mockAddItem }),
+  useInventoryStore: (
+    selector: (s: { addItem: typeof mockAddItem; addItems: typeof mockAddItems }) => unknown
+  ) => selector({ addItem: mockAddItem, addItems: mockAddItems }),
+}))
+
+vi.mock('../../store/locationsStore', () => ({
+  useLocationsStore: (
+    selector: (s: { locations: Array<{ id: string; name: string; icon: string }> }) => unknown
+  ) => selector({ locations: [{ id: 'loc-1', name: 'Skafferi', icon: 'pantry' }] }),
+}))
+
+vi.mock('../../lib/categories', () => ({
+  ITEM_CATEGORIES: [{ value: 'dairy', label: 'Mejeri' }],
+}))
+
+vi.mock('../../lib/storageDurations', () => ({
+  suggestExpiryDate: () => null,
+}))
+
+vi.mock('../../lib/units', () => ({
+  UNITS_FLAT: [
+    { value: 'st', label: 'st' },
+    { value: 'l', label: 'l' },
+  ],
 }))
 
 // Scanner använder ZXing som inte fungerar i jsdom – mocka hela komponenten
@@ -45,7 +68,7 @@ describe('AddItemModal', () => {
 
     await waitFor(() => {
       expect(mockAddItem).toHaveBeenCalledWith(
-        expect.objectContaining({ name: 'Ägg', location: 'pantry' })
+        expect.objectContaining({ name: 'Ägg', location: 'loc-1' })
       )
     })
   })

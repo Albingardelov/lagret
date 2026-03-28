@@ -1,25 +1,18 @@
 import { test, expect, setupInventoryMocks, setupShoppingMocks } from './fixtures'
 
-const MOCK_RECIPES = {
-  meals: [
-    {
-      idMeal: '52772',
-      strMeal: 'Pasta Carbonara',
-      strMealThumb: 'https://www.themealdb.com/images/media/meals/llcbn01574260722.jpg',
-      strCategory: 'Pasta',
-      strArea: 'Italian',
-      strIngredient1: 'Pasta',
-      strIngredient2: 'Bacon',
-      strIngredient3: 'Egg',
-      strIngredient4: '',
-      strMeasure1: '200g',
-      strMeasure2: '100g',
-      strMeasure3: '2',
-      strMeasure4: '',
-      strInstructions: 'Cook pasta. Fry bacon. Mix with egg.',
-      strYoutube: '',
-    },
-  ],
+const MOCK_RECIPE_ROW = {
+  id: 1,
+  url: 'https://example.com/pasta',
+  slug: 'pasta-carbonara',
+  name: 'Pasta Carbonara',
+  description: 'Klassisk italiensk pasta',
+  ingredient_groups: [{ name: null, items: ['Pasta', 'Bacon', 'Egg'] }],
+  instructions: ['Cook pasta', 'Fry bacon', 'Mix with egg'],
+  image_urls: ['https://example.com/pasta.jpg'],
+  cook_time: null,
+  prep_time: null,
+  total_time: '30',
+  servings: '4',
 }
 
 test.beforeEach(async ({ authedPage: page }) => {
@@ -29,7 +22,7 @@ test.beforeEach(async ({ authedPage: page }) => {
       name: 'Pasta',
       quantity: 500,
       unit: 'gram',
-      location: 'pantry',
+      location: 'loc-pantry',
       expiry_date: null,
       expiryDate: null,
       household_id: 'hh-1',
@@ -38,12 +31,30 @@ test.beforeEach(async ({ authedPage: page }) => {
   ])
   await setupShoppingMocks(page)
 
-  // Mock TheMealDB (all endpoints: filter.php, lookup.php, search.php)
-  await page.route('https://www.themealdb.com/**', (route) => {
+  // Mock Supabase recipe endpoints (RPC + REST)
+  await page.route('**/rest/v1/rpc/match_recipes_by_ingredients', (route) => {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify(MOCK_RECIPES),
+      body: JSON.stringify([
+        { id: 1, name: 'Pasta Carbonara', slug: 'pasta-carbonara', image_urls: [], match_count: 1 },
+      ]),
+    })
+  })
+
+  await page.route('**/rest/v1/rpc/search_recipes', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([MOCK_RECIPE_ROW]),
+    })
+  })
+
+  await page.route('**/rest/v1/recipes**', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([MOCK_RECIPE_ROW]),
     })
   })
 })
@@ -68,18 +79,17 @@ test('kan söka efter recept via sökfält', async ({ authedPage: page }) => {
   await page.goto('/recipes')
 
   await page.getByPlaceholder(/Sök recept/i).fill('Pasta')
-  await page.getByRole('button', { name: /^Sök$/i }).click()
+  await page.getByPlaceholder(/Sök recept/i).press('Enter')
 
   await expect(page.getByText('Pasta Carbonara')).toBeVisible({ timeout: 10000 })
 })
 
-test('kan filtrera recept med segmented control', async ({ authedPage: page }) => {
+test('kan filtrera recept med pills', async ({ authedPage: page }) => {
   await loadRecipesPage(page)
 
-  // Trigger recipe suggestions (inventory store should be populated)
   await page.getByRole('button', { name: /Föreslå recept/i }).click()
 
-  // Wait for segmented control — only visible when matches.length > 0
+  // Wait for filter pills — only visible when matches.length > 0
   await expect(page.getByText('Alla')).toBeVisible({ timeout: 10000 })
   await expect(page.getByText('Kan laga nu')).toBeVisible()
   await expect(page.getByText('Nästan')).toBeVisible()
@@ -94,7 +104,7 @@ test('kan öppna ett receptkort för ingredienslista', async ({ authedPage: page
 
   await expect(page.getByText('Pasta Carbonara')).toBeVisible({ timeout: 10000 })
 
-  // Click on the recipe card to open modal
+  // Click on the recipe card to open bottom sheet / modal
   await page.getByText('Pasta Carbonara').click()
 
   const dialog = page.getByRole('dialog')

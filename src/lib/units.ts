@@ -7,6 +7,7 @@ export const UNITS = [
   },
 ]
 
-export const UNITS_FLAT = UNITS.flatMap((g) =>
-  g.items.map((item) => ({ value: item, label: item, group: g.group }))
-)
+export const UNITS_FLAT = UNITS.map((g) => ({
+  group: g.group,
+  items: g.items.map((item) => ({ value: item, label: item })),
+}))

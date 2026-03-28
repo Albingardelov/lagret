@@ -15,6 +15,7 @@ import {
   Alert,
   Select,
 } from '@mantine/core'
+import { BottomSheet } from '../components/BottomSheet'
 import {
   IconCopy,
   IconCheck,
@@ -212,95 +213,99 @@ export function HouseholdPage() {
           )}
 
           {locations.map((loc) => (
-            <div key={loc.id}>
-              {editingId === loc.id ? (
-                <Group>
-                  <TextInput
-                    value={editName}
-                    onChange={(e) => setEditName(e.currentTarget.value)}
-                    style={{ flex: 1 }}
-                  />
-                  <Select
-                    data={ICON_OPTIONS}
-                    value={editIcon}
-                    onChange={(v) => setEditIcon((v as LocationIcon) ?? 'fridge')}
-                    w={120}
-                  />
-                  <Button size="xs" onClick={() => handleUpdateLocation(loc.id)}>
-                    Spara
-                  </Button>
-                  <Button
-                    size="xs"
-                    variant="subtle"
-                    color="gray"
-                    onClick={() => setEditingId(null)}
-                  >
-                    Avbryt
-                  </Button>
-                </Group>
-              ) : (
-                <Group justify="space-between">
-                  <Group gap="xs">
-                    {ICON_MAP[loc.icon]}
-                    <Text>{loc.name}</Text>
-                  </Group>
-                  <Group gap={4}>
-                    <ActionIcon
-                      variant="subtle"
-                      onClick={() => {
-                        setEditingId(loc.id)
-                        setEditName(loc.name)
-                        setEditIcon(loc.icon)
-                        setLocError(null)
-                      }}
-                    >
-                      <IconEdit size={16} />
-                    </ActionIcon>
-                    <ActionIcon
-                      variant="subtle"
-                      color="red"
-                      onClick={() => handleDeleteLocation(loc.id)}
-                    >
-                      <IconTrash size={16} />
-                    </ActionIcon>
-                  </Group>
-                </Group>
-              )}
-            </div>
-          ))}
-
-          {addingLocation && (
-            <Group>
-              <TextInput
-                placeholder="Namn, t.ex. Hallkylskåp"
-                value={newLocName}
-                onChange={(e) => setNewLocName(e.currentTarget.value)}
-                style={{ flex: 1 }}
-              />
-              <Select
-                data={ICON_OPTIONS}
-                value={newLocIcon}
-                onChange={(v) => setNewLocIcon((v as LocationIcon) ?? 'fridge')}
-                w={120}
-              />
-              <Button size="xs" onClick={handleAddLocation} disabled={!newLocName.trim()}>
-                Lägg till
-              </Button>
-              <Button
-                size="xs"
-                variant="subtle"
-                color="gray"
-                onClick={() => {
-                  setAddingLocation(false)
-                  setNewLocName('')
-                }}
-              >
-                Avbryt
-              </Button>
+            <Group key={loc.id} justify="space-between">
+              <Group gap="xs">
+                {ICON_MAP[loc.icon]}
+                <Text>{loc.name}</Text>
+              </Group>
+              <Group gap={4}>
+                <ActionIcon
+                  variant="subtle"
+                  onClick={() => {
+                    setEditingId(loc.id)
+                    setEditName(loc.name)
+                    setEditIcon(loc.icon)
+                    setLocError(null)
+                  }}
+                >
+                  <IconEdit size={16} />
+                </ActionIcon>
+                <ActionIcon
+                  variant="subtle"
+                  color="red"
+                  onClick={() => handleDeleteLocation(loc.id)}
+                >
+                  <IconTrash size={16} />
+                </ActionIcon>
+              </Group>
             </Group>
-          )}
+          ))}
         </Stack>
       </Paper>
+
+      <BottomSheet
+        opened={addingLocation}
+        onClose={() => {
+          setAddingLocation(false)
+          setNewLocName('')
+          setLocError(null)
+        }}
+        title="Ny förvaringsplats"
+      >
+        <Stack>
+          <TextInput
+            label="Namn"
+            placeholder="T.ex. Hallkylskåp"
+            value={newLocName}
+            onChange={(e) => setNewLocName(e.currentTarget.value)}
+          />
+          <Select
+            label="Typ"
+            data={ICON_OPTIONS}
+            value={newLocIcon}
+            onChange={(v) => setNewLocIcon((v as LocationIcon) ?? 'fridge')}
+          />
+          {locError && (
+            <Alert color="red" title="Fel">
+              {locError}
+            </Alert>
+          )}
+          <Button onClick={handleAddLocation} disabled={!newLocName.trim()} fullWidth>
+            Lägg till
+          </Button>
+        </Stack>
+      </BottomSheet>
+
+      <BottomSheet
+        opened={editingId !== null}
+        onClose={() => {
+          setEditingId(null)
+          setLocError(null)
+        }}
+        title="Redigera förvaringsplats"
+      >
+        <Stack>
+          <TextInput
+            label="Namn"
+            value={editName}
+            onChange={(e) => setEditName(e.currentTarget.value)}
+          />
+          <Select
+            label="Typ"
+            data={ICON_OPTIONS}
+            value={editIcon}
+            onChange={(v) => setEditIcon((v as LocationIcon) ?? 'fridge')}
+          />
+          {locError && (
+            <Alert color="red" title="Fel">
+              {locError}
+            </Alert>
+          )}
+          <Button onClick={() => editingId && handleUpdateLocation(editingId)} fullWidth>
+            Spara
+          </Button>
+        </Stack>
+      </BottomSheet>
     </Stack>
   )
 }

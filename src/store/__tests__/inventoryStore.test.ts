@@ -104,7 +104,7 @@ describe('addItem', () => {
     expect(useInventoryStore.getState().items[0].name).toBe('Mjölk')
   })
 
-  it('gör ingenting vid Supabase-fel', async () => {
+  it('kastar error vid Supabase-fel', async () => {
     mockFrom.mockImplementationOnce(() => ({
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockResolvedValueOnce({ error: { message: 'fel' } }),
@@ -116,7 +116,7 @@ describe('addItem', () => {
     }))
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { id, createdAt, updatedAt, ...newItemData } = MOCK_ITEM
-    await useInventoryStore.getState().addItem(newItemData)
+    await expect(useInventoryStore.getState().addItem(newItemData)).rejects.toThrow('fel')
     expect(useInventoryStore.getState().items).toHaveLength(0)
   })
 })

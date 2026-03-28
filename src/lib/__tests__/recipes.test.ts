@@ -2,10 +2,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 // Mock supabase before importing recipes
-const { mockRpc, mockSelect, mockEq, mockSingle } = vi.hoisted(() => ({
+const { mockRpc, mockSelect, mockEq, mockIn, mockSingle } = vi.hoisted(() => ({
   mockRpc: vi.fn(),
   mockSelect: vi.fn(),
   mockEq: vi.fn(),
+  mockIn: vi.fn(),
   mockSingle: vi.fn(),
 }))
 
@@ -21,6 +22,17 @@ vi.mock('../../lib/supabase', () => ({
             error: null,
           }),
         }),
+        not: vi.fn().mockReturnValue({
+          not: vi.fn().mockReturnValue({
+            order: vi.fn().mockReturnValue({
+              limit: vi.fn().mockReturnValue({
+                data: [],
+                error: null,
+              }),
+            }),
+          }),
+        }),
+        in: mockIn,
         textSearch: vi.fn().mockReturnValue({
           limit: vi.fn().mockReturnValue({
             data: [],
@@ -40,7 +52,7 @@ const MOCK_DB_ROW = {
   slug: 'test-1',
   name: 'Testrecept',
   description: 'Ett testrecept',
-  ingredients: ['200 g pasta', '1 burk krossade tomater'],
+  ingredient_groups: [{ name: null, items: ['200 g pasta', '1 burk krossade tomater'] }],
   instructions: ['Koka pastan.', 'Häll på tomatsåsen.'],
   image_urls: ['https://example.com/image.jpg'],
   cook_time: 'PT20M',
@@ -89,7 +101,9 @@ describe('getRecipeById', () => {
     const recipe = await getRecipeById(1)
     expect(recipe).not.toBeNull()
     expect(recipe!.name).toBe('Testrecept')
-    expect(recipe!.ingredients).toEqual(['200 g pasta', '1 burk krossade tomater'])
+    expect(recipe!.ingredientGroups).toEqual([
+      { name: null, items: ['200 g pasta', '1 burk krossade tomater'] },
+    ])
   })
 
   it('returns null for unknown id', async () => {
@@ -132,20 +146,21 @@ describe('suggestRecipes', () => {
     expect(results).toEqual([])
   })
 
-  it('calls match_recipes_by_ingredients RPC and fetches full recipes', async () => {
+  it('calls match_recipes_by_ingredients RPC and fetches full recipes via batch query', async () => {
     mockRpc.mockResolvedValueOnce({
       data: [
         { id: 1, name: 'Testrecept', slug: 'test-1', image_urls: ['img.jpg'], match_count: 2 },
       ],
       error: null,
     })
-    mockSingle.mockResolvedValue({ data: MOCK_DB_ROW, error: null })
+    mockIn.mockResolvedValue({ data: [MOCK_DB_ROW], error: null })
 
     const results = await suggestRecipes(['pasta', 'tomater'])
     expect(mockRpc).toHaveBeenCalledWith('match_recipes_by_ingredients', {
       search_ingredients: ['pasta', 'tomater'],
       lim: 20,
     })
+    expect(mockIn).toHaveBeenCalledWith('id', [1])
     expect(results).toHaveLength(1)
     expect(results[0].name).toBe('Testrecept')
   })

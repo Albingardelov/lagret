@@ -26,18 +26,24 @@ describe('ItemCard', () => {
     expect(screen.queryByText(/Bäst före/)).not.toBeInTheDocument()
   })
 
-  it('visar formaterat utgångsdatum när det finns', () => {
-    const item = { ...BASE_ITEM, expiryDate: '2026-12-31' }
+  it('visar utgångsbadge när datumet är nära', () => {
+    const expiryDate = dayjs().add(2, 'day').format('YYYY-MM-DD')
+    const item = { ...BASE_ITEM, expiryDate }
     render(<ItemCard item={item} onEdit={vi.fn()} onDelete={vi.fn()} />)
-    expect(screen.getByText(/Bäst före/)).toBeInTheDocument()
-    expect(screen.getByText(/31/)).toBeInTheDocument()
+    expect(screen.getByText(/kvar/)).toBeInTheDocument()
+  })
+
+  it('visar ingen utgångsbadge för datum långt bort', () => {
+    const expiryDate = dayjs().add(10, 'day').format('YYYY-MM-DD')
+    const item = { ...BASE_ITEM, expiryDate }
+    render(<ItemCard item={item} onEdit={vi.fn()} onDelete={vi.fn()} />)
+    expect(screen.queryByText(/kvar/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Utgå/)).not.toBeInTheDocument()
   })
 
   it.each([
     { daysFromNow: -1, expectedColor: 'red', desc: 'röd för utgånget' },
     { daysFromNow: 2, expectedColor: 'orange', desc: 'orange för ≤3 dagar' },
-    { daysFromNow: 5, expectedColor: 'yellow', desc: 'gul för ≤7 dagar' },
-    { daysFromNow: 10, expectedColor: 'green', desc: 'grön för >7 dagar' },
   ])('badge är $desc', ({ daysFromNow, expectedColor }) => {
     const expiryDate = dayjs().add(daysFromNow, 'day').format('YYYY-MM-DD')
     const item = { ...BASE_ITEM, expiryDate }

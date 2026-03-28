@@ -1,4 +1,5 @@
-import { Modal, TextInput, NumberInput, Select, Button, Stack, Group, Alert } from '@mantine/core'
+import { TextInput, NumberInput, Select, Button, Stack, Group, Alert } from '@mantine/core'
+import { BottomSheet } from './BottomSheet'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { useState, useEffect } from 'react'
@@ -72,7 +73,7 @@ export function EditItemModal({ item, onClose }: Props) {
   })
 
   return (
-    <Modal opened={!!item} onClose={onClose} title="Redigera vara">
+    <BottomSheet opened={!!item} onClose={onClose} title="Redigera vara">
       <form onSubmit={handleSubmit}>
         <Stack>
           <TextInput label="Namn" required {...form.getInputProps('name')} />
@@ -125,6 +126,6 @@ export function EditItemModal({ item, onClose }: Props) {
           </Button>
         </Stack>
       </form>
-    </Modal>
+    </BottomSheet>
   )
 }

@@ -48,9 +48,9 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
   return (
     <Box
       style={{
-        borderRadius: 20,
+        borderRadius: 16,
         overflow: 'hidden',
-        height: 150,
+        height: 90,
         position: 'relative',
         background: gradient,
         flexShrink: 0,
@@ -82,7 +82,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
       />
 
       {/* Top-right: quantity + actions */}
-      <Group gap={4} style={{ position: 'absolute', top: 10, right: 10 }} align="center">
+      <Group gap={4} style={{ position: 'absolute', top: 8, right: 8 }} align="center">
         <Box
           style={{
             background: 'rgba(255,255,255,0.18)',
@@ -138,7 +138,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
           bottom: 0,
           left: 0,
           right: 0,
-          padding: '12px 16px',
+          padding: '8px 12px',
         }}
       >
         <Group justify="space-between" align="flex-end" wrap="nowrap">
@@ -148,7 +148,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
               truncate
               style={{
                 fontFamily: '"Epilogue", sans-serif',
-                fontSize: 18,
+                fontSize: 15,
                 color: '#ffffff',
                 lineHeight: 1.2,
                 letterSpacing: '-0.2px',

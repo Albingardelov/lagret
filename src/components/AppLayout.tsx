@@ -4,6 +4,7 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { IconBox, IconBook2, IconShoppingCart, IconHome, IconLogout } from '@tabler/icons-react'
 import { useAuthStore } from '../store/authStore'
 import { useHouseholdStore } from '../store/householdStore'
+import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
 import { useExpiryNotifications } from '../hooks/useExpiryNotifications'
 
@@ -19,11 +20,17 @@ export function AppLayout() {
   const { pathname } = useLocation()
   const signOut = useAuthStore((s) => s.signOut)
   const fetchHousehold = useHouseholdStore((s) => s.fetchHousehold)
+  const household = useHouseholdStore((s) => s.household)
+  const fetchLocations = useLocationsStore((s) => s.fetchLocations)
   useExpiryNotifications()
 
   useEffect(() => {
     fetchHousehold()
   }, [fetchHousehold])
+
+  useEffect(() => {
+    if (household) fetchLocations()
+  }, [household, fetchLocations])
 
   const handleSignOut = async () => {
     await signOut()

@@ -1,5 +1,15 @@
 import { useState, useEffect, useMemo } from 'react'
-import { Tabs, Button, Stack, Text, Group, Loader, Center, ScrollArea, Box } from '@mantine/core'
+import {
+  Button,
+  Stack,
+  Text,
+  Group,
+  Loader,
+  Center,
+  ScrollArea,
+  Box,
+  ActionIcon,
+} from '@mantine/core'
 import {
   IconPlus,
   IconFridge,
@@ -230,7 +240,7 @@ export function InventoryPage() {
             marginBottom: 4,
           }}
         >
-          Current stock
+          Nuvarande lager
         </Text>
         <Group justify="space-between" align="flex-end">
           <Text
@@ -245,30 +255,16 @@ export function InventoryPage() {
           >
             Råvaruöversikt
           </Text>
-          <Group gap="xs">
-            <Button
-              variant="subtle"
-              color="sage"
-              leftSection={<IconCooker size={16} />}
-              onClick={() => setCookingOpen(true)}
-              size="sm"
-              style={{ fontFamily: '"Manrope", sans-serif' }}
-            >
-              Laga mat
-            </Button>
-            <Button
-              leftSection={<IconPlus size={16} />}
-              onClick={() => setModalOpen(true)}
-              size="sm"
-              style={{
-                fontFamily: '"Manrope", sans-serif',
-                background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
-                border: 'none',
-              }}
-            >
-              Lägg till
-            </Button>
-          </Group>
+          <Button
+            variant="subtle"
+            color="sage"
+            leftSection={<IconCooker size={16} />}
+            onClick={() => setCookingOpen(true)}
+            size="sm"
+            style={{ fontFamily: '"Manrope", sans-serif' }}
+          >
+            Laga mat
+          </Button>
         </Group>
 
         {/* Stats row */}
@@ -294,56 +290,80 @@ export function InventoryPage() {
         </Group>
       </Box>
 
-      {/* Location tabs + items */}
+      {/* Location pills + items */}
       {loading ? (
         <Center h={200}>
           <Loader color="sage" />
         </Center>
       ) : (
-        <Tabs
-          value={effectiveTab}
-          onChange={(v) => setActiveTab(v ?? '')}
-          styles={{
-            tab: {
-              fontFamily: '"Manrope", sans-serif',
-              fontSize: 13,
-              fontWeight: 500,
-            },
-            list: {
-              paddingLeft: 16,
-              paddingRight: 16,
-              borderBottom: '1px solid #ecefe3',
-            },
-          }}
-        >
-          <Tabs.List>
-            {locations.map((loc) => (
-              <Tabs.Tab key={loc.id} value={loc.id} leftSection={ICON_MAP[loc.icon]}>
-                {loc.name}
-                <Box
-                  component="span"
-                  ml={6}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 18,
-                    height: 18,
-                    borderRadius: '50%',
-                    background: effectiveTab === loc.id ? '#53642e' : '#ecefe3',
-                    color: effectiveTab === loc.id ? '#ffffff' : '#7a8a6a',
-                    fontSize: 10,
-                    fontWeight: 600,
-                    fontFamily: '"Manrope", sans-serif',
-                  }}
-                >
-                  {getByLocation(loc.id).length}
-                </Box>
-              </Tabs.Tab>
-            ))}
-          </Tabs.List>
+        <>
+          <ScrollArea
+            scrollbarSize={0}
+            px="md"
+            pb={4}
+            style={{ borderBottom: '1px solid #ecefe3' }}
+          >
+            <Group gap={8} wrap="nowrap" py={10}>
+              {locations.map((loc) => {
+                const active = effectiveTab === loc.id
+                const count = getByLocation(loc.id).length
+                return (
+                  <Box
+                    key={loc.id}
+                    onClick={() => setActiveTab(loc.id)}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 6,
+                      padding: '7px 14px',
+                      borderRadius: 20,
+                      background: active ? '#53642e' : '#ecefe3',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      transition: 'background 0.15s ease',
+                      userSelect: 'none',
+                    }}
+                  >
+                    <Box style={{ color: active ? '#ffffff' : '#7a8a6a', display: 'flex' }}>
+                      {ICON_MAP[loc.icon]}
+                    </Box>
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 13,
+                        fontWeight: 600,
+                        color: active ? '#ffffff' : '#191d16',
+                        whiteSpace: 'nowrap',
+                        lineHeight: 1,
+                      }}
+                    >
+                      {loc.name}
+                    </Text>
+                    <Box
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        minWidth: 18,
+                        height: 18,
+                        borderRadius: '50%',
+                        background: active ? 'rgba(255,255,255,0.2)' : 'rgba(83,100,46,0.12)',
+                        color: active ? '#ffffff' : '#7a8a6a',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        fontFamily: '"Manrope", sans-serif',
+                      }}
+                    >
+                      {count}
+                    </Box>
+                  </Box>
+                )
+              })}
+            </Group>
+          </ScrollArea>
 
           {locations.map((loc) => {
+            if (loc.id !== effectiveTab) return null
             const allItems = getByLocation(loc.id)
             const categories = [
               ...new Set(allItems.map((i) => i.category).filter(Boolean)),
@@ -356,67 +376,89 @@ export function InventoryPage() {
               : allItems
 
             return (
-              <Tabs.Panel key={loc.id} value={loc.id} pt="md">
-                <Stack gap="md">
-                  {/* Category filter buttons */}
-                  {categories.length > 0 && (
-                    <ScrollArea scrollbarSize={0} px="md">
-                      <Group gap="xs" wrap="nowrap" pb={4}>
+              <Stack key={loc.id} gap="md" pt="md">
+                {/* Category filter buttons */}
+                {categories.length > 0 && (
+                  <ScrollArea scrollbarSize={0} px="md">
+                    <Group gap="xs" wrap="nowrap" pb={4}>
+                      <CategoryButton
+                        label="Alla"
+                        count={allItems.length}
+                        active={activeFilter === null}
+                        onClick={() => setFilter(null)}
+                      />
+                      {categories.map((cat) => (
                         <CategoryButton
-                          label="Alla"
-                          count={allItems.length}
-                          active={activeFilter === null}
-                          onClick={() => setFilter(null)}
-                        />
-                        {categories.map((cat) => (
-                          <CategoryButton
-                            key={cat}
-                            label={cat}
-                            imageUrl={CATEGORY_IMAGES[cat]}
-                            count={allItems.filter((i) => i.category === cat).length}
-                            active={activeFilter === cat}
-                            color={CATEGORY_COLORS[cat]}
-                            onClick={() => setFilter(activeFilter === cat ? null : cat)}
-                          />
-                        ))}
-                      </Group>
-                    </ScrollArea>
-                  )}
-
-                  {/* Item cards */}
-                  {filtered.length === 0 ? (
-                    <Center py="xl">
-                      <Stack align="center" gap="xs">
-                        <IconPackage size={40} opacity={0.2} color="#53642e" />
-                        <Text
-                          style={{
-                            fontFamily: '"Manrope", sans-serif',
-                            color: '#a8b4a0',
-                            fontSize: 14,
-                          }}
-                        >
-                          Inga varor här ännu
-                        </Text>
-                      </Stack>
-                    </Center>
-                  ) : (
-                    <Stack gap="sm" px="md" pb="md">
-                      {filtered.map((item) => (
-                        <ItemCard
-                          key={item.id}
-                          item={item}
-                          onEdit={setEditItem}
-                          onDelete={deleteItem}
+                          key={cat}
+                          label={cat}
+                          imageUrl={CATEGORY_IMAGES[cat]}
+                          count={allItems.filter((i) => i.category === cat).length}
+                          active={activeFilter === cat}
+                          color={CATEGORY_COLORS[cat]}
+                          onClick={() => setFilter(activeFilter === cat ? null : cat)}
                         />
                       ))}
+                    </Group>
+                  </ScrollArea>
+                )}
+
+                {/* Item cards */}
+                {filtered.length === 0 ? (
+                  <Center py="xl">
+                    <Stack align="center" gap="xs">
+                      <IconPackage size={40} opacity={0.2} color="#53642e" />
+                      <Text
+                        style={{
+                          fontFamily: '"Manrope", sans-serif',
+                          color: '#a8b4a0',
+                          fontSize: 14,
+                        }}
+                      >
+                        Inga varor här ännu
+                      </Text>
                     </Stack>
-                  )}
-                </Stack>
-              </Tabs.Panel>
+                  </Center>
+                ) : (
+                  <Stack gap="sm" px="md" pb={80}>
+                    {filtered.map((item) => (
+                      <ItemCard
+                        key={item.id}
+                        item={item}
+                        onEdit={setEditItem}
+                        onDelete={deleteItem}
+                      />
+                    ))}
+                  </Stack>
+                )}
+              </Stack>
             )
           })}
-        </Tabs>
+        </>
       )}
+
+      {/* FAB — floating add button */}
+      <Box
+        style={{
+          position: 'fixed',
+          bottom: 88,
+          right: 20,
+          zIndex: 100,
+        }}
+      >
+        <ActionIcon
+          size={52}
+          radius="50%"
+          onClick={() => setModalOpen(true)}
+          style={{
+            background: 'linear-gradient(135deg, #53642e 0%, #889a5e 100%)',
+            border: 'none',
+            boxShadow: '0 4px 16px rgba(83,100,46,0.35), 0 0 0 3px rgba(248,251,238,0.92)',
+          }}
+          aria-label="Lägg till vara"
+        >
+          <IconPlus size={24} color="#fff" />
+        </ActionIcon>
+      </Box>
 
       <AddItemModal
         opened={modalOpen}

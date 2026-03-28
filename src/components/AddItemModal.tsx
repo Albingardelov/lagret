@@ -1,5 +1,4 @@
 import {
-  Modal,
   TextInput,
   NumberInput,
   Select,
@@ -12,6 +11,7 @@ import {
   Badge,
   Alert,
 } from '@mantine/core'
+import { BottomSheet } from './BottomSheet'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { IconBarcode, IconScissors, IconCheck, IconAlertTriangle } from '@tabler/icons-react'
@@ -30,6 +30,7 @@ interface Props {
   defaultBarcode?: string
   defaultLocation?: string // now a UUID string
   defaultName?: string
+  onAdded?: () => void
 }
 
 export function AddItemModal({
@@ -38,6 +39,7 @@ export function AddItemModal({
   defaultBarcode,
   defaultLocation,
   defaultName,
+  onAdded,
 }: Props) {
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
@@ -136,11 +138,12 @@ export function AddItemModal({
     setLookupFailed(false)
     setLookupSuccess(false)
     setSubmitError(null)
+    onAdded?.()
     onClose()
   })
 
   return (
-    <Modal opened={opened} onClose={onClose} title="Lägg till vara">
+    <BottomSheet opened={opened} onClose={onClose} title="Lägg till vara">
       {showScanner ? (
         <Scanner onBarcode={handleBarcode} onClose={() => setShowScanner(false)} />
       ) : (
@@ -268,6 +271,6 @@ export function AddItemModal({
           </Stack>
         </form>
       )}
-    </Modal>
+    </BottomSheet>
   )
 }

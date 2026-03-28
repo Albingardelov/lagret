@@ -98,6 +98,18 @@ export async function suggestRecipes(ingredientNames: string[], limit = 20): Pro
     image_urls: string[]
     match_count: number
   }[]
-  const recipes = await Promise.all(matches.map((m) => getRecipeById(m.id)))
-  return recipes.filter(Boolean) as Recipe[]
+  if (matches.length === 0) return []
+
+  const ids = matches.map((m) => m.id)
+  const { data: recipes, error: recipeError } = await supabase
+    .from('recipes')
+    .select(
+      'id, url, slug, name, description, ingredient_groups, instructions, image_urls, cook_time, prep_time, total_time, servings'
+    )
+    .in('id', ids)
+  if (recipeError || !recipes) return []
+
+  // Preserve match_count ordering
+  const recipeMap = new Map((recipes as RecipeRow[]).map((r) => [r.id, mapRecipe(r)]))
+  return ids.map((id) => recipeMap.get(id)).filter(Boolean) as Recipe[]
 }

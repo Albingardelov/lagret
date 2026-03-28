@@ -22,7 +22,7 @@ export const MOCK_INVENTORY = [
     name: 'Mjölk',
     quantity: 1,
     unit: 'liter',
-    location: 'fridge',
+    location: 'loc-fridge',
     expiry_date: null,
     expiryDate: null,
     household_id: 'hh-1',
@@ -33,7 +33,7 @@ export const MOCK_INVENTORY = [
     name: 'Pasta',
     quantity: 500,
     unit: 'gram',
-    location: 'pantry',
+    location: 'loc-pantry',
     expiry_date: null,
     expiryDate: null,
     household_id: 'hh-1',
@@ -133,12 +133,47 @@ export async function setupInventoryMocks(page: Page, items = MOCK_INVENTORY) {
   })
 }
 
+export const MOCK_LOCATIONS = [
+  {
+    id: 'loc-pantry',
+    household_id: 'hh-1',
+    name: 'Skafferi',
+    icon: 'pantry',
+    sort_order: 0,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'loc-fridge',
+    household_id: 'hh-1',
+    name: 'Kylskåp',
+    icon: 'fridge',
+    sort_order: 1,
+    created_at: new Date().toISOString(),
+  },
+  {
+    id: 'loc-freezer',
+    household_id: 'hh-1',
+    name: 'Frys',
+    icon: 'freezer',
+    sort_order: 2,
+    created_at: new Date().toISOString(),
+  },
+]
+
 export async function setupShoppingMocks(page: Page) {
   await page.route('**/rest/v1/shopping_list**', (route) => {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify([]),
+    })
+  })
+
+  await page.route('**/rest/v1/storage_locations**', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify(MOCK_LOCATIONS),
     })
   })
 }

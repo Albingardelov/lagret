@@ -8,7 +8,7 @@ const BASE_RECIPE: Recipe = {
   slug: 'pasta-bolognese',
   name: 'Pasta Bolognese',
   description: 'Klassisk pasta bolognese',
-  ingredients: ['200 g pasta', '2 tomater', '300 g nötfärs', '1 lök'],
+  ingredientGroups: [{ name: null, items: ['200 g pasta', '2 tomater', '300 g nötfärs', '1 lök'] }],
   instructions: ['Koka pastan.', 'Stek färsen.'],
   imageUrls: [],
   cookTime: null,
@@ -57,7 +57,7 @@ describe('matchRecipe', () => {
   })
 
   it('returnerar score 0 för recept utan ingredienser', () => {
-    const emptyRecipe = { ...BASE_RECIPE, ingredients: [] }
+    const emptyRecipe = { ...BASE_RECIPE, ingredientGroups: [] }
     const result = matchRecipe(emptyRecipe, ['pasta'])
     expect(result.score).toBe(0)
   })
@@ -70,7 +70,7 @@ describe('matchRecipes', () => {
       id: 2,
       slug: 'enkel-pasta',
       name: 'Enkel pasta',
-      ingredients: ['200 g pasta'],
+      ingredientGroups: [{ name: null, items: ['200 g pasta'] }],
     }
     const inventory = ['pasta', 'tomat', 'nötfärs', 'lök']
     const results = matchRecipes([BASE_RECIPE, r2], inventory)
@@ -83,7 +83,7 @@ describe('matchRecipes', () => {
       id: 3,
       slug: 'okant-recept',
       name: 'Okänt recept',
-      ingredients: ['1 enhörning', '1 drake'],
+      ingredientGroups: [{ name: null, items: ['1 enhörning', '1 drake'] }],
     }
     const inventory = ['pasta', 'tomat', 'nötfärs', 'lök']
     const results = matchRecipes([lowMatch, BASE_RECIPE], inventory)
