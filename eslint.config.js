@@ -31,6 +31,7 @@ export default defineConfig([
       'src/test/**/*.{ts,tsx}',
       'src/router.tsx',
       'src/components/NotificationBanner.tsx',
+      'src/components/CookingMode.tsx',
     ],
     rules: {
       'react-refresh/only-export-components': 'off',

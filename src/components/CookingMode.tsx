@@ -1,229 +1,349 @@
-import { useState, useMemo } from 'react'
+// Re-export utility functions so tests can import them from this file
+export { getSmallStep, getLargeStep, formatQty } from './cookingModeUtils'
+import {
+  getSmallStep,
+  getLargeStep,
+  formatQty,
+  loadCustomSteps,
+  saveCustomSteps,
+} from './cookingModeUtils'
+
+import { useState, useMemo, useEffect } from 'react'
 import {
   Modal,
   Stack,
   Group,
   Text,
   TextInput,
-  ActionIcon,
-  Chip,
   ScrollArea,
-  Badge,
   Box,
+  UnstyledButton,
+  NumberInput,
+  Popover,
 } from '@mantine/core'
-import { IconMinus, IconPlus, IconSearch } from '@tabler/icons-react'
+import { IconSearch, IconPlus } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
+import { AddItemModal } from './AddItemModal'
 
 interface Props {
   opened: boolean
   onClose: () => void
 }
 
-const CATEGORY_COLORS: Record<string, string> = {
-  Mejeri: '#74b9ff',
-  Kött: '#ff7675',
-  'Fisk & skaldjur': '#00cec9',
-  Grönsaker: '#55efc4',
-  Frukt: '#fdcb6e',
-  'Pasta & ris': '#fab1a0',
-  Bakning: '#e17055',
-  Frukost: '#ffeaa7',
-  Konserver: '#a29bfe',
-  Snacks: '#fd79a8',
-  Dryck: '#00b894',
-  Skafferi: '#b2bec3',
-  'Såser & kryddor': '#e84393',
-  'Örter & kryddor': '#6ab04c',
-}
-
 export function CookingMode({ opened, onClose }: Props) {
   const items = useInventoryStore((s) => s.items)
   const updateItem = useInventoryStore((s) => s.updateItem)
   const locations = useLocationsStore((s) => s.locations)
+
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState<string | null>(null)
+  const [activeLocation, setActiveLocation] = useState<string | null>(null)
+  const [customSteps, setCustomSteps] = useState<Record<string, number>>({})
+  const [editingStep, setEditingStep] = useState<string | null>(null)
+  const [addItemOpen, setAddItemOpen] = useState(false)
 
-  const categories = useMemo(
-    () => [...new Set(items.map((i) => i.category).filter(Boolean))] as string[],
-    [items]
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    if (opened) setCustomSteps(loadCustomSteps())
+  }, [opened])
+  /* eslint-enable react-hooks/set-state-in-effect */
+
+  const filtered = useMemo(
+    () =>
+      items.filter((item) => {
+        const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
+        const matchesLocation = !activeLocation || item.location === activeLocation
+        return matchesSearch && matchesLocation
+      }),
+    [items, search, activeLocation]
   )
-
-  const filtered = useMemo(() => {
-    return items.filter((item) => {
-      const matchesSearch = item.name.toLowerCase().includes(search.toLowerCase())
-      const matchesCategory = !activeCategory || item.category === activeCategory
-      return matchesSearch && matchesCategory
-    })
-  }, [items, search, activeCategory])
-
-  const getStep = (unit: string): number => {
-    switch (unit) {
-      case 'kg':
-        return 0.5
-      case 'hg':
-        return 1
-      case 'g':
-        return 50
-      case 'l':
-        return 0.5
-      case 'dl':
-        return 0.5
-      case 'ml':
-        return 50
-      case 'msk':
-        return 1
-      case 'tsk':
-        return 1
-      case 'krm':
-        return 1
-      default:
-        return 1
-    }
-  }
-
-  const formatQty = (qty: number): string => {
-    if (Number.isInteger(qty)) return qty.toString()
-    return qty.toFixed(1).replace(/\.0$/, '')
-  }
-
-  const adjust = (id: string, currentQty: number, unit: string, delta: number) => {
-    const step = getStep(unit)
-    const next = Math.max(0, Math.round((currentQty + delta * step) * 100) / 100)
-    updateItem(id, { quantity: next }).catch(() => {})
-  }
 
   const getLocationName = (locationId: string) =>
     locations.find((l) => l.id === locationId)?.name ?? ''
 
-  return (
-    <Modal
-      opened={opened}
-      onClose={onClose}
-      title={
-        <Text fw={700} size="lg">
-          🍳 Laga mat
-        </Text>
-      }
-      fullScreen
-      radius={0}
-    >
-      <Stack gap="sm" h="100%">
-        {/* Search */}
-        <TextInput
-          placeholder="Sök vara..."
-          leftSection={<IconSearch size={16} />}
-          value={search}
-          onChange={(e) => setSearch(e.currentTarget.value)}
-          size="md"
-        />
+  const adjust = (id: string, qty: number, step: number) => {
+    const next = Math.max(0, Math.round((qty - step) * 1000) / 1000)
+    updateItem(id, { quantity: next }).catch(() => {})
+  }
 
-        {/* Category filter */}
-        {categories.length > 0 && (
+  const setCustomStep = (itemId: string, value: number) => {
+    const next = { ...customSteps, [itemId]: value }
+    setCustomSteps(next)
+    saveCustomSteps(next)
+    setEditingStep(null)
+  }
+
+  const bg = '#f5f0e8'
+  const cardBg = '#ffffff'
+  const chipActive = '#e8956d'
+  const chipInactive = '#e8e0d0'
+  const badgeBg = '#e8e0d0'
+  const btnBg = '#f0ece6'
+  const locationColor = '#999'
+
+  return (
+    <>
+      <Modal
+        opened={opened}
+        onClose={onClose}
+        fullScreen
+        radius={0}
+        withCloseButton={false}
+        styles={{
+          body: { background: bg, padding: '16px 16px 80px', height: '100%' },
+          content: { background: bg },
+        }}
+      >
+        <Stack gap="md" h="100%">
+          {/* Header */}
+          <Box>
+            <Text fw={800} size="28px" lh={1.1} c="#1a1a1a">
+              Improvisera i köket
+            </Text>
+            <Text size="sm" c="#888" mt={4}>
+              Uppdatera ditt lager medan du skapar magi vid spisen.
+            </Text>
+          </Box>
+
+          {/* Search */}
+          <TextInput
+            placeholder="Sök ingredienser..."
+            leftSection={<IconSearch size={16} />}
+            value={search}
+            onChange={(e) => setSearch(e.currentTarget.value)}
+            radius="xl"
+            styles={{
+              input: { background: '#ede8df', border: 'none', fontSize: 15 },
+            }}
+          />
+
+          {/* Location filter */}
           <ScrollArea scrollbarSize={0}>
-            <Group gap="xs" wrap="nowrap" pb={4}>
-              <Chip
-                size="sm"
-                checked={activeCategory === null}
-                onChange={() => setActiveCategory(null)}
-              >
-                Alla
-              </Chip>
-              {categories.map((cat) => (
-                <Chip
-                  key={cat}
-                  size="sm"
-                  checked={activeCategory === cat}
-                  onChange={() => setActiveCategory(activeCategory === cat ? null : cat)}
-                >
-                  {cat}
-                </Chip>
-              ))}
+            <Group gap={8} wrap="nowrap" pb={4}>
+              {[{ id: null as string | null, name: 'Alla' }, ...locations].map((loc) => {
+                const isActive = activeLocation === loc.id
+                return (
+                  <UnstyledButton
+                    key={loc.id ?? 'all'}
+                    onClick={() => setActiveLocation(loc.id)}
+                    style={{
+                      padding: '7px 18px',
+                      borderRadius: 999,
+                      background: isActive ? chipActive : chipInactive,
+                      color: isActive ? '#fff' : '#555',
+                      fontWeight: isActive ? 700 : 500,
+                      fontSize: 14,
+                      whiteSpace: 'nowrap',
+                      transition: 'background 0.15s',
+                    }}
+                  >
+                    {loc.name}
+                  </UnstyledButton>
+                )
+              })}
             </Group>
           </ScrollArea>
-        )}
 
-        {/* Item list */}
-        <ScrollArea flex={1} offsetScrollbars>
-          <Stack gap="xs">
-            {filtered.map((item) => {
-              const categoryColor = item.category
-                ? (CATEGORY_COLORS[item.category] ?? '#dfe6e9')
-                : '#dfe6e9'
-              const isEmpty = item.quantity === 0
+          {/* Item list */}
+          <ScrollArea flex={1} offsetScrollbars>
+            <Stack gap="md">
+              {filtered.map((item) => {
+                const locationName = getLocationName(item.location).toUpperCase()
+                const smallStep = getSmallStep(item.unit)
+                const largeStep = getLargeStep(item.unit)
+                const customStep = customSteps[item.id]
+                const unit = item.unit.toUpperCase()
 
-              return (
-                <Box
-                  key={item.id}
-                  style={{
-                    borderRadius: 10,
-                    borderLeft: `4px solid ${categoryColor}`,
-                    padding: '6px 10px',
-                    opacity: isEmpty ? 0.4 : 1,
-                    background: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                  }}
-                >
-                  {/* Name + location */}
-                  <Stack gap={0} style={{ flex: 1, minWidth: 0 }}>
-                    <Text fw={600} truncate style={{ fontSize: 13, lineHeight: 1.2 }}>
+                return (
+                  <Box
+                    key={item.id}
+                    style={{
+                      background: cardBg,
+                      borderRadius: 16,
+                      padding: '14px 16px',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      opacity: item.quantity === 0 ? 0.45 : 1,
+                    }}
+                  >
+                    {/* Top row: location + quantity badge */}
+                    <Group justify="space-between" align="flex-start" mb={4}>
+                      <Text
+                        style={{
+                          fontSize: 11,
+                          letterSpacing: '0.08em',
+                          color: locationColor,
+                          fontWeight: 600,
+                        }}
+                      >
+                        {locationName}
+                      </Text>
+                      <Box
+                        style={{
+                          background: badgeBg,
+                          borderRadius: 999,
+                          padding: '3px 12px',
+                        }}
+                      >
+                        <Text fw={600} size="sm" c="#6b5a3e">
+                          {formatQty(item.quantity)} {item.unit}
+                        </Text>
+                      </Box>
+                    </Group>
+
+                    {/* Item name */}
+                    <Text fw={700} size="xl" c="#1a1a1a" mb={12}>
                       {item.name}
                     </Text>
-                    <Text style={{ fontSize: 10, color: '#999' }}>
-                      {getLocationName(item.location)}
-                    </Text>
-                  </Stack>
 
-                  {/* Quantity + controls */}
-                  <Group gap={4} align="center" wrap="nowrap">
-                    <ActionIcon
-                      size={32}
-                      radius="xl"
-                      variant="light"
-                      color="red"
-                      disabled={isEmpty}
-                      onClick={() => adjust(item.id, item.quantity, item.unit, -1)}
-                      aria-label={`Minska med ${getStep(item.unit)} ${item.unit}`}
-                    >
-                      <IconMinus size={14} />
-                    </ActionIcon>
+                    {/* Decrement buttons */}
+                    <Group gap={8} grow>
+                      {/* Small step */}
+                      <UnstyledButton
+                        disabled={item.quantity === 0}
+                        onClick={() => adjust(item.id, item.quantity, smallStep)}
+                        style={{
+                          background: btnBg,
+                          borderRadius: 10,
+                          padding: '8px 4px',
+                          textAlign: 'center',
+                          opacity: item.quantity === 0 ? 0.4 : 1,
+                        }}
+                      >
+                        <Text fw={600} size="sm" c="#333">
+                          -{formatQty(smallStep)}
+                        </Text>
+                        <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
+                          {unit}
+                        </Text>
+                      </UnstyledButton>
 
-                    <Stack gap={0} align="center" style={{ minWidth: 40 }}>
-                      <Text fw={700} ta="center" style={{ fontSize: 15, lineHeight: 1 }}>
-                        {formatQty(item.quantity)}
-                      </Text>
-                      <Text ta="center" style={{ fontSize: 10, color: '#999' }}>
-                        {item.unit}
-                      </Text>
-                    </Stack>
+                      {/* Large step */}
+                      <UnstyledButton
+                        disabled={item.quantity === 0}
+                        onClick={() => adjust(item.id, item.quantity, largeStep)}
+                        style={{
+                          background: btnBg,
+                          borderRadius: 10,
+                          padding: '8px 4px',
+                          textAlign: 'center',
+                          opacity: item.quantity === 0 ? 0.4 : 1,
+                        }}
+                      >
+                        <Text fw={600} size="sm" c="#333">
+                          -{formatQty(largeStep)}
+                        </Text>
+                        <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
+                          {unit}
+                        </Text>
+                      </UnstyledButton>
 
-                    <ActionIcon
-                      size={32}
-                      radius="xl"
-                      variant="light"
-                      color="green"
-                      onClick={() => adjust(item.id, item.quantity, item.unit, 1)}
-                      aria-label={`Öka med ${getStep(item.unit)} ${item.unit}`}
-                    >
-                      <IconPlus size={14} />
-                    </ActionIcon>
-                  </Group>
+                      {/* Custom step */}
+                      <Popover
+                        opened={editingStep === item.id}
+                        onClose={() => setEditingStep(null)}
+                        position="top"
+                        withArrow
+                      >
+                        <Popover.Target>
+                          <UnstyledButton
+                            disabled={item.quantity === 0 && customStep === undefined}
+                            onClick={() => {
+                              if (customStep !== undefined) {
+                                adjust(item.id, item.quantity, customStep)
+                              } else {
+                                setEditingStep(item.id)
+                              }
+                            }}
+                            style={{
+                              background: btnBg,
+                              borderRadius: 10,
+                              padding: '8px 4px',
+                              textAlign: 'center',
+                              opacity: item.quantity === 0 && customStep === undefined ? 0.4 : 1,
+                            }}
+                          >
+                            {customStep !== undefined ? (
+                              <>
+                                <Text fw={600} size="sm" c="#333">
+                                  -{formatQty(customStep)}
+                                </Text>
+                                <Text size="xs" c="#888" style={{ letterSpacing: '0.05em' }}>
+                                  {unit}
+                                </Text>
+                              </>
+                            ) : (
+                              <Text fw={600} size="sm" c="#aaa">
+                                —
+                              </Text>
+                            )}
+                          </UnstyledButton>
+                        </Popover.Target>
+                        <Popover.Dropdown>
+                          <Stack gap={8}>
+                            <Text size="xs" c="#888">
+                              Ange eget steg ({item.unit})
+                            </Text>
+                            <NumberInput
+                              min={0.1}
+                              step={getSmallStep(item.unit)}
+                              decimalScale={2}
+                              placeholder={`ex. ${getLargeStep(item.unit)}`}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  const v = parseFloat((e.target as HTMLInputElement).value)
+                                  if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
+                                }
+                              }}
+                              onBlur={(e) => {
+                                const v = parseFloat(e.target.value)
+                                if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
+                              }}
+                              styles={{ input: { width: 100 } }}
+                            />
+                          </Stack>
+                        </Popover.Dropdown>
+                      </Popover>
+                    </Group>
+                  </Box>
+                )
+              })}
 
-                  {item.minQuantity !== undefined &&
-                    item.minQuantity > 0 &&
-                    item.quantity < item.minQuantity && (
-                      <Badge color="red" size="xs" variant="light" style={{ flexShrink: 0 }}>
-                        Lågt
-                      </Badge>
-                    )}
-                </Box>
-              )
-            })}
-          </Stack>
-        </ScrollArea>
-      </Stack>
-    </Modal>
+              {/* Add item button */}
+              <UnstyledButton
+                onClick={() => setAddItemOpen(true)}
+                style={{
+                  border: '2px dashed #c8bfb0',
+                  borderRadius: 16,
+                  padding: '20px 16px',
+                  textAlign: 'center',
+                  marginTop: 4,
+                }}
+              >
+                <Stack gap={6} align="center">
+                  <Box
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: '50%',
+                      background: '#e8e0d0',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <IconPlus size={18} color="#6b5a3e" />
+                  </Box>
+                  <Text size="xs" fw={700} c="#6b5a3e" style={{ letterSpacing: '0.1em' }}>
+                    LÄGG TILL INGREDIENS
+                  </Text>
+                </Stack>
+              </UnstyledButton>
+            </Stack>
+          </ScrollArea>
+        </Stack>
+      </Modal>
+
+      <AddItemModal opened={addItemOpen} onClose={() => setAddItemOpen(false)} />
+    </>
   )
 }
