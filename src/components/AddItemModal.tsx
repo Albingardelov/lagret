@@ -224,6 +224,7 @@ export function AddItemModal({
                 data={UNITS_FLAT}
                 searchable
                 allowDeselect={false}
+                comboboxProps={{ withinPortal: false }}
                 {...form.getInputProps('unit')}
               />
             </Group>
@@ -232,12 +233,14 @@ export function AddItemModal({
               data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
               searchable
               allowDeselect={false}
+              comboboxProps={{ withinPortal: false }}
               {...form.getInputProps('location')}
             />
             <DateInput
               label="Bäst-före datum"
               placeholder="Välj datum"
               clearable
+              popoverProps={{ withinPortal: false }}
               {...form.getInputProps('expiryDate')}
             />
             <Select
@@ -246,6 +249,7 @@ export function AddItemModal({
               data={ITEM_CATEGORIES}
               clearable
               searchable
+              comboboxProps={{ withinPortal: false }}
               {...form.getInputProps('category')}
             />
             <Divider />
