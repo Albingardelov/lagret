@@ -1,131 +1,164 @@
+// src/store/__tests__/householdStore.test.ts
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { useHouseholdStore } from '../householdStore'
-import type { Household } from '../../types'
 
-const { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, mockGetUser } =
-  vi.hoisted(() => {
-    const mockMaybeSingle = vi.fn()
-    const mockSingle = vi.fn()
-    const mockEq = vi.fn()
-    const mockInsert = vi.fn()
-    const mockSelect = vi.fn()
-    const mockFrom = vi.fn()
-    const mockGetUser = vi.fn()
-    return { mockMaybeSingle, mockSingle, mockEq, mockInsert, mockSelect, mockFrom, mockGetUser }
-  })
-
-vi.mock('../locationsStore', () => ({
-  useLocationsStore: { getState: () => ({ fetchLocations: vi.fn() }) },
-}))
-
+// Mock supabase
 vi.mock('../../lib/supabase', () => ({
   supabase: {
-    from: mockFrom,
-    auth: {
-      getUser: mockGetUser,
-    },
+    from: vi.fn(),
+    rpc: vi.fn(),
   },
 }))
 
-function defaultFromImpl() {
-  return {
-    select: mockSelect.mockReturnThis(),
-    insert: mockInsert.mockReturnThis(),
-    limit: vi.fn().mockReturnThis(),
-    eq: mockEq.mockReturnThis(),
-    maybeSingle: mockMaybeSingle,
-    single: mockSingle,
+// Mock dependent stores — fetchLocations, fetchItems are called on household switch
+vi.mock('../locationsStore', () => ({
+  useLocationsStore: {
+    getState: vi.fn(() => ({ fetchLocations: vi.fn() })),
+  },
+}))
+vi.mock('../inventoryStore', () => ({
+  useInventoryStore: {
+    getState: vi.fn(() => ({ fetchItems: vi.fn() })),
+  },
+}))
+vi.mock('../shoppingStore', () => ({
+  useShoppingStore: {
+    getState: vi.fn(() => ({ fetchItems: vi.fn() })),
+  },
+}))
+
+import { supabase } from '../../lib/supabase'
+import { useHouseholdStore } from '../householdStore'
+
+const mockHouseholds = [
+  { id: 'hh-1', name: 'Hemma', invite_code: 'abc12345', created_at: '2026-01-01' },
+  { id: 'hh-2', name: 'Stugan', invite_code: 'xyz67890', created_at: '2026-02-01' },
+]
+
+function makeChain(data: unknown, error: unknown = null) {
+  const chain = {
+    select: vi.fn(),
+    eq: vi.fn(),
+    limit: vi.fn(),
+    maybeSingle: vi.fn(),
+    insert: vi.fn(),
+    single: vi.fn(),
   }
-}
-
-const MOCK_HH_ROW = {
-  id: 'hh-1',
-  name: 'Testfamiljen',
-  invite_code: 'abc12345',
-  created_at: '2026-03-26T00:00:00Z',
-}
-
-const MOCK_HH: Household = {
-  id: 'hh-1',
-  name: 'Testfamiljen',
-  inviteCode: 'abc12345',
-  createdAt: '2026-03-26T00:00:00Z',
+  chain.select.mockReturnValue(chain)
+  chain.eq.mockReturnValue(chain)
+  chain.limit.mockReturnValue(chain)
+  chain.maybeSingle.mockResolvedValue({ data, error })
+  chain.insert.mockReturnValue(chain)
+  chain.single.mockResolvedValue({ data, error })
+  return chain
 }
 
 beforeEach(() => {
-  vi.resetAllMocks()
-  mockFrom.mockImplementation(defaultFromImpl)
-  mockGetUser.mockResolvedValue({ data: { user: { id: 'test-user-id' } } })
-  useHouseholdStore.setState({ household: null, loading: false, error: null })
+  // Reset store state between tests
+  useHouseholdStore.setState({
+    households: [],
+    household: null,
+    activeHouseholdId: null,
+    members: [],
+    loading: false,
+    error: null,
+  })
+  localStorage.clear()
+  vi.clearAllMocks()
 })
 
-describe('fetchHousehold', () => {
-  it('hämtar och mappar hushållet', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({ data: MOCK_HH_ROW, error: null })
-    await useHouseholdStore.getState().fetchHousehold()
-    expect(useHouseholdStore.getState().household).toEqual(MOCK_HH)
-    expect(useHouseholdStore.getState().loading).toBe(false)
+describe('fetchHouseholds', () => {
+  it('sätter households från Supabase', async () => {
+    vi.mocked(supabase.from).mockReturnValue(makeChain(null) as ReturnType<typeof supabase.from>)
+    // Override maybeSingle with array response
+    const chain = makeChain(null)
+    chain.select.mockReturnValue({ data: mockHouseholds, error: null } as unknown as ReturnType<
+      typeof chain.select
+    >)
+    vi.mocked(supabase.from).mockReturnValue(chain as ReturnType<typeof supabase.from>)
+
+    await useHouseholdStore.getState().fetchHouseholds()
+
+    const { households } = useHouseholdStore.getState()
+    expect(households).toHaveLength(2)
+    expect(households[0].id).toBe('hh-1')
+    expect(households[0].name).toBe('Hemma')
+    expect(households[0].inviteCode).toBe('abc12345')
   })
 
-  it('sätter null om inget hushåll finns', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null })
-    await useHouseholdStore.getState().fetchHousehold()
-    expect(useHouseholdStore.getState().household).toBeNull()
+  it('sätter household till första om inget sparats i localStorage', async () => {
+    const chain = { select: vi.fn().mockResolvedValue({ data: mockHouseholds, error: null }) }
+    vi.mocked(supabase.from).mockReturnValue(chain as ReturnType<typeof supabase.from>)
+
+    // Mock rpc för fetchMembers
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
+
+    await useHouseholdStore.getState().fetchHouseholds()
+
+    expect(useHouseholdStore.getState().household?.id).toBe('hh-1')
   })
 
-  it('sätter error vid Supabase-fel', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: { message: 'DB-fel' } })
-    await useHouseholdStore.getState().fetchHousehold()
-    expect(useHouseholdStore.getState().error).toBe('DB-fel')
+  it('återställer sparat aktivt hushåll från localStorage', async () => {
+    localStorage.setItem('lagret:activeHousehold', 'hh-2')
+    const chain = { select: vi.fn().mockResolvedValue({ data: mockHouseholds, error: null }) }
+    vi.mocked(supabase.from).mockReturnValue(chain as ReturnType<typeof supabase.from>)
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
+
+    await useHouseholdStore.getState().fetchHouseholds()
+
+    expect(useHouseholdStore.getState().household?.id).toBe('hh-2')
+    expect(useHouseholdStore.getState().activeHouseholdId).toBe('hh-2')
   })
 })
 
-describe('createHousehold', () => {
-  it('skapar hushåll och sätter household i state', async () => {
-    let callCount = 0
-    mockFrom.mockImplementation(() => {
-      callCount++
-      if (callCount === 1) {
-        // households INSERT
-        return {
-          insert: vi.fn().mockReturnThis(),
-          select: vi.fn().mockReturnThis(),
-          single: vi.fn().mockResolvedValueOnce({ data: MOCK_HH_ROW, error: null }),
-        }
-      }
-      // household_members INSERT
-      return { insert: vi.fn().mockResolvedValueOnce({ error: null }) }
+describe('setActiveHousehold', () => {
+  it('uppdaterar household och sparar i localStorage', async () => {
+    useHouseholdStore.setState({
+      households: [
+        { id: 'hh-1', name: 'Hemma', inviteCode: 'abc12345', createdAt: '2026-01-01' },
+        { id: 'hh-2', name: 'Stugan', inviteCode: 'xyz67890', createdAt: '2026-02-01' },
+      ],
     })
-    await useHouseholdStore.getState().createHousehold('Testfamiljen')
-    expect(useHouseholdStore.getState().household?.name).toBe('Testfamiljen')
-    expect(useHouseholdStore.getState().household?.inviteCode).toBe('abc12345')
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
+
+    await useHouseholdStore.getState().setActiveHousehold('hh-2')
+
+    expect(useHouseholdStore.getState().household?.id).toBe('hh-2')
+    expect(useHouseholdStore.getState().activeHouseholdId).toBe('hh-2')
+    expect(localStorage.getItem('lagret:activeHousehold')).toBe('hh-2')
   })
 })
 
-describe('joinHousehold', () => {
-  it('hittar inte hushåll med felaktig kod', async () => {
-    mockMaybeSingle.mockResolvedValueOnce({ data: null, error: null })
-    await useHouseholdStore.getState().joinHousehold('felkoden')
-    expect(useHouseholdStore.getState().error).toBe('Hittade inget hushåll med den koden')
-    expect(useHouseholdStore.getState().household).toBeNull()
+describe('fetchMembers', () => {
+  it('sätter members från RPC', async () => {
+    const mockMembers = [
+      { user_id: 'u-1', email: 'anna@example.com' },
+      { user_id: 'u-2', email: 'bjorn@example.com' },
+    ]
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: mockMembers, error: null } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
+
+    await useHouseholdStore.getState().fetchMembers('hh-1')
+
+    const { members } = useHouseholdStore.getState()
+    expect(members).toHaveLength(2)
+    expect(members[0].email).toBe('anna@example.com')
+    expect(members[0].userId).toBe('u-1')
   })
 
-  it('sätter household vid lyckad join', async () => {
-    let callCount = 0
-    mockFrom.mockImplementation(() => {
-      callCount++
-      if (callCount === 1) {
-        // households SELECT
-        return {
-          select: vi.fn().mockReturnThis(),
-          eq: vi.fn().mockReturnThis(),
-          maybeSingle: vi.fn().mockResolvedValueOnce({ data: MOCK_HH_ROW, error: null }),
-        }
-      }
-      // household_members INSERT
-      return { insert: vi.fn().mockResolvedValueOnce({ error: null }) }
-    })
-    await useHouseholdStore.getState().joinHousehold('abc12345')
-    expect(useHouseholdStore.getState().household?.inviteCode).toBe('abc12345')
+  it('sätter members till [] om RPC misslyckas', async () => {
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: null, error: { message: 'fel' } } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
+
+    await useHouseholdStore.getState().fetchMembers('hh-1')
+
+    expect(useHouseholdStore.getState().members).toEqual([])
   })
 })
