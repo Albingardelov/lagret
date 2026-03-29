@@ -304,6 +304,23 @@ export function CookingMode({ opened, onClose }: Props) {
 
   return (
     <>
+      <style>{`
+        .cm-press { transition: transform 0.12s ease, opacity 0.12s ease; }
+        .cm-press:active { transform: scale(0.93); opacity: 0.85; }
+        .cm-press-sm:active { transform: scale(0.96); }
+        .cm-press-sm { transition: transform 0.12s ease; }
+        @keyframes timerTick {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.65; }
+        }
+        .timer-running-text { animation: timerTick 1s ease-in-out infinite; }
+        @keyframes itemFadeIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .cm-item { animation: itemFadeIn 0.18s ease both; }
+      `}</style>
+
       <Modal
         opened={opened}
         onClose={onClose}
@@ -316,12 +333,11 @@ export function CookingMode({ opened, onClose }: Props) {
         }}
       >
         <Stack gap={0} h="100%">
-          {/* Sticky header */}
+          {/* Header */}
           <Box
             style={{
-              background: BG,
-              borderBottom: '1px solid rgba(180,160,140,0.2)',
-              padding: '12px 16px',
+              background: '#1C1410',
+              padding: '14px 16px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
@@ -330,25 +346,27 @@ export function CookingMode({ opened, onClose }: Props) {
             <UnstyledButton
               onClick={onClose}
               aria-label="Stäng"
+              className="cm-press"
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 10,
-                background: '#E8E0D8',
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                background: 'rgba(255,255,255,0.1)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <IconX size={18} color="#4A3728" />
+              <IconX size={18} color="rgba(255,255,255,0.8)" />
             </UnstyledButton>
 
             <Text
               style={{
                 fontFamily: '"Epilogue", sans-serif',
-                fontWeight: 800,
+                fontWeight: 900,
                 fontSize: 18,
-                color: '#1C1410',
+                color: '#FFFFFF',
+                letterSpacing: '-0.3px',
               }}
             >
               Laga mat
@@ -356,22 +374,23 @@ export function CookingMode({ opened, onClose }: Props) {
 
             <UnstyledButton
               onClick={onClose}
+              className="cm-press-sm"
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: 6,
-                background: '#DCFCE7',
+                background: '#2A7A4A',
                 borderRadius: 20,
-                padding: '7px 14px',
+                padding: '8px 16px',
               }}
             >
-              <IconCheck size={13} color="#166534" stroke={3} />
+              <IconCheck size={13} color="#fff" stroke={3} />
               <Text
                 style={{
                   fontFamily: '"Manrope", sans-serif',
                   fontSize: 13,
                   fontWeight: 700,
-                  color: '#166534',
+                  color: '#fff',
                 }}
               >
                 Färdig
@@ -385,15 +404,15 @@ export function CookingMode({ opened, onClose }: Props) {
               <Box style={{ padding: '20px 16px' }}>
                 <UnstyledButton
                   onClick={() => setTimerOpen(false)}
+                  className="cm-press-sm"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 6,
-                    marginBottom: 20,
-                    color: '#7A6A5A',
+                    marginBottom: 24,
                   }}
                 >
-                  <IconArrowLeft size={16} />
+                  <IconArrowLeft size={16} color="#7A6A5A" />
                   <Text
                     style={{
                       fontFamily: '"Manrope", sans-serif',
@@ -406,16 +425,106 @@ export function CookingMode({ opened, onClose }: Props) {
                   </Text>
                 </UnstyledButton>
 
-                <Text
+                {/* Countdown — always visible, above presets */}
+                <Box
                   style={{
-                    fontFamily: '"Epilogue", sans-serif',
-                    fontWeight: 900,
-                    fontSize: 26,
-                    color: '#1C1410',
+                    background: timerRunning ? '#1C1410' : timerSeconds > 0 ? '#F7F2EB' : '#F0EEE8',
+                    borderRadius: 24,
+                    padding: '28px 20px',
+                    textAlign: 'center',
                     marginBottom: 20,
+                    transition: 'background 0.4s ease',
                   }}
                 >
-                  Snabb-timer
+                  <Text
+                    className={timerRunning ? 'timer-running-text' : undefined}
+                    style={{
+                      fontFamily: '"Epilogue", sans-serif',
+                      fontWeight: 900,
+                      fontSize: 72,
+                      color: timerSeconds === 0 ? '#C0B4A8' : timerRunning ? TERRA : '#1C1410',
+                      letterSpacing: '-4px',
+                      lineHeight: 1,
+                      transition: 'color 0.3s ease',
+                    }}
+                  >
+                    {formatTime(timerSeconds)}
+                  </Text>
+                  {timerRunning && (
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 11,
+                        fontWeight: 700,
+                        letterSpacing: '0.1em',
+                        textTransform: 'uppercase',
+                        color: 'rgba(255,255,255,0.5)',
+                        marginTop: 8,
+                      }}
+                    >
+                      Kör…
+                    </Text>
+                  )}
+                  <Group justify="center" gap={12} mt={20}>
+                    <UnstyledButton
+                      onClick={() => setTimerRunning((r) => !r)}
+                      disabled={timerSeconds === 0}
+                      className="cm-press"
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: '50%',
+                        background: timerSeconds === 0 ? '#EDE8E2' : TERRA,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        boxShadow: timerSeconds > 0 ? '0 4px 16px rgba(181,67,42,0.35)' : 'none',
+                        transition: 'background 0.15s ease, box-shadow 0.15s ease',
+                      }}
+                    >
+                      {timerRunning ? (
+                        <IconPlayerPause size={22} color="#fff" />
+                      ) : (
+                        <IconPlayerPlay size={22} color={timerSeconds === 0 ? '#B0A090' : '#fff'} />
+                      )}
+                    </UnstyledButton>
+                    <UnstyledButton
+                      onClick={() => {
+                        setTimerRunning(false)
+                        setTimerSeconds(0)
+                      }}
+                      className="cm-press"
+                      style={{
+                        width: 56,
+                        height: 56,
+                        borderRadius: '50%',
+                        background: timerRunning ? 'rgba(255,255,255,0.12)' : '#EDE8E2',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'background 0.3s ease',
+                      }}
+                    >
+                      <IconRefresh
+                        size={20}
+                        color={timerRunning ? 'rgba(255,255,255,0.7)' : '#7A6A5A'}
+                      />
+                    </UnstyledButton>
+                  </Group>
+                </Box>
+
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#7A6A5A',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    marginBottom: 10,
+                  }}
+                >
+                  Presets
                 </Text>
 
                 {/* Preset list */}
@@ -729,73 +838,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   </UnstyledButton>
                 )}
 
-                <Box style={{ textAlign: 'center', marginBottom: 32 }}>
-                  <Text
-                    style={{
-                      fontFamily: '"Epilogue", sans-serif',
-                      fontWeight: 900,
-                      fontSize: 80,
-                      color: timerSeconds === 0 ? '#D0C4B8' : timerRunning ? TERRA : '#1C1410',
-                      letterSpacing: '-3px',
-                      lineHeight: 1,
-                      transition: 'color 0.3s ease',
-                    }}
-                  >
-                    {formatTime(timerSeconds)}
-                  </Text>
-                  {timerRunning && (
-                    <Text
-                      style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 12,
-                        color: '#7A6A5A',
-                        marginTop: 8,
-                      }}
-                    >
-                      Kör…
-                    </Text>
-                  )}
-                </Box>
-
-                <Group justify="center" gap={16}>
-                  <UnstyledButton
-                    onClick={() => setTimerRunning((r) => !r)}
-                    disabled={timerSeconds === 0}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: '50%',
-                      background: timerSeconds === 0 ? '#EDE8E2' : TERRA,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'background 0.15s ease',
-                    }}
-                  >
-                    {timerRunning ? (
-                      <IconPlayerPause size={24} color="#fff" />
-                    ) : (
-                      <IconPlayerPlay size={24} color={timerSeconds === 0 ? '#B0A090' : '#fff'} />
-                    )}
-                  </UnstyledButton>
-                  <UnstyledButton
-                    onClick={() => {
-                      setTimerRunning(false)
-                      setTimerSeconds(0)
-                    }}
-                    style={{
-                      width: 60,
-                      height: 60,
-                      borderRadius: '50%',
-                      background: '#EDE8E2',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <IconRefresh size={22} color="#7A6A5A" />
-                  </UnstyledButton>
-                </Group>
+                {/* (countdown moved above presets) */}
               </Box>
             </ScrollArea>
           ) : (
@@ -818,43 +861,43 @@ export function CookingMode({ opened, onClose }: Props) {
                 />
               </Box>
 
-              {/* Category chips */}
+              {/* Category chips — horizontal pills */}
               <ScrollArea scrollbarSize={0} offsetScrollbars={false}>
-                <Group gap={10} px={16} pb={16} wrap="nowrap">
+                <Group gap={8} px={16} pt={14} pb={12} wrap="nowrap">
                   {[null, ...availableCategories].map((cat) => {
                     const active = activeCategory === cat
                     const iconStyle = cat
                       ? (CATEGORY_COLORS[cat] ?? DEFAULT_ICON_STYLE)
                       : DEFAULT_ICON_STYLE
                     const icon = cat ? (
-                      (CATEGORY_ICONS[cat] ?? <IconPackage size={24} />)
+                      (CATEGORY_ICONS[cat] ?? <IconPackage size={18} />)
                     ) : (
-                      <IconPackage size={24} />
+                      <IconPackage size={18} />
                     )
-                    const label = cat ?? 'Alla'
                     return (
                       <UnstyledButton
                         key={cat ?? 'all'}
                         onClick={() => setActiveCategory(cat)}
+                        className="cm-press-sm"
                         style={{
-                          width: 88,
-                          borderRadius: 18,
-                          background: active ? TERRA : CARD_BG,
-                          boxShadow: active
-                            ? '0 2px 8px rgba(181,67,42,0.3)'
-                            : '0 1px 4px rgba(74,55,40,0.08)',
-                          padding: '14px 8px 12px',
-                          display: 'flex',
-                          flexDirection: 'column',
+                          display: 'inline-flex',
                           alignItems: 'center',
-                          gap: 8,
+                          gap: 7,
                           flexShrink: 0,
+                          padding: '9px 16px 9px 12px',
+                          borderRadius: 24,
+                          background: active ? '#1C1410' : CARD_BG,
+                          boxShadow: active
+                            ? '0 2px 10px rgba(28,20,16,0.22)'
+                            : '0 1px 3px rgba(74,55,40,0.1)',
                           transition: 'background 0.15s ease, box-shadow 0.15s ease',
                         }}
                       >
                         <Box
                           style={{
-                            color: active ? 'rgba(255,255,255,0.9)' : iconStyle.icon,
+                            color: active ? TERRA : iconStyle.icon,
+                            display: 'flex',
+                            flexShrink: 0,
                           }}
                         >
                           {icon}
@@ -862,16 +905,13 @@ export function CookingMode({ opened, onClose }: Props) {
                         <Text
                           style={{
                             fontFamily: '"Manrope", sans-serif',
-                            fontSize: 10,
+                            fontSize: 13,
                             fontWeight: 700,
-                            color: active ? '#FFFFFF' : '#4A3728',
-                            letterSpacing: '0.06em',
-                            textTransform: 'uppercase',
-                            textAlign: 'center',
-                            lineHeight: 1.2,
+                            color: active ? '#FFFFFF' : '#1C1410',
+                            whiteSpace: 'nowrap',
                           }}
                         >
-                          {label}
+                          {cat ?? 'Alla'}
                         </Text>
                       </UnstyledButton>
                     )
@@ -880,13 +920,13 @@ export function CookingMode({ opened, onClose }: Props) {
               </ScrollArea>
 
               {/* Category heading */}
-              <Box px={16} pb={10}>
-                <Group align="baseline" gap={10}>
+              <Box px={16} pb={8} style={{ borderBottom: '1px solid rgba(180,160,140,0.18)' }}>
+                <Group align="center" justify="space-between">
                   <Text
                     style={{
                       fontFamily: '"Epilogue", sans-serif',
                       fontWeight: 900,
-                      fontSize: 26,
+                      fontSize: 22,
                       color: '#1C1410',
                       lineHeight: 1,
                     }}
@@ -898,12 +938,12 @@ export function CookingMode({ opened, onClose }: Props) {
                       fontFamily: '"Manrope", sans-serif',
                       fontSize: 11,
                       fontWeight: 700,
-                      color: '#7A6A5A',
+                      color: '#9A8A7A',
                       letterSpacing: '0.08em',
                       textTransform: 'uppercase',
                     }}
                   >
-                    {filtered.length} artiklar i lager
+                    {filtered.length} st
                   </Text>
                 </Group>
               </Box>
@@ -932,266 +972,279 @@ export function CookingMode({ opened, onClose }: Props) {
                     return (
                       <Box
                         key={item.id}
+                        className="cm-item"
                         style={{
                           background: CARD_BG,
                           borderRadius: 16,
-                          padding: '14px 16px',
-                          boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
-                          opacity: item.quantity === 0 ? 0.45 : 1,
+                          overflow: 'hidden',
+                          boxShadow: '0 1px 6px rgba(74,55,40,0.08)',
+                          opacity: item.quantity === 0 ? 0.4 : 1,
+                          borderLeft: `4px solid ${iconStyle.icon}`,
                         }}
                       >
-                        <Group justify="space-between" align="center" wrap="nowrap" gap={12}>
-                          {/* Category icon */}
+                        {expiringSoon && (
                           <Box
                             style={{
-                              width: 54,
-                              height: 54,
-                              borderRadius: 14,
-                              background: iconStyle.bg,
-                              color: iconStyle.icon,
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              flexShrink: 0,
+                              background: '#FEF2F2',
+                              padding: '5px 14px',
+                              borderBottom: '1px solid #FCA5A5',
                             }}
                           >
-                            {icon}
-                          </Box>
-
-                          {/* Item info */}
-                          <Box style={{ flex: 1, minWidth: 0 }}>
-                            {/* Location name hidden in DOM for legacy compat */}
-                            <Text
-                              aria-hidden
-                              style={{
-                                fontFamily: '"Manrope", sans-serif',
-                                fontSize: 0,
-                                height: 0,
-                                overflow: 'hidden',
-                                position: 'absolute',
-                              }}
-                            >
-                              {locationName.toUpperCase()}
-                            </Text>
-
                             <Text
                               style={{
                                 fontFamily: '"Manrope", sans-serif',
-                                fontSize: 15,
+                                fontSize: 11,
                                 fontWeight: 700,
-                                color: '#1C1410',
-                                lineHeight: 1.3,
-                                overflow: 'hidden',
-                                textOverflow: 'ellipsis',
-                                whiteSpace: 'nowrap',
+                                color: '#DC2626',
+                                letterSpacing: '0.05em',
                               }}
                             >
-                              {item.name}
+                              ⚠ Bör användas snart
                             </Text>
+                          </Box>
+                        )}
+                        <Box style={{ padding: '12px 14px 12px 12px' }}>
+                          <Group justify="space-between" align="center" wrap="nowrap" gap={10}>
+                            {/* Category icon */}
+                            <Box
+                              style={{
+                                width: 46,
+                                height: 46,
+                                borderRadius: 12,
+                                background: iconStyle.bg,
+                                color: iconStyle.icon,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                              }}
+                            >
+                              {icon}
+                            </Box>
 
-                            {expiringSoon ? (
+                            {/* Item info */}
+                            <Box style={{ flex: 1, minWidth: 0 }}>
+                              {/* Location name hidden in DOM for legacy compat */}
                               <Text
+                                aria-hidden
                                 style={{
-                                  fontFamily: '"Manrope", sans-serif',
-                                  fontSize: 12,
-                                  color: '#DC2626',
-                                  fontWeight: 600,
-                                  lineHeight: 1.3,
-                                  marginBottom: 4,
+                                  fontSize: 0,
+                                  height: 0,
+                                  overflow: 'hidden',
+                                  position: 'absolute',
                                 }}
                               >
-                                Bör användas snart
+                                {locationName.toUpperCase()}
                               </Text>
-                            ) : (
+
+                              <Text
+                                style={{
+                                  fontFamily: '"Manrope", sans-serif',
+                                  fontSize: 15,
+                                  fontWeight: 700,
+                                  color: '#1C1410',
+                                  lineHeight: 1.25,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {item.name}
+                              </Text>
                               <Text
                                 style={{
                                   fontFamily: '"Manrope", sans-serif',
                                   fontSize: 12,
-                                  color: '#7A6A5A',
+                                  color: '#9A8A7A',
                                   lineHeight: 1.3,
                                 }}
                               >
                                 {formatQty(item.quantity)} {item.unit} kvar
                               </Text>
-                            )}
 
-                            {/* Unit picker — always rendered */}
-                            <Popover
-                              opened={editingUnit === item.id}
-                              onClose={() => setEditingUnit(null)}
-                              position="bottom-start"
-                              withArrow
-                            >
-                              <Popover.Target>
-                                <UnstyledButton
-                                  aria-label="byt enhet"
-                                  onClick={() =>
-                                    setEditingUnit(editingUnit === item.id ? null : item.id)
-                                  }
-                                  style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 3,
-                                    background: '#EDE8E2',
-                                    borderRadius: 8,
-                                    padding: '2px 6px',
-                                    marginTop: 4,
-                                  }}
-                                >
-                                  <Text
+                              {/* Unit picker */}
+                              <Popover
+                                opened={editingUnit === item.id}
+                                onClose={() => setEditingUnit(null)}
+                                position="bottom-start"
+                                withArrow
+                              >
+                                <Popover.Target>
+                                  <UnstyledButton
+                                    aria-label="byt enhet"
+                                    onClick={() =>
+                                      setEditingUnit(editingUnit === item.id ? null : item.id)
+                                    }
                                     style={{
-                                      fontFamily: '"Manrope", sans-serif',
-                                      fontSize: 10,
-                                      fontWeight: 700,
-                                      color: '#4A3728',
-                                      letterSpacing: '0.05em',
-                                      textTransform: 'uppercase',
+                                      display: 'inline-flex',
+                                      alignItems: 'center',
+                                      gap: 3,
+                                      background: '#F0EEE8',
+                                      borderRadius: 6,
+                                      padding: '2px 7px',
+                                      marginTop: 5,
                                     }}
                                   >
-                                    {cookingUnit}
-                                  </Text>
-                                  <IconPencil size={9} color="#7A6A5A" stroke={2} />
-                                </UnstyledButton>
-                              </Popover.Target>
-                              <Popover.Dropdown>
-                                <NativeSelect
-                                  size="xs"
-                                  data={['st', 'g', 'kg', 'dl', 'l', 'ml', 'msk', 'tsk', 'krm']}
-                                  value={cookingUnit}
-                                  onChange={(e) => setCookingUnit(item.id, e.currentTarget.value)}
-                                  label="Kokenhet"
-                                />
-                              </Popover.Dropdown>
-                            </Popover>
-                          </Box>
+                                    <Text
+                                      style={{
+                                        fontFamily: '"Manrope", sans-serif',
+                                        fontSize: 10,
+                                        fontWeight: 700,
+                                        color: '#4A3728',
+                                        letterSpacing: '0.05em',
+                                        textTransform: 'uppercase',
+                                      }}
+                                    >
+                                      {cookingUnit}
+                                    </Text>
+                                    <IconPencil size={9} color="#9A8A7A" stroke={2} />
+                                  </UnstyledButton>
+                                </Popover.Target>
+                                <Popover.Dropdown>
+                                  <NativeSelect
+                                    size="xs"
+                                    data={['st', 'g', 'kg', 'dl', 'l', 'ml', 'msk', 'tsk', 'krm']}
+                                    value={cookingUnit}
+                                    onChange={(e) => setCookingUnit(item.id, e.currentTarget.value)}
+                                    label="Kokenhet"
+                                  />
+                                </Popover.Dropdown>
+                              </Popover>
+                            </Box>
 
-                          {/* Quantity controls */}
-                          <Group gap={10} wrap="nowrap" style={{ flexShrink: 0 }} align="center">
-                            <UnstyledButton
-                              disabled={item.quantity === 0}
-                              onClick={() =>
-                                decrement(item.id, item.quantity, activeStep, cookingUnit)
-                              }
-                              style={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: '50%',
-                                background: '#EDE8E2',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                opacity: item.quantity === 0 ? 0.4 : 1,
-                              }}
-                            >
-                              <Text
+                            {/* Quantity controls */}
+                            <Group gap={8} wrap="nowrap" style={{ flexShrink: 0 }} align="center">
+                              <UnstyledButton
+                                disabled={item.quantity === 0}
+                                onClick={() =>
+                                  decrement(item.id, item.quantity, activeStep, cookingUnit)
+                                }
+                                className="cm-press"
                                 style={{
-                                  fontSize: 24,
-                                  fontWeight: 300,
-                                  color: '#4A3728',
-                                  lineHeight: 1,
+                                  width: 46,
+                                  height: 46,
+                                  borderRadius: '50%',
+                                  background: '#EDE8E2',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  opacity: item.quantity === 0 ? 0.35 : 1,
+                                  flexShrink: 0,
                                 }}
                               >
-                                −
-                              </Text>
-                            </UnstyledButton>
-
-                            {/* Quantity display + step popover */}
-                            <Popover
-                              opened={editingStep === item.id}
-                              onClose={() => setEditingStep(null)}
-                              position="top"
-                              withArrow
-                            >
-                              <Popover.Target>
-                                <UnstyledButton
-                                  onClick={() => {
-                                    setPopoverValue('')
-                                    setEditingStep(editingStep === item.id ? null : item.id)
+                                <Text
+                                  style={{
+                                    fontSize: 26,
+                                    fontWeight: 300,
+                                    color: '#4A3728',
+                                    lineHeight: 1,
                                   }}
-                                  style={{ minWidth: 32, textAlign: 'center' }}
                                 >
-                                  <Text
-                                    style={{
-                                      fontFamily: '"Manrope", sans-serif',
-                                      fontSize: 18,
-                                      fontWeight: 700,
-                                      color: '#1C1410',
-                                      lineHeight: 1,
+                                  −
+                                </Text>
+                              </UnstyledButton>
+
+                              {/* Qty + step popover */}
+                              <Popover
+                                opened={editingStep === item.id}
+                                onClose={() => setEditingStep(null)}
+                                position="top"
+                                withArrow
+                              >
+                                <Popover.Target>
+                                  <UnstyledButton
+                                    onClick={() => {
+                                      setPopoverValue('')
+                                      setEditingStep(editingStep === item.id ? null : item.id)
                                     }}
+                                    style={{ minWidth: 36, textAlign: 'center' }}
                                   >
-                                    {formatQty(item.quantity)}
-                                  </Text>
-                                  <Text
-                                    style={{
-                                      fontFamily: '"Manrope", sans-serif',
-                                      fontSize: 10,
-                                      color: '#9A8A7A',
-                                      letterSpacing: '0.04em',
-                                    }}
-                                  >
-                                    {cookingUnit.toUpperCase()}
-                                  </Text>
-                                </UnstyledButton>
-                              </Popover.Target>
-                              <Popover.Dropdown>
-                                <Stack gap={8}>
-                                  <Text size="xs" c="#888">
-                                    Ange eget steg ({cookingUnit})
-                                  </Text>
-                                  <NumberInput
-                                    min={0.1}
-                                    step={getSmallStep(cookingUnit)}
-                                    decimalScale={2}
-                                    placeholder={`ex. ${getLargeStep(cookingUnit)}`}
-                                    value={popoverValue}
-                                    onChange={setPopoverValue}
-                                    onKeyDown={(e) => {
-                                      if (e.key === 'Enter') {
+                                    <Text
+                                      style={{
+                                        fontFamily: '"Manrope", sans-serif',
+                                        fontSize: 20,
+                                        fontWeight: 800,
+                                        color: '#1C1410',
+                                        lineHeight: 1,
+                                      }}
+                                    >
+                                      {formatQty(item.quantity)}
+                                    </Text>
+                                    <Text
+                                      style={{
+                                        fontFamily: '"Manrope", sans-serif',
+                                        fontSize: 10,
+                                        color: '#9A8A7A',
+                                        letterSpacing: '0.04em',
+                                      }}
+                                    >
+                                      {cookingUnit.toUpperCase()}
+                                    </Text>
+                                  </UnstyledButton>
+                                </Popover.Target>
+                                <Popover.Dropdown>
+                                  <Stack gap={8}>
+                                    <Text size="xs" c="#888">
+                                      Ange eget steg ({cookingUnit})
+                                    </Text>
+                                    <NumberInput
+                                      min={0.1}
+                                      step={getSmallStep(cookingUnit)}
+                                      decimalScale={2}
+                                      placeholder={`ex. ${getLargeStep(cookingUnit)}`}
+                                      value={popoverValue}
+                                      onChange={setPopoverValue}
+                                      onKeyDown={(e) => {
+                                        if (e.key === 'Enter') {
+                                          const v =
+                                            typeof popoverValue === 'number'
+                                              ? popoverValue
+                                              : parseFloat(String(popoverValue))
+                                          if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
+                                        }
+                                      }}
+                                      onBlur={() => {
                                         const v =
                                           typeof popoverValue === 'number'
                                             ? popoverValue
                                             : parseFloat(String(popoverValue))
                                         if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
-                                      }
-                                    }}
-                                    onBlur={() => {
-                                      const v =
-                                        typeof popoverValue === 'number'
-                                          ? popoverValue
-                                          : parseFloat(String(popoverValue))
-                                      if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
-                                    }}
-                                    styles={{ input: { width: 100 } }}
-                                  />
-                                </Stack>
-                              </Popover.Dropdown>
-                            </Popover>
+                                      }}
+                                      styles={{ input: { width: 100 } }}
+                                    />
+                                  </Stack>
+                                </Popover.Dropdown>
+                              </Popover>
 
-                            <UnstyledButton
-                              onClick={() => increment(item.id, item.quantity, activeStep)}
-                              style={{
-                                width: 42,
-                                height: 42,
-                                borderRadius: '50%',
-                                background: TERRA,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
-                            >
-                              <Text
+                              <UnstyledButton
+                                onClick={() => increment(item.id, item.quantity, activeStep)}
+                                className="cm-press"
                                 style={{
-                                  fontSize: 24,
-                                  fontWeight: 300,
-                                  color: '#FFFFFF',
-                                  lineHeight: 1,
+                                  width: 46,
+                                  height: 46,
+                                  borderRadius: '50%',
+                                  background: TERRA,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  flexShrink: 0,
+                                  boxShadow: '0 2px 8px rgba(181,67,42,0.3)',
                                 }}
                               >
-                                +
-                              </Text>
-                            </UnstyledButton>
+                                <Text
+                                  style={{
+                                    fontSize: 26,
+                                    fontWeight: 300,
+                                    color: '#FFFFFF',
+                                    lineHeight: 1,
+                                  }}
+                                >
+                                  +
+                                </Text>
+                              </UnstyledButton>
+                            </Group>
                           </Group>
-                        </Group>
+                        </Box>
                       </Box>
                     )
                   })}
