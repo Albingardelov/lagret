@@ -66,7 +66,8 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
 
   setActiveHousehold: async (id: string) => {
     const { households } = get()
-    const household = households.find((h) => h.id === id) ?? null
+    const household = households.find((h) => h.id === id)
+    if (!household) return
     set({ household, activeHouseholdId: id })
     localStorage.setItem(ACTIVE_HH_KEY, id)
     await get().fetchMembers(id)
@@ -112,7 +113,9 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
     await useLocationsStore.getState().fetchLocations()
     set((s) => ({
-      households: [...s.households, mapped],
+      households: s.households.some((h) => h.id === mapped.id)
+        ? s.households
+        : [...s.households, mapped],
       household: mapped,
       activeHouseholdId: mapped.id,
       loading: false,
@@ -145,7 +148,9 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
     await useLocationsStore.getState().fetchLocations()
     set((s) => ({
-      households: [...s.households, mapped],
+      households: s.households.some((h) => h.id === mapped.id)
+        ? s.households
+        : [...s.households, mapped],
       household: mapped,
       activeHouseholdId: mapped.id,
       loading: false,
