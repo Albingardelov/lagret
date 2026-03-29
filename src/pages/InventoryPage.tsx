@@ -19,19 +19,8 @@ import { EditItemModal } from '../components/EditItemModal'
 import { CookingMode } from '../components/CookingMode'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
-import type { LocationIcon } from '../types'
-
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
-
-type TabKey = 'all' | LocationIcon
-
-const TAB_LABELS: Record<TabKey, string> = {
-  all: 'Allt',
-  fridge: 'Kyl',
-  freezer: 'Frys',
-  pantry: 'Skafferi',
-}
 
 export function InventoryPage() {
   const { loading, error, fetchItems, deleteItem, getExpiringSoon, subscribeRealtime, items } =
@@ -39,7 +28,8 @@ export function InventoryPage() {
   const { locations, fetchLocations } = useLocationsStore()
   const [modalOpen, setModalOpen] = useState(false)
   const [editItem, setEditItem] = useState(null as import('../types').InventoryItem | null)
-  const [activeTab, setActiveTab] = useState<TabKey>('all')
+  // activeTab: 'all' | location.id
+  const [activeTab, setActiveTab] = useState<string>('all')
   const [cookingOpen, setCookingOpen] = useState(false)
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
@@ -51,30 +41,10 @@ export function InventoryPage() {
     return unsubscribe
   }, [fetchItems, fetchLocations, subscribeRealtime])
 
-  // Derive which location icon types actually exist
-  const availableIcons = useMemo(() => {
-    const icons = new Set(locations.map((l) => l.icon as LocationIcon))
-    return icons
-  }, [locations])
-
-  // Build location-id → icon map
-  const locationIconMap = useMemo(() => {
-    const m: Record<string, LocationIcon> = {}
-    for (const loc of locations) m[loc.id] = loc.icon as LocationIcon
-    return m
-  }, [locations])
-
-  // Build location-id → name map
-  const locationNameMap = useMemo(() => {
-    const m: Record<string, string> = {}
-    for (const loc of locations) m[loc.id] = loc.name
-    return m
-  }, [locations])
-
   const filteredItems = useMemo(() => {
     let result = [...items]
     if (activeTab !== 'all') {
-      result = result.filter((item) => locationIconMap[item.location] === activeTab)
+      result = result.filter((item) => item.location === activeTab)
     }
     // Sort: expiring first, then zero-stock last
     return result.sort((a, b) => {
@@ -84,12 +54,7 @@ export function InventoryPage() {
       if (a.quantity !== 0 && b.quantity === 0) return -1
       return aExpiry - bExpiry
     })
-  }, [items, activeTab, locationIconMap])
-
-  const tabs: TabKey[] = [
-    'all',
-    ...(['fridge', 'freezer', 'pantry'] as LocationIcon[]).filter((t) => availableIcons.has(t)),
-  ]
+  }, [items, activeTab])
 
   return (
     <Stack gap={0} style={{ background: BG, minHeight: '100%' }}>
@@ -199,12 +164,12 @@ export function InventoryPage() {
         }}
       >
         <Group gap={0} wrap="nowrap">
-          {tabs.map((tab) => {
-            const active = activeTab === tab
+          {[{ id: 'all', name: 'Allt' }, ...locations].map((loc) => {
+            const active = activeTab === loc.id
             return (
               <UnstyledButton
-                key={tab}
-                onClick={() => setActiveTab(tab)}
+                key={loc.id}
+                onClick={() => setActiveTab(loc.id)}
                 style={{
                   padding: '10px 16px',
                   position: 'relative',
@@ -219,9 +184,10 @@ export function InventoryPage() {
                     color: active ? TERRA : '#7A6A5A',
                     lineHeight: 1,
                     transition: 'color 0.15s ease',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  {TAB_LABELS[tab]}
+                  {loc.name}
                 </Text>
                 {active && (
                   <Box
@@ -266,15 +232,7 @@ export function InventoryPage() {
       ) : (
         <Stack gap="xs" px="md" pt="md" pb={100}>
           {filteredItems.map((item) => (
-            <ItemCard
-              key={item.id}
-              item={{
-                ...item,
-                category: item.category ?? locationNameMap[item.location] ?? undefined,
-              }}
-              onEdit={setEditItem}
-              onDelete={deleteItem}
-            />
+            <ItemCard key={item.id} item={item} onEdit={setEditItem} onDelete={deleteItem} />
           ))}
         </Stack>
       )}
