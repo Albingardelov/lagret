@@ -67,7 +67,6 @@ export function HouseholdPage() {
     members,
     loading,
     error,
-    fetchHouseholds,
     setActiveHousehold,
     createHousehold,
     joinHousehold,
@@ -87,10 +86,6 @@ export function HouseholdPage() {
   const navigate = useNavigate()
 
   useErrorNotification(error, 'Hushållsfel')
-
-  useEffect(() => {
-    fetchHouseholds()
-  }, [fetchHouseholds])
 
   useEffect(() => {
     if (household) fetchLocations()

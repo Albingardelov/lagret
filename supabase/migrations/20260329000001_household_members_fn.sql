@@ -3,6 +3,7 @@ CREATE OR REPLACE FUNCTION get_household_members(hid uuid)
 RETURNS TABLE(user_id uuid, email text)
 LANGUAGE sql
 SECURITY DEFINER
+SET search_path = public, auth
 AS $$
   SELECT hm.user_id, u.email::text
   FROM household_members hm

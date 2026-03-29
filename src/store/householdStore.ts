@@ -111,7 +111,6 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     }
     const mapped = mapHousehold(hh as Record<string, string>)
     localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
-    await useLocationsStore.getState().fetchLocations()
     set((s) => ({
       households: s.households.some((h) => h.id === mapped.id)
         ? s.households
@@ -121,6 +120,9 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
       loading: false,
     }))
     await get().fetchMembers(mapped.id)
+    await useLocationsStore.getState().fetchLocations()
+    await useInventoryStore.getState().fetchItems()
+    await useShoppingStore.getState().fetchItems()
   },
 
   joinHousehold: async (inviteCode) => {
@@ -146,7 +148,6 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     }
     const mapped = mapHousehold(hh as Record<string, string>)
     localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
-    await useLocationsStore.getState().fetchLocations()
     set((s) => ({
       households: s.households.some((h) => h.id === mapped.id)
         ? s.households
@@ -156,5 +157,8 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
       loading: false,
     }))
     await get().fetchMembers(mapped.id)
+    await useLocationsStore.getState().fetchLocations()
+    await useInventoryStore.getState().fetchItems()
+    await useShoppingStore.getState().fetchItems()
   },
 }))
