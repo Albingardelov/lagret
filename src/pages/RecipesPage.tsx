@@ -435,7 +435,7 @@ export function RecipesPage() {
                 >
                   {m.recipe.imageUrls?.[0] && (
                     <div style={{ position: 'relative' }}>
-                      <Image src={m.recipe.imageUrls[0]} h={180} style={{ display: 'block' }} />
+                      <Image src={m.recipe.imageUrls[0]} h={220} style={{ display: 'block' }} />
                       {/* Gradient overlay */}
                       <div
                         style={{
@@ -516,7 +516,7 @@ export function RecipesPage() {
                       )}
                     </div>
                   )}
-                  <div style={{ padding: '12px 14px 14px' }}>
+                  <div style={{ padding: '14px 16px 18px' }}>
                     <Text
                       style={{
                         fontFamily: '"Epilogue", sans-serif',
