@@ -127,7 +127,6 @@ const TIMER_PRESETS = [
   { label: 'Ägg (hårdkokt)', seconds: 10 * 60 },
   { label: 'Pasta', seconds: 8 * 60 },
   { label: 'Ris', seconds: 18 * 60 },
-  { label: 'Kaffe', seconds: 4 * 60 },
 ]
 
 function formatTime(s: number) {
@@ -152,6 +151,8 @@ export function CookingMode({ opened, onClose }: Props) {
   const [timerOpen, setTimerOpen] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerRunning, setTimerRunning] = useState(false)
+  const [customMin, setCustomMin] = useState('')
+  const [customSec, setCustomSec] = useState('')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
@@ -378,7 +379,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   Välj preset
                 </Text>
 
-                <Group gap={8} wrap="wrap" mb={32}>
+                <Group gap={8} wrap="wrap" mb={16}>
                   {TIMER_PRESETS.map((p) => {
                     const active = timerSeconds === p.seconds && !timerRunning
                     return (
@@ -408,6 +409,112 @@ export function CookingMode({ opened, onClose }: Props) {
                       </UnstyledButton>
                     )
                   })}
+                </Group>
+
+                {/* Custom time input */}
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 11,
+                    fontWeight: 700,
+                    color: '#7A6A5A',
+                    letterSpacing: '0.1em',
+                    textTransform: 'uppercase',
+                    marginBottom: 10,
+                  }}
+                >
+                  Egen tid
+                </Text>
+                <Group gap={8} align="center" mb={32}>
+                  <Box style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <input
+                      type="number"
+                      min={0}
+                      max={99}
+                      placeholder="0"
+                      value={customMin}
+                      onChange={(e) => setCustomMin(e.currentTarget.value)}
+                      style={{
+                        width: 60,
+                        height: 44,
+                        borderRadius: 12,
+                        border: '1.5px solid #E8E0D8',
+                        background: '#FFFFFF',
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: '#1C1410',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 13,
+                        color: '#7A6A5A',
+                      }}
+                    >
+                      min
+                    </Text>
+                    <input
+                      type="number"
+                      min={0}
+                      max={59}
+                      placeholder="0"
+                      value={customSec}
+                      onChange={(e) => setCustomSec(e.currentTarget.value)}
+                      style={{
+                        width: 60,
+                        height: 44,
+                        borderRadius: 12,
+                        border: '1.5px solid #E8E0D8',
+                        background: '#FFFFFF',
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 18,
+                        fontWeight: 700,
+                        color: '#1C1410',
+                        textAlign: 'center',
+                        outline: 'none',
+                      }}
+                    />
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 13,
+                        color: '#7A6A5A',
+                      }}
+                    >
+                      sek
+                    </Text>
+                  </Box>
+                  <UnstyledButton
+                    onClick={() => {
+                      const m = parseInt(customMin || '0', 10)
+                      const s = parseInt(customSec || '0', 10)
+                      const total = m * 60 + s
+                      if (total > 0) {
+                        setTimerSeconds(total)
+                        setTimerRunning(false)
+                      }
+                    }}
+                    style={{
+                      background: TERRA,
+                      borderRadius: 20,
+                      padding: '8px 16px',
+                    }}
+                  >
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 13,
+                        fontWeight: 700,
+                        color: '#fff',
+                      }}
+                    >
+                      Sätt
+                    </Text>
+                  </UnstyledButton>
                 </Group>
 
                 <Box style={{ textAlign: 'center', marginBottom: 32 }}>
