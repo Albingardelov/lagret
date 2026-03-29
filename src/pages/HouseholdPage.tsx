@@ -30,6 +30,7 @@ import {
   IconChevronRight,
   IconLogout,
   IconUsers,
+  IconUserMinus,
 } from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
@@ -70,6 +71,7 @@ export function HouseholdPage() {
     setActiveHousehold,
     createHousehold,
     joinHousehold,
+    leaveHousehold,
   } = useHouseholdStore()
   const { locations, fetchLocations, addLocation, updateLocation, deleteLocation } =
     useLocationsStore()
@@ -82,6 +84,9 @@ export function HouseholdPage() {
   const [editName, setEditName] = useState('')
   const [editIcon, setEditIcon] = useState<LocationIcon>('fridge')
   const [locError, setLocError] = useState<string | null>(null)
+  const [addHouseholdOpen, setAddHouseholdOpen] = useState(false)
+  const [confirmLeave, setConfirmLeave] = useState(false)
+  const [leaveError, setLeaveError] = useState<string | null>(null)
   const signOut = useAuthStore((s) => s.signOut)
   const navigate = useNavigate()
 
@@ -642,6 +647,61 @@ export function HouseholdPage() {
         </Stack>
       </Box>
 
+      {/* Hantera hushåll */}
+      <Box px="md" mb="md">
+        <Text
+          style={{
+            fontFamily: '"Manrope", sans-serif',
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: '#7A6A5A',
+            marginBottom: 10,
+          }}
+        >
+          Hantera hushåll
+        </Text>
+        <UnstyledButton
+          onClick={() => setAddHouseholdOpen(true)}
+          style={{
+            width: '100%',
+            background: CARD_BG,
+            borderRadius: 14,
+            padding: '14px 16px',
+            boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 12,
+          }}
+        >
+          <Box
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: '#F0EEF8',
+              color: '#5A4AAA',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <IconPlus size={16} />
+          </Box>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 14,
+              fontWeight: 600,
+              color: '#1C1410',
+            }}
+          >
+            Skapa eller gå med i hushåll
+          </Text>
+        </UnstyledButton>
+      </Box>
+
       {/* Settings section */}
       <Box px="md">
         <Text
@@ -665,6 +725,90 @@ export function HouseholdPage() {
             overflow: 'hidden',
           }}
         >
+          {!confirmLeave ? (
+            <UnstyledButton
+              onClick={() => {
+                setConfirmLeave(true)
+                setLeaveError(null)
+              }}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 12,
+                borderBottom: '1px solid #F0EAE0',
+              }}
+            >
+              <Box
+                style={{
+                  width: 40,
+                  height: 40,
+                  borderRadius: 12,
+                  background: '#FEF3E8',
+                  color: '#C47820',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <IconUserMinus size={16} />
+              </Box>
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 14,
+                  fontWeight: 600,
+                  color: '#C47820',
+                }}
+              >
+                Lämna aktivt hushåll
+              </Text>
+            </UnstyledButton>
+          ) : (
+            <Box style={{ padding: '14px 16px', borderBottom: '1px solid #F0EAE0' }}>
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 13,
+                  color: '#1C1410',
+                  marginBottom: 10,
+                }}
+              >
+                Lämna <strong>{household.name}</strong>? Du kan gå med igen med inbjudningskoden.
+              </Text>
+              {leaveError && (
+                <Alert color="red" mb="sm">
+                  {leaveError}
+                </Alert>
+              )}
+              <Group gap={8}>
+                <Button
+                  size="xs"
+                  color="red"
+                  onClick={async () => {
+                    setLeaveError(null)
+                    try {
+                      await leaveHousehold(household.id)
+                      setConfirmLeave(false)
+                    } catch (e) {
+                      setLeaveError(e instanceof Error ? e.message : 'Något gick fel')
+                    }
+                  }}
+                >
+                  Ja, lämna
+                </Button>
+                <Button
+                  size="xs"
+                  variant="subtle"
+                  color="gray"
+                  onClick={() => setConfirmLeave(false)}
+                >
+                  Avbryt
+                </Button>
+              </Group>
+            </Box>
+          )}
           <UnstyledButton
             onClick={handleSignOut}
             style={{
@@ -702,6 +846,80 @@ export function HouseholdPage() {
           </UnstyledButton>
         </Box>
       </Box>
+
+      {/* Add household bottom sheet */}
+      <BottomSheet
+        opened={addHouseholdOpen}
+        onClose={() => {
+          setAddHouseholdOpen(false)
+          setHouseholdName('')
+          setInviteCode('')
+        }}
+        title="Lägg till hushåll"
+      >
+        <Stack>
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 15,
+              fontWeight: 700,
+              color: '#1C1410',
+            }}
+          >
+            Skapa nytt hushåll
+          </Text>
+          <TextInput
+            placeholder="Hushållets namn"
+            value={householdName}
+            onChange={(e) => setHouseholdName(e.currentTarget.value)}
+          />
+          <Button
+            leftSection={<IconPlus size={16} />}
+            disabled={!householdName.trim()}
+            loading={loading}
+            onClick={async () => {
+              await createHousehold(householdName.trim())
+              setHouseholdName('')
+              setAddHouseholdOpen(false)
+            }}
+            style={{ background: TERRA }}
+          >
+            Skapa
+          </Button>
+
+          <Divider label="eller" labelPosition="center" color="#D0C4B8" />
+
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 15,
+              fontWeight: 700,
+              color: '#1C1410',
+            }}
+          >
+            Gå med i ett hushåll
+          </Text>
+          <TextInput
+            placeholder="Inbjudningskod (8 tecken)"
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.currentTarget.value)}
+          />
+          <Button
+            leftSection={<IconDoor size={16} />}
+            variant="outline"
+            disabled={inviteCode.length !== 8}
+            loading={loading}
+            onClick={async () => {
+              await joinHousehold(inviteCode)
+              setInviteCode('')
+              setAddHouseholdOpen(false)
+            }}
+            color="terra"
+          >
+            Gå med
+          </Button>
+        </Stack>
+      </BottomSheet>
 
       {/* Add location bottom sheet */}
       <BottomSheet

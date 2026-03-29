@@ -20,6 +20,7 @@ interface HouseholdState {
   fetchMembers: (id: string) => Promise<void>
   createHousehold: (name: string) => Promise<void>
   joinHousehold: (inviteCode: string) => Promise<void>
+  leaveHousehold: (id: string) => Promise<void>
 }
 
 function mapHousehold(row: Record<string, string>): Household {
@@ -160,5 +161,26 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     await useLocationsStore.getState().fetchLocations()
     await useInventoryStore.getState().fetchItems()
     await useShoppingStore.getState().fetchItems()
+  },
+
+  leaveHousehold: async (id: string) => {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    const { error } = await supabase
+      .from('household_members')
+      .delete()
+      .eq('household_id', id)
+      .eq('user_id', user?.id)
+    if (error) throw new Error(error.message)
+
+    const remaining = get().households.filter((h) => h.id !== id)
+    if (remaining.length > 0) {
+      set({ households: remaining })
+      await get().setActiveHousehold(remaining[0].id)
+    } else {
+      localStorage.removeItem(ACTIVE_HH_KEY)
+      set({ households: [], household: null, activeHouseholdId: null, members: [] })
+    }
   },
 }))
