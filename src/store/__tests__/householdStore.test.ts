@@ -34,24 +34,6 @@ const mockHouseholds = [
   { id: 'hh-2', name: 'Stugan', invite_code: 'xyz67890', created_at: '2026-02-01' },
 ]
 
-function makeChain(data: unknown, error: unknown = null) {
-  const chain = {
-    select: vi.fn(),
-    eq: vi.fn(),
-    limit: vi.fn(),
-    maybeSingle: vi.fn(),
-    insert: vi.fn(),
-    single: vi.fn(),
-  }
-  chain.select.mockReturnValue(chain)
-  chain.eq.mockReturnValue(chain)
-  chain.limit.mockReturnValue(chain)
-  chain.maybeSingle.mockResolvedValue({ data, error })
-  chain.insert.mockReturnValue(chain)
-  chain.single.mockResolvedValue({ data, error })
-  return chain
-}
-
 beforeEach(() => {
   // Reset store state between tests
   useHouseholdStore.setState({
@@ -68,13 +50,11 @@ beforeEach(() => {
 
 describe('fetchHouseholds', () => {
   it('sätter households från Supabase', async () => {
-    vi.mocked(supabase.from).mockReturnValue(makeChain(null) as ReturnType<typeof supabase.from>)
-    // Override maybeSingle with array response
-    const chain = makeChain(null)
-    chain.select.mockReturnValue({ data: mockHouseholds, error: null } as unknown as ReturnType<
-      typeof chain.select
-    >)
+    const chain = { select: vi.fn().mockResolvedValue({ data: mockHouseholds, error: null }) }
     vi.mocked(supabase.from).mockReturnValue(chain as ReturnType<typeof supabase.from>)
+    vi.mocked(supabase.rpc).mockResolvedValue({ data: [], error: null } as Awaited<
+      ReturnType<typeof supabase.rpc>
+    >)
 
     await useHouseholdStore.getState().fetchHouseholds()
 
@@ -109,6 +89,7 @@ describe('fetchHouseholds', () => {
 
     await useHouseholdStore.getState().fetchHouseholds()
 
+    expect(useHouseholdStore.getState().households).toHaveLength(2)
     expect(useHouseholdStore.getState().household?.id).toBe('hh-2')
     expect(useHouseholdStore.getState().activeHouseholdId).toBe('hh-2')
   })
@@ -159,6 +140,7 @@ describe('fetchMembers', () => {
 
     await useHouseholdStore.getState().fetchMembers('hh-1')
 
+    expect(vi.mocked(supabase.rpc)).toHaveBeenCalledOnce()
     expect(useHouseholdStore.getState().members).toEqual([])
   })
 })
