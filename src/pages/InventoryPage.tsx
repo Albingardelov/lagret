@@ -9,6 +9,7 @@ import {
   Box,
   ActionIcon,
   UnstyledButton,
+  ScrollArea,
 } from '@mantine/core'
 import { IconPlus, IconAlertTriangle, IconCooker, IconBarcode } from '@tabler/icons-react'
 import { useInventoryStore } from '../store/inventoryStore'
@@ -155,57 +156,52 @@ export function InventoryPage() {
       </Box>
 
       {/* Filter tabs */}
-      <Box
-        style={{
-          borderBottom: '1px solid rgba(180,160,140,0.25)',
-          paddingBottom: 0,
-          paddingLeft: 16,
-          paddingRight: 16,
-        }}
-      >
-        <Group gap={0} wrap="nowrap">
-          {[{ id: 'all', name: 'Allt' }, ...locations].map((loc) => {
-            const active = activeTab === loc.id
-            return (
-              <UnstyledButton
-                key={loc.id}
-                onClick={() => setActiveTab(loc.id)}
-                style={{
-                  padding: '10px 16px',
-                  position: 'relative',
-                  flexShrink: 0,
-                }}
-              >
-                <Text
+      <Box style={{ borderBottom: '1px solid rgba(180,160,140,0.25)' }}>
+        <ScrollArea scrollbarSize={0} offsetScrollbars={false} px="md">
+          <Group gap={0} wrap="nowrap">
+            {[{ id: 'all', name: 'Allt' }, ...locations].map((loc) => {
+              const active = activeTab === loc.id
+              return (
+                <UnstyledButton
+                  key={loc.id}
+                  onClick={() => setActiveTab(loc.id)}
                   style={{
-                    fontFamily: '"Manrope", sans-serif',
-                    fontSize: 14,
-                    fontWeight: active ? 700 : 500,
-                    color: active ? TERRA : '#7A6A5A',
-                    lineHeight: 1,
-                    transition: 'color 0.15s ease',
-                    whiteSpace: 'nowrap',
+                    padding: '10px 16px',
+                    position: 'relative',
+                    flexShrink: 0,
                   }}
                 >
-                  {loc.name}
-                </Text>
-                {active && (
-                  <Box
+                  <Text
                     style={{
-                      position: 'absolute',
-                      bottom: 0,
-                      left: 16,
-                      right: 16,
-                      height: 2,
-                      borderRadius: 2,
-                      background: TERRA,
+                      fontFamily: '"Manrope", sans-serif',
+                      fontSize: 14,
+                      fontWeight: active ? 700 : 500,
+                      color: active ? TERRA : '#7A6A5A',
+                      lineHeight: 1,
+                      transition: 'color 0.15s ease',
+                      whiteSpace: 'nowrap',
                     }}
-                  />
-                )}
-              </UnstyledButton>
-            )
-          })}
-        </Group>
+                  >
+                    {loc.name}
+                  </Text>
+                  {active && (
+                    <Box
+                      style={{
+                        position: 'absolute',
+                        bottom: 0,
+                        left: 16,
+                        right: 16,
+                        height: 2,
+                        borderRadius: 2,
+                        background: TERRA,
+                      }}
+                    />
+                  )}
+                </UnstyledButton>
+              )
+            })}
+          </Group>
+        </ScrollArea>
       </Box>
 
       {/* Items */}

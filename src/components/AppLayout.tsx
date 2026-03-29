@@ -1,14 +1,7 @@
 import { useEffect } from 'react'
 import { AppShell, UnstyledButton, Text, Box, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import {
-  IconBox,
-  IconBook2,
-  IconShoppingCart,
-  IconHome,
-  IconMenu2,
-  IconScan,
-} from '@tabler/icons-react'
+import { IconBox, IconBook2, IconShoppingCart, IconHome } from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
@@ -54,11 +47,7 @@ export function AppLayout() {
           boxShadow: 'none',
         }}
       >
-        <Group h="100%" px="md" justify="space-between" align="center">
-          <UnstyledButton aria-label="Meny" style={{ color: '#4A3728', display: 'flex' }}>
-            <IconMenu2 size={22} stroke={1.8} />
-          </UnstyledButton>
-
+        <Group h="100%" px="md" justify="center" align="center">
           <Text
             style={{
               fontFamily: '"Epilogue", sans-serif',
@@ -71,10 +60,6 @@ export function AppLayout() {
           >
             Lagret
           </Text>
-
-          <UnstyledButton aria-label="Skanna" style={{ color: '#4A3728', display: 'flex' }}>
-            <IconScan size={22} stroke={1.8} />
-          </UnstyledButton>
         </Group>
       </AppShell.Header>
 
