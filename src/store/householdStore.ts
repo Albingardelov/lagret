@@ -1,13 +1,23 @@
 import { create } from 'zustand'
 import { supabase } from '../lib/supabase'
-import type { Household } from '../types'
+import type { Household, HouseholdMember } from '../types'
 import { useLocationsStore } from './locationsStore'
+import { useInventoryStore } from './inventoryStore'
+import { useShoppingStore } from './shoppingStore'
+
+const ACTIVE_HH_KEY = 'lagret:activeHousehold'
 
 interface HouseholdState {
+  households: Household[]
   household: Household | null
+  activeHouseholdId: string | null
+  members: HouseholdMember[]
   loading: boolean
   error: string | null
   fetchHousehold: () => Promise<void>
+  fetchHouseholds: () => Promise<void>
+  setActiveHousehold: (id: string) => Promise<void>
+  fetchMembers: (id: string) => Promise<void>
   createHousehold: (name: string) => Promise<void>
   joinHousehold: (inviteCode: string) => Promise<void>
 }
@@ -21,19 +31,60 @@ function mapHousehold(row: Record<string, string>): Household {
   }
 }
 
-export const useHouseholdStore = create<HouseholdState>((set) => ({
+export const useHouseholdStore = create<HouseholdState>((set, get) => ({
+  households: [],
   household: null,
+  activeHouseholdId: null,
+  members: [],
   loading: false,
   error: null,
 
+  // Bakåtkompatibelt alias — AppLayout anropar fetchHousehold()
   fetchHousehold: async () => {
+    await get().fetchHouseholds()
+  },
+
+  fetchHouseholds: async () => {
     set({ loading: true, error: null })
-    const { data, error } = await supabase.from('households').select('*').limit(1).maybeSingle()
+    const { data, error } = await supabase.from('households').select('*')
     if (error) {
       set({ error: error.message, loading: false })
-    } else {
-      set({ household: data ? mapHousehold(data as Record<string, string>) : null, loading: false })
+      return
     }
+    const households = (data ?? []).map((row) => mapHousehold(row as Record<string, string>))
+    set({ households, loading: false })
+
+    if (households.length === 0) return
+
+    // Återställ aktivt hushåll från localStorage, annars välj första
+    const saved = localStorage.getItem(ACTIVE_HH_KEY)
+    const active = households.find((h) => h.id === saved) ?? households[0]
+    set({ household: active, activeHouseholdId: active.id })
+    localStorage.setItem(ACTIVE_HH_KEY, active.id)
+    await get().fetchMembers(active.id)
+  },
+
+  setActiveHousehold: async (id: string) => {
+    const { households } = get()
+    const household = households.find((h) => h.id === id) ?? null
+    set({ household, activeHouseholdId: id })
+    localStorage.setItem(ACTIVE_HH_KEY, id)
+    await get().fetchMembers(id)
+    await useLocationsStore.getState().fetchLocations()
+    await useInventoryStore.getState().fetchItems()
+    await useShoppingStore.getState().fetchItems()
+  },
+
+  fetchMembers: async (id: string) => {
+    const { data, error } = await supabase.rpc('get_household_members', { hid: id })
+    if (error || !data) {
+      set({ members: [] })
+      return
+    }
+    const members: HouseholdMember[] = (data as { user_id: string; email: string }[]).map(
+      (row) => ({ userId: row.user_id, email: row.email })
+    )
+    set({ members })
   },
 
   createHousehold: async (name) => {
@@ -57,8 +108,16 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: memberError.message, loading: false })
       return
     }
+    const mapped = mapHousehold(hh as Record<string, string>)
+    localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
     await useLocationsStore.getState().fetchLocations()
-    set({ household: mapHousehold(hh as Record<string, string>), loading: false })
+    set((s) => ({
+      households: [...s.households, mapped],
+      household: mapped,
+      activeHouseholdId: mapped.id,
+      loading: false,
+    }))
+    await get().fetchMembers(mapped.id)
   },
 
   joinHousehold: async (inviteCode) => {
@@ -82,7 +141,15 @@ export const useHouseholdStore = create<HouseholdState>((set) => ({
       set({ error: memberError.message, loading: false })
       return
     }
+    const mapped = mapHousehold(hh as Record<string, string>)
+    localStorage.setItem(ACTIVE_HH_KEY, mapped.id)
     await useLocationsStore.getState().fetchLocations()
-    set({ household: mapHousehold(hh as Record<string, string>), loading: false })
+    set((s) => ({
+      households: [...s.households, mapped],
+      household: mapped,
+      activeHouseholdId: mapped.id,
+      loading: false,
+    }))
+    await get().fetchMembers(mapped.id)
   },
 }))
