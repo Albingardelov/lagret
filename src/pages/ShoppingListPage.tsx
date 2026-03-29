@@ -143,6 +143,18 @@ export function ShoppingListPage() {
 
   return (
     <Stack gap={0} style={{ background: BG, minHeight: '100%', paddingBottom: 100 }}>
+      <style>{`
+        @keyframes sl-item-in {
+          from { opacity: 0; transform: translateX(-10px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .sl-item { animation: sl-item-in 0.22s cubic-bezier(0.34,1.56,0.64,1) both; }
+        @keyframes sl-bought-in {
+          from { opacity: 0; transform: translateX(8px); }
+          to   { opacity: 0.7; transform: translateX(0); }
+        }
+        .sl-bought { animation: sl-bought-in 0.28s cubic-bezier(0.34,1.56,0.64,1) both; }
+      `}</style>
       {/* Header */}
       <Box px="md" pt="lg" pb="md">
         <Text
@@ -251,14 +263,16 @@ export function ShoppingListPage() {
               </Group>
             )}
             <Stack gap={6}>
-              {groupItems.map((item) => (
+              {groupItems.map((item, idx) => (
                 <Box
                   key={item.id}
+                  className="sl-item"
                   style={{
                     background: CARD_BG,
                     borderRadius: 14,
                     padding: '12px 16px',
                     boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+                    animationDelay: `${idx * 0.04}s`,
                   }}
                 >
                   <Group justify="space-between" wrap="nowrap">
@@ -375,12 +389,12 @@ export function ShoppingListPage() {
             {bought.map((item) => (
               <Box
                 key={item.id}
+                className="sl-bought"
                 style={{
                   background: CARD_BG,
                   borderRadius: 14,
                   padding: '12px 16px',
                   boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
-                  opacity: 0.7,
                 }}
               >
                 <Group justify="space-between" wrap="nowrap">

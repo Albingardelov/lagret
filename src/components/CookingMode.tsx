@@ -65,6 +65,67 @@ interface Props {
 const TERRA = '#B5432A'
 const BG = '#F7F2EB'
 const CARD_BG = '#FFFFFF'
+const MANROPE = '"Manrope", sans-serif'
+const EPILOGUE = '"Epilogue", sans-serif'
+
+const flexCenter: React.CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+
+const presetCardStyle: React.CSSProperties = {
+  background: '#FFFFFF',
+  borderRadius: 14,
+  padding: '12px 14px',
+  boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
+}
+
+const presetNameInputStyle: React.CSSProperties = {
+  width: '100%',
+  marginBottom: 10,
+  border: 'none',
+  borderBottom: `1.5px solid ${TERRA}`,
+  background: 'transparent',
+  fontFamily: MANROPE,
+  fontSize: 14,
+  fontWeight: 600,
+  color: '#1C1410',
+  outline: 'none',
+  padding: '2px 0',
+}
+
+const circleConfirmStyle: React.CSSProperties = {
+  marginLeft: 4,
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
+  background: TERRA,
+  ...flexCenter,
+}
+
+const circleCancelStyle: React.CSSProperties = {
+  width: 32,
+  height: 32,
+  borderRadius: '50%',
+  background: '#EDE8E2',
+  ...flexCenter,
+}
+
+const roundButtonStyle: React.CSSProperties = {
+  width: 46,
+  height: 46,
+  borderRadius: '50%',
+  ...flexCenter,
+  flexShrink: 0,
+}
+
+const timerButtonStyle: React.CSSProperties = {
+  width: 56,
+  height: 56,
+  borderRadius: '50%',
+  ...flexCenter,
+}
 
 const CATEGORY_ORDER = [
   'Mejeri',
@@ -160,7 +221,7 @@ const timeInputStyle: React.CSSProperties = {
   borderRadius: 10,
   border: '1.5px solid #E8E0D8',
   background: '#FFFFFF',
-  fontFamily: '"Manrope", sans-serif',
+  fontFamily: MANROPE,
   fontSize: 16,
   fontWeight: 700,
   color: '#1C1410',
@@ -169,7 +230,7 @@ const timeInputStyle: React.CSSProperties = {
 }
 
 const timeLabelStyle: React.CSSProperties = {
-  fontFamily: '"Manrope", sans-serif',
+  fontFamily: MANROPE,
   fontSize: 12,
   color: '#7A6A5A',
 }
@@ -193,6 +254,7 @@ export function CookingMode({ opened, onClose }: Props) {
   const [popoverValue, setPopoverValue] = useState<number | string>('')
   const [cookingUnits, setCookingUnits] = useState<Record<string, string>>({})
   const [editingUnit, setEditingUnit] = useState<string | null>(null)
+  const [zeroPuffId, setZeroPuffId] = useState<string | null>(null)
   const [timerOpen, setTimerOpen] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerRunning, setTimerRunning] = useState(false)
@@ -270,6 +332,10 @@ export function CookingMode({ opened, onClose }: Props) {
   const decrement = (id: string, qty: number, step: number, unit: string) => {
     const next = Math.max(0, Math.round((qty - step) * 1000) / 1000)
     updateItem(id, { quantity: next }).catch(() => {})
+    if (next === 0) {
+      setZeroPuffId(id)
+      setTimeout(() => setZeroPuffId(null), 500)
+    }
     notifications.show({
       message: `-${formatQty(step)} ${unit} avdraget`,
       color: 'terra',
@@ -302,6 +368,16 @@ export function CookingMode({ opened, onClose }: Props) {
     return dayjs(expiryDate).diff(dayjs(), 'day') <= 3
   }
 
+  const parsePopoverValue = (): number => {
+    if (typeof popoverValue === 'number') return popoverValue
+    return parseFloat(String(popoverValue))
+  }
+
+  const trySetCustomStep = (itemId: string) => {
+    const v = parsePopoverValue()
+    if (!isNaN(v) && v > 0) setCustomStep(itemId, v)
+  }
+
   return (
     <>
       <style>{`
@@ -315,10 +391,19 @@ export function CookingMode({ opened, onClose }: Props) {
         }
         .timer-running-text { animation: timerTick 1s ease-in-out infinite; }
         @keyframes itemFadeIn {
-          from { opacity: 0; transform: translateY(6px); }
+          from { opacity: 0; transform: translateY(8px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        .cm-item { animation: itemFadeIn 0.18s ease both; }
+        .cm-item { animation: itemFadeIn 0.22s cubic-bezier(0.34,1.56,0.64,1) both; }
+        @keyframes zeroPuff {
+          0%   { transform: translateX(0) scale(1); }
+          15%  { transform: translateX(-7px) scale(0.98); }
+          35%  { transform: translateX(6px) scale(1.01); }
+          55%  { transform: translateX(-4px) scale(0.99); }
+          75%  { transform: translateX(3px); }
+          100% { transform: translateX(0) scale(1); }
+        }
+        .cm-zero-puff { animation: zeroPuff 0.45s cubic-bezier(0.36,0.07,0.19,0.97) both; }
       `}</style>
 
       <Modal
@@ -348,13 +433,11 @@ export function CookingMode({ opened, onClose }: Props) {
               aria-label="Stäng"
               className="cm-press"
               style={{
+                ...flexCenter,
                 width: 38,
                 height: 38,
                 borderRadius: 12,
                 background: 'rgba(255,255,255,0.1)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
               }}
             >
               <IconX size={18} color="rgba(255,255,255,0.8)" />
@@ -362,7 +445,7 @@ export function CookingMode({ opened, onClose }: Props) {
 
             <Text
               style={{
-                fontFamily: '"Epilogue", sans-serif',
+                fontFamily: EPILOGUE,
                 fontWeight: 900,
                 fontSize: 18,
                 color: '#FFFFFF',
@@ -376,8 +459,7 @@ export function CookingMode({ opened, onClose }: Props) {
               onClick={onClose}
               className="cm-press-sm"
               style={{
-                display: 'flex',
-                alignItems: 'center',
+                ...flexCenter,
                 gap: 6,
                 background: '#2A7A4A',
                 borderRadius: 20,
@@ -387,7 +469,7 @@ export function CookingMode({ opened, onClose }: Props) {
               <IconCheck size={13} color="#fff" stroke={3} />
               <Text
                 style={{
-                  fontFamily: '"Manrope", sans-serif',
+                  fontFamily: MANROPE,
                   fontSize: 13,
                   fontWeight: 700,
                   color: '#fff',
@@ -415,7 +497,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   <IconArrowLeft size={16} color="#7A6A5A" />
                   <Text
                     style={{
-                      fontFamily: '"Manrope", sans-serif',
+                      fontFamily: MANROPE,
                       fontSize: 13,
                       fontWeight: 600,
                       color: '#7A6A5A',
@@ -439,7 +521,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   <Text
                     className={timerRunning ? 'timer-running-text' : undefined}
                     style={{
-                      fontFamily: '"Epilogue", sans-serif',
+                      fontFamily: EPILOGUE,
                       fontWeight: 900,
                       fontSize: 72,
                       color: timerSeconds === 0 ? '#C0B4A8' : timerRunning ? TERRA : '#1C1410',
@@ -453,7 +535,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   {timerRunning && (
                     <Text
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: MANROPE,
                         fontSize: 11,
                         fontWeight: 700,
                         letterSpacing: '0.1em',
@@ -471,13 +553,8 @@ export function CookingMode({ opened, onClose }: Props) {
                       disabled={timerSeconds === 0}
                       className="cm-press"
                       style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '50%',
+                        ...timerButtonStyle,
                         background: timerSeconds === 0 ? '#EDE8E2' : TERRA,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
                         boxShadow: timerSeconds > 0 ? '0 4px 16px rgba(181,67,42,0.35)' : 'none',
                         transition: 'background 0.15s ease, box-shadow 0.15s ease',
                       }}
@@ -495,13 +572,8 @@ export function CookingMode({ opened, onClose }: Props) {
                       }}
                       className="cm-press"
                       style={{
-                        width: 56,
-                        height: 56,
-                        borderRadius: '50%',
+                        ...timerButtonStyle,
                         background: timerRunning ? 'rgba(255,255,255,0.12)' : '#EDE8E2',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
                         transition: 'background 0.3s ease',
                       }}
                     >
@@ -515,7 +587,7 @@ export function CookingMode({ opened, onClose }: Props) {
 
                 <Text
                   style={{
-                    fontFamily: '"Manrope", sans-serif',
+                    fontFamily: MANROPE,
                     fontSize: 11,
                     fontWeight: 700,
                     color: '#7A6A5A',
@@ -534,34 +606,14 @@ export function CookingMode({ opened, onClose }: Props) {
                     const isEditing = editingPresetId === p.id
                     if (isEditing) {
                       return (
-                        <Box
-                          key={p.id}
-                          style={{
-                            background: '#FFFFFF',
-                            borderRadius: 14,
-                            padding: '12px 14px',
-                            boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
-                          }}
-                        >
+                        <Box key={p.id} style={presetCardStyle}>
                           <input
                             // eslint-disable-next-line jsx-a11y/no-autofocus
                             autoFocus
                             value={editLabel}
                             onChange={(e) => setEditLabel(e.currentTarget.value)}
                             placeholder="Namn"
-                            style={{
-                              width: '100%',
-                              marginBottom: 10,
-                              border: 'none',
-                              borderBottom: `1.5px solid ${TERRA}`,
-                              background: 'transparent',
-                              fontFamily: '"Manrope", sans-serif',
-                              fontSize: 14,
-                              fontWeight: 600,
-                              color: '#1C1410',
-                              outline: 'none',
-                              padding: '2px 0',
-                            }}
+                            style={presetNameInputStyle}
                           />
                           <Group gap={6} align="center">
                             <input
@@ -598,30 +650,13 @@ export function CookingMode({ opened, onClose }: Props) {
                                 }
                                 setEditingPresetId(null)
                               }}
-                              style={{
-                                marginLeft: 4,
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                                background: TERRA,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
+                              style={circleConfirmStyle}
                             >
                               <IconCheck size={14} color="#fff" stroke={2.5} />
                             </UnstyledButton>
                             <UnstyledButton
                               onClick={() => setEditingPresetId(null)}
-                              style={{
-                                width: 32,
-                                height: 32,
-                                borderRadius: '50%',
-                                background: '#EDE8E2',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                              }}
+                              style={circleCancelStyle}
                             >
                               <IconX size={14} color="#7A6A5A" />
                             </UnstyledButton>
@@ -653,7 +688,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         <Box style={{ flex: 1 }}>
                           <Text
                             style={{
-                              fontFamily: '"Manrope", sans-serif',
+                              fontFamily: MANROPE,
                               fontSize: 14,
                               fontWeight: 600,
                               color: active ? '#fff' : '#1C1410',
@@ -664,7 +699,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           </Text>
                           <Text
                             style={{
-                              fontFamily: '"Manrope", sans-serif',
+                              fontFamily: MANROPE,
                               fontSize: 12,
                               color: active ? 'rgba(255,255,255,0.75)' : '#7A6A5A',
                             }}
@@ -714,10 +749,7 @@ export function CookingMode({ opened, onClose }: Props) {
                 {addingPreset ? (
                   <Box
                     style={{
-                      background: '#FFFFFF',
-                      borderRadius: 14,
-                      padding: '12px 14px',
-                      boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
+                      ...presetCardStyle,
                       marginBottom: 24,
                     }}
                   >
@@ -727,19 +759,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       value={newLabel}
                       onChange={(e) => setNewLabel(e.currentTarget.value)}
                       placeholder="Namn på preset"
-                      style={{
-                        width: '100%',
-                        marginBottom: 10,
-                        border: 'none',
-                        borderBottom: `1.5px solid ${TERRA}`,
-                        background: 'transparent',
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 14,
-                        fontWeight: 600,
-                        color: '#1C1410',
-                        outline: 'none',
-                        padding: '2px 0',
-                      }}
+                      style={presetNameInputStyle}
                     />
                     <Group gap={6} align="center">
                       <input
@@ -780,30 +800,13 @@ export function CookingMode({ opened, onClose }: Props) {
                             setAddingPreset(false)
                           }
                         }}
-                        style={{
-                          marginLeft: 4,
-                          width: 32,
-                          height: 32,
-                          borderRadius: '50%',
-                          background: TERRA,
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
+                        style={circleConfirmStyle}
                       >
                         <IconCheck size={14} color="#fff" stroke={2.5} />
                       </UnstyledButton>
                       <UnstyledButton
                         onClick={() => setAddingPreset(false)}
-                        style={{
-                          width: 32,
-                          height: 32,
-                          borderRadius: '50%',
-                          background: '#EDE8E2',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                        }}
+                        style={circleCancelStyle}
                       >
                         <IconX size={14} color="#7A6A5A" />
                       </UnstyledButton>
@@ -826,7 +829,7 @@ export function CookingMode({ opened, onClose }: Props) {
                     <IconPlus size={14} color={TERRA} />
                     <Text
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: MANROPE,
                         fontSize: 13,
                         fontWeight: 700,
                         color: TERRA,
@@ -890,7 +893,8 @@ export function CookingMode({ opened, onClose }: Props) {
                           boxShadow: active
                             ? '0 2px 10px rgba(28,20,16,0.22)'
                             : '0 1px 3px rgba(74,55,40,0.1)',
-                          transition: 'background 0.15s ease, box-shadow 0.15s ease',
+                          transition:
+                            'background 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s cubic-bezier(0.34,1.56,0.64,1), transform 0.2s cubic-bezier(0.34,1.56,0.64,1)',
                         }}
                       >
                         <Box
@@ -904,7 +908,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         </Box>
                         <Text
                           style={{
-                            fontFamily: '"Manrope", sans-serif',
+                            fontFamily: MANROPE,
                             fontSize: 13,
                             fontWeight: 700,
                             color: active ? '#FFFFFF' : '#1C1410',
@@ -924,7 +928,7 @@ export function CookingMode({ opened, onClose }: Props) {
                 <Group align="center" justify="space-between">
                   <Text
                     style={{
-                      fontFamily: '"Epilogue", sans-serif',
+                      fontFamily: EPILOGUE,
                       fontWeight: 900,
                       fontSize: 22,
                       color: '#1C1410',
@@ -935,7 +939,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   </Text>
                   <Text
                     style={{
-                      fontFamily: '"Manrope", sans-serif',
+                      fontFamily: MANROPE,
                       fontSize: 11,
                       fontWeight: 700,
                       color: '#9A8A7A',
@@ -950,8 +954,8 @@ export function CookingMode({ opened, onClose }: Props) {
 
               {/* Item list */}
               <ScrollArea flex={1} offsetScrollbars style={{ padding: '0 16px' }}>
-                <Stack gap={10} pb={4}>
-                  {filtered.map((item) => {
+                <Stack gap={10} pb={4} key={activeCategory ?? '__all__'}>
+                  {filtered.map((item, index) => {
                     const cookingUnit =
                       cookingUnits[item.id] ?? suggestCookingUnit(item.name, item.unit)
                     const smallStep = getSmallStep(cookingUnit)
@@ -972,7 +976,7 @@ export function CookingMode({ opened, onClose }: Props) {
                     return (
                       <Box
                         key={item.id}
-                        className="cm-item"
+                        className={`cm-item${zeroPuffId === item.id ? ' cm-zero-puff' : ''}`}
                         style={{
                           background: CARD_BG,
                           borderRadius: 16,
@@ -980,6 +984,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           boxShadow: '0 1px 6px rgba(74,55,40,0.08)',
                           opacity: item.quantity === 0 ? 0.4 : 1,
                           borderLeft: `4px solid ${iconStyle.icon}`,
+                          animationDelay: `${Math.min(index * 0.04, 0.28)}s`,
                         }}
                       >
                         {expiringSoon && (
@@ -992,7 +997,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           >
                             <Text
                               style={{
-                                fontFamily: '"Manrope", sans-serif',
+                                fontFamily: MANROPE,
                                 fontSize: 11,
                                 fontWeight: 700,
                                 color: '#DC2626',
@@ -1008,14 +1013,12 @@ export function CookingMode({ opened, onClose }: Props) {
                             {/* Category icon */}
                             <Box
                               style={{
+                                ...flexCenter,
                                 width: 46,
                                 height: 46,
                                 borderRadius: 12,
                                 background: iconStyle.bg,
                                 color: iconStyle.icon,
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
                                 flexShrink: 0,
                               }}
                             >
@@ -1039,7 +1042,7 @@ export function CookingMode({ opened, onClose }: Props) {
 
                               <Text
                                 style={{
-                                  fontFamily: '"Manrope", sans-serif',
+                                  fontFamily: MANROPE,
                                   fontSize: 15,
                                   fontWeight: 700,
                                   color: '#1C1410',
@@ -1053,7 +1056,7 @@ export function CookingMode({ opened, onClose }: Props) {
                               </Text>
                               <Text
                                 style={{
-                                  fontFamily: '"Manrope", sans-serif',
+                                  fontFamily: MANROPE,
                                   fontSize: 12,
                                   color: '#9A8A7A',
                                   lineHeight: 1.3,
@@ -1087,7 +1090,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                   >
                                     <Text
                                       style={{
-                                        fontFamily: '"Manrope", sans-serif',
+                                        fontFamily: MANROPE,
                                         fontSize: 10,
                                         fontWeight: 700,
                                         color: '#4A3728',
@@ -1121,15 +1124,9 @@ export function CookingMode({ opened, onClose }: Props) {
                                 }
                                 className="cm-press"
                                 style={{
-                                  width: 46,
-                                  height: 46,
-                                  borderRadius: '50%',
+                                  ...roundButtonStyle,
                                   background: '#EDE8E2',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
                                   opacity: item.quantity === 0 ? 0.35 : 1,
-                                  flexShrink: 0,
                                 }}
                               >
                                 <Text
@@ -1161,7 +1158,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                   >
                                     <Text
                                       style={{
-                                        fontFamily: '"Manrope", sans-serif',
+                                        fontFamily: MANROPE,
                                         fontSize: 20,
                                         fontWeight: 800,
                                         color: '#1C1410',
@@ -1172,7 +1169,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                     </Text>
                                     <Text
                                       style={{
-                                        fontFamily: '"Manrope", sans-serif',
+                                        fontFamily: MANROPE,
                                         fontSize: 10,
                                         color: '#9A8A7A',
                                         letterSpacing: '0.04em',
@@ -1195,21 +1192,9 @@ export function CookingMode({ opened, onClose }: Props) {
                                       value={popoverValue}
                                       onChange={setPopoverValue}
                                       onKeyDown={(e) => {
-                                        if (e.key === 'Enter') {
-                                          const v =
-                                            typeof popoverValue === 'number'
-                                              ? popoverValue
-                                              : parseFloat(String(popoverValue))
-                                          if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
-                                        }
+                                        if (e.key === 'Enter') trySetCustomStep(item.id)
                                       }}
-                                      onBlur={() => {
-                                        const v =
-                                          typeof popoverValue === 'number'
-                                            ? popoverValue
-                                            : parseFloat(String(popoverValue))
-                                        if (!isNaN(v) && v > 0) setCustomStep(item.id, v)
-                                      }}
+                                      onBlur={() => trySetCustomStep(item.id)}
                                       styles={{ input: { width: 100 } }}
                                     />
                                   </Stack>
@@ -1220,14 +1205,8 @@ export function CookingMode({ opened, onClose }: Props) {
                                 onClick={() => increment(item.id, item.quantity, activeStep)}
                                 className="cm-press"
                                 style={{
-                                  width: 46,
-                                  height: 46,
-                                  borderRadius: '50%',
+                                  ...roundButtonStyle,
                                   background: TERRA,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  flexShrink: 0,
                                   boxShadow: '0 2px 8px rgba(181,67,42,0.3)',
                                 }}
                               >
@@ -1256,7 +1235,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       </Text>
                       <Text
                         style={{
-                          fontFamily: '"Manrope", sans-serif',
+                          fontFamily: MANROPE,
                           fontWeight: 600,
                           color: '#7A6A5A',
                           fontSize: 14,
@@ -1266,7 +1245,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       </Text>
                       <Text
                         style={{
-                          fontFamily: '"Manrope", sans-serif',
+                          fontFamily: MANROPE,
                           fontSize: 13,
                           color: '#9A8A7A',
                           marginTop: 4,
@@ -1293,7 +1272,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       <IconPlus size={16} color={TERRA} />
                       <Text
                         style={{
-                          fontFamily: '"Manrope", sans-serif',
+                          fontFamily: MANROPE,
                           fontSize: 12,
                           fontWeight: 700,
                           color: TERRA,
@@ -1320,7 +1299,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         <IconClock size={24} color="#4A5568" />
                         <Text
                           style={{
-                            fontFamily: '"Manrope", sans-serif',
+                            fontFamily: MANROPE,
                             fontSize: 14,
                             fontWeight: 700,
                             color: TERRA,
@@ -1331,7 +1310,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         </Text>
                         <Text
                           style={{
-                            fontFamily: '"Manrope", sans-serif',
+                            fontFamily: MANROPE,
                             fontSize: 12,
                             color: '#7A6A5A',
                             lineHeight: 1.3,
@@ -1353,7 +1332,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         <IconShoppingCart size={24} color="#2A7A4A" />
                         <Text
                           style={{
-                            fontFamily: '"Manrope", sans-serif',
+                            fontFamily: MANROPE,
                             fontSize: 14,
                             fontWeight: 700,
                             color: '#1A5A35',
@@ -1364,7 +1343,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         </Text>
                         <Text
                           style={{
-                            fontFamily: '"Manrope", sans-serif',
+                            fontFamily: MANROPE,
                             fontSize: 12,
                             color: '#4A7A5A',
                             lineHeight: 1.3,
