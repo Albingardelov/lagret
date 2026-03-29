@@ -29,13 +29,14 @@ import {
   IconSnowflake,
   IconChevronRight,
   IconLogout,
+  IconUsers,
 } from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
-import type { LocationIcon } from '../types'
+import type { LocationIcon, HouseholdMember } from '../types'
 
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
@@ -60,8 +61,17 @@ const ICON_OPTIONS = [
 ]
 
 export function HouseholdPage() {
-  const { household, loading, error, fetchHousehold, createHousehold, joinHousehold } =
-    useHouseholdStore()
+  const {
+    households,
+    household,
+    members,
+    loading,
+    error,
+    fetchHouseholds,
+    setActiveHousehold,
+    createHousehold,
+    joinHousehold,
+  } = useHouseholdStore()
   const { locations, fetchLocations, addLocation, updateLocation, deleteLocation } =
     useLocationsStore()
   const [householdName, setHouseholdName] = useState('')
@@ -79,8 +89,8 @@ export function HouseholdPage() {
   useErrorNotification(error, 'Hushållsfel')
 
   useEffect(() => {
-    fetchHousehold()
-  }, [fetchHousehold])
+    fetchHouseholds()
+  }, [fetchHouseholds])
 
   useEffect(() => {
     if (household) fetchLocations()
@@ -280,7 +290,93 @@ export function HouseholdPage() {
         </Text>
       </Box>
 
-      {/* Household card */}
+      {/* Mina hushåll */}
+      {households.length > 1 && (
+        <Box px="md" mb="md">
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#7A6A5A',
+              marginBottom: 10,
+            }}
+          >
+            Mina hushåll
+          </Text>
+          <Stack gap={8}>
+            {households.map((hh) => {
+              const isActive = hh.id === household?.id
+              return (
+                <UnstyledButton
+                  key={hh.id}
+                  onClick={() => !isActive && setActiveHousehold(hh.id)}
+                  style={{
+                    background: CARD_BG,
+                    borderRadius: 14,
+                    padding: '14px 16px',
+                    boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+                    border: isActive ? `2px solid ${TERRA}` : '2px solid transparent',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    cursor: isActive ? 'default' : 'pointer',
+                  }}
+                >
+                  <Box>
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 14,
+                        fontWeight: 700,
+                        color: '#1C1410',
+                      }}
+                    >
+                      {hh.name}
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: 'monospace',
+                        fontSize: 11,
+                        color: '#9A8A7A',
+                        letterSpacing: '0.08em',
+                      }}
+                    >
+                      {hh.inviteCode}
+                    </Text>
+                  </Box>
+                  {isActive && (
+                    <Box
+                      style={{
+                        background: TERRA,
+                        borderRadius: 20,
+                        padding: '3px 10px',
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: '"Manrope", sans-serif',
+                          fontSize: 10,
+                          fontWeight: 700,
+                          color: '#fff',
+                          letterSpacing: '0.06em',
+                          textTransform: 'uppercase',
+                        }}
+                      >
+                        Aktivt
+                      </Text>
+                    </Box>
+                  )}
+                </UnstyledButton>
+              )
+            })}
+          </Stack>
+        </Box>
+      )}
+
+      {/* Aktivt hushåll — terraröd hero-kort */}
       <Box
         mx="md"
         mb="md"
@@ -325,7 +421,7 @@ export function HouseholdPage() {
             marginBottom: 12,
           }}
         >
-          {household.name}
+          {household?.name}
         </Text>
         <Group gap="xs" align="center">
           <Text
@@ -346,20 +442,16 @@ export function HouseholdPage() {
               letterSpacing: '0.1em',
             }}
           >
-            {household.inviteCode}
+            {household?.inviteCode}
           </Text>
-          <CopyButton value={household.inviteCode} timeout={2000}>
+          <CopyButton value={household?.inviteCode ?? ''} timeout={2000}>
             {({ copied, copy }) => (
               <Tooltip label={copied ? 'Kopierat!' : 'Kopiera'} withArrow>
                 <ActionIcon
                   variant="filled"
                   onClick={copy}
                   size="sm"
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    color: '#FFFFFF',
-                    borderRadius: 6,
-                  }}
+                  style={{ background: 'rgba(255,255,255,0.2)', color: '#FFFFFF', borderRadius: 6 }}
                 >
                   {copied ? <IconCheck size={13} /> : <IconCopy size={13} />}
                 </ActionIcon>
@@ -367,6 +459,61 @@ export function HouseholdPage() {
             )}
           </CopyButton>
         </Group>
+      </Box>
+
+      {/* Medlemmar */}
+      <Box px="md" mb="md">
+        <Group gap={6} mb={10} align="center">
+          <IconUsers size={14} color="#7A6A5A" />
+          <Text
+            style={{
+              fontFamily: '"Manrope", sans-serif',
+              fontSize: 11,
+              fontWeight: 700,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: '#7A6A5A',
+            }}
+          >
+            Medlemmar
+          </Text>
+        </Group>
+        <Stack gap={6}>
+          {members.map((m: HouseholdMember) => (
+            <Box
+              key={m.userId}
+              style={{
+                background: CARD_BG,
+                borderRadius: 12,
+                padding: '10px 14px',
+                boxShadow: '0 1px 4px rgba(74,55,40,0.07)',
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 13,
+                  color: '#1C1410',
+                }}
+              >
+                {m.email}
+              </Text>
+            </Box>
+          ))}
+          {members.length === 0 && (
+            <Text
+              style={{
+                fontFamily: '"Manrope", sans-serif',
+                fontSize: 13,
+                color: '#9A8A7A',
+                textAlign: 'center',
+                padding: '8px 0',
+              }}
+            >
+              Inga medlemmar hittades
+            </Text>
+          )}
+        </Stack>
       </Box>
 
       {/* Storage locations */}
