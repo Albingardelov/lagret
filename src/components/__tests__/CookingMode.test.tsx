@@ -15,6 +15,7 @@ vi.mock('../../store/inventoryStore', () => ({
           name: 'Vispgrädde',
           quantity: 0.8,
           unit: 'l',
+          category: 'Mejeri',
           location: 'loc-kyl',
           createdAt: '',
           updatedAt: '',
@@ -24,6 +25,7 @@ vi.mock('../../store/inventoryStore', () => ({
           name: 'Olivolja',
           quantity: 420,
           unit: 'ml',
+          category: 'Skafferi',
           location: 'loc-skafferi',
           createdAt: '',
           updatedAt: '',
@@ -111,22 +113,16 @@ describe('CookingMode', () => {
     expect(screen.getByText('Olivolja')).toBeInTheDocument()
   })
 
-  it('visar platsnamn i versaler på kortet', () => {
-    render(<CookingMode opened onClose={vi.fn()} />)
-    expect(screen.getByText('KYL')).toBeInTheDocument()
-    expect(screen.getByText('SKAFFERI')).toBeInTheDocument()
-  })
-
-  it('renderar filterknappar för platser', () => {
+  it('renderar kategoriflikar', () => {
     render(<CookingMode opened onClose={vi.fn()} />)
     expect(screen.getByText('Alla')).toBeInTheDocument()
-    expect(screen.getByText('Kyl')).toBeInTheDocument()
+    expect(screen.getByText('Mejeri')).toBeInTheDocument()
     expect(screen.getByText('Skafferi')).toBeInTheDocument()
   })
 
-  it('filtrerar till en plats vid chip-klick', async () => {
+  it('filtrerar till en kategori vid chip-klick', async () => {
     const { user } = render(<CookingMode opened onClose={vi.fn()} />)
-    await user.click(screen.getByText('Kyl'))
+    await user.click(screen.getByText('Mejeri'))
     expect(screen.getByText('Vispgrädde')).toBeInTheDocument()
     expect(screen.queryByText('Olivolja')).not.toBeInTheDocument()
   })
