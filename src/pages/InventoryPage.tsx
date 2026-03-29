@@ -24,6 +24,8 @@ import { searchRecipes } from '../lib/recipes'
 import { useNavigate } from 'react-router-dom'
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
+const MANROPE = '"Manrope", sans-serif'
+const EPILOGUE = '"Epilogue", sans-serif'
 
 export function InventoryPage() {
   const { loading, error, fetchItems, deleteItem, getExpiringSoon, subscribeRealtime, items } =
@@ -78,7 +80,7 @@ export function InventoryPage() {
       <Box px="md" pt="lg" pb="md">
         <Text
           style={{
-            fontFamily: '"Manrope", sans-serif',
+            fontFamily: MANROPE,
             fontSize: 11,
             fontWeight: 700,
             letterSpacing: '0.12em',
@@ -91,7 +93,7 @@ export function InventoryPage() {
         </Text>
         <Text
           style={{
-            fontFamily: '"Epilogue", sans-serif',
+            fontFamily: EPILOGUE,
             fontWeight: 900,
             fontSize: 28,
             color: '#1C1410',
@@ -105,7 +107,7 @@ export function InventoryPage() {
 
         {/* Stats row */}
         <Group gap="sm" mt={8} align="center">
-          <Text style={{ fontFamily: '"Manrope", sans-serif', fontSize: 13, color: '#7A6A5A' }}>
+          <Text style={{ fontFamily: MANROPE, fontSize: 13, color: '#7A6A5A' }}>
             {items.length} varor totalt
           </Text>
           {expiring.length > 0 && (
@@ -113,7 +115,7 @@ export function InventoryPage() {
               <IconAlertTriangle size={13} color="#EA580C" />
               <Text
                 style={{
-                  fontFamily: '"Manrope", sans-serif',
+                  fontFamily: MANROPE,
                   fontSize: 13,
                   color: '#EA580C',
                   fontWeight: 600,
@@ -141,7 +143,7 @@ export function InventoryPage() {
             <IconBarcode size={14} color="#4A3728" />
             <Text
               style={{
-                fontFamily: '"Manrope", sans-serif',
+                fontFamily: MANROPE,
                 fontSize: 12,
                 fontWeight: 700,
                 color: '#4A3728',
@@ -158,7 +160,7 @@ export function InventoryPage() {
             leftSection={<IconCooker size={14} />}
             onClick={() => setCookingOpen(true)}
             style={{
-              fontFamily: '"Manrope", sans-serif',
+              fontFamily: MANROPE,
               color: TERRA,
               fontWeight: 600,
             }}
@@ -186,7 +188,7 @@ export function InventoryPage() {
                 >
                   <Text
                     style={{
-                      fontFamily: '"Manrope", sans-serif',
+                      fontFamily: MANROPE,
                       fontSize: 14,
                       fontWeight: active ? 700 : 500,
                       color: active ? TERRA : '#7A6A5A',
@@ -228,7 +230,7 @@ export function InventoryPage() {
             <Text style={{ fontSize: 32 }}>🥬</Text>
             <Text
               style={{
-                fontFamily: '"Manrope", sans-serif',
+                fontFamily: MANROPE,
                 color: '#7A6A5A',
                 fontSize: 14,
                 fontWeight: 600,
@@ -258,7 +260,7 @@ export function InventoryPage() {
                   <Box style={{ padding: '16px 16px 0' }}>
                     <Text
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: MANROPE,
                         fontSize: 10,
                         fontWeight: 700,
                         letterSpacing: '0.12em',
@@ -271,7 +273,7 @@ export function InventoryPage() {
                     </Text>
                     <Text
                       style={{
-                        fontFamily: '"Epilogue", sans-serif',
+                        fontFamily: EPILOGUE,
                         fontWeight: 800,
                         fontSize: 20,
                         color: '#1C1410',
@@ -286,7 +288,7 @@ export function InventoryPage() {
                     </Text>
                     <Text
                       style={{
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: MANROPE,
                         fontSize: 13,
                         color: '#7A6A5A',
                         marginBottom: 14,
@@ -302,7 +304,7 @@ export function InventoryPage() {
                       style={{
                         background: '#1C1410',
                         color: '#FFFFFF',
-                        fontFamily: '"Manrope", sans-serif',
+                        fontFamily: MANROPE,
                         fontWeight: 700,
                         marginBottom: inspirationImage ? 14 : 16,
                       }}
