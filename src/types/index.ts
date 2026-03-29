@@ -51,6 +51,11 @@ export interface Household {
   createdAt: string
 }
 
+export interface HouseholdMember {
+  userId: string
+  email: string
+}
+
 export interface ShoppingItem {
   id: string
   householdId: string
