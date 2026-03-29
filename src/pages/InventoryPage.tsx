@@ -20,6 +20,8 @@ import { EditItemModal } from '../components/EditItemModal'
 import { CookingMode } from '../components/CookingMode'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
+import { searchRecipes } from '../lib/recipes'
+import { useNavigate } from 'react-router-dom'
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
 
@@ -32,8 +34,11 @@ export function InventoryPage() {
   // activeTab: 'all' | location.id
   const [activeTab, setActiveTab] = useState<string>('all')
   const [cookingOpen, setCookingOpen] = useState(false)
+  const [inspirationImage, setInspirationImage] = useState<string | null>(null)
+  const navigate = useNavigate()
   useErrorNotification(error, 'Lagerfel')
   const expiring = getExpiringSoon(3)
+  const featuredItem = expiring[0] ?? null
 
   useEffect(() => {
     fetchItems()
@@ -41,6 +46,14 @@ export function InventoryPage() {
     const unsubscribe = subscribeRealtime()
     return unsubscribe
   }, [fetchItems, fetchLocations, subscribeRealtime])
+
+  useEffect(() => {
+    if (!featuredItem) return
+    searchRecipes(featuredItem.name, 1).then((results) => {
+      const img = results[0]?.imageUrls?.[0] ?? null
+      setInspirationImage(img)
+    })
+  }, [featuredItem?.name])
 
   const filteredItems = useMemo(() => {
     let result = [...items]
@@ -227,8 +240,91 @@ export function InventoryPage() {
         </Center>
       ) : (
         <Stack gap="xs" px="md" pt="md" pb={100}>
-          {filteredItems.map((item) => (
-            <ItemCard key={item.id} item={item} onEdit={setEditItem} onDelete={deleteItem} />
+          {filteredItems.map((item, index) => (
+            <>
+              <ItemCard key={item.id} item={item} onEdit={setEditItem} onDelete={deleteItem} />
+              {index === 2 && featuredItem && (
+                <Box
+                  key="inspiration-card"
+                  style={{
+                    background: '#FFFFFF',
+                    borderRadius: 18,
+                    overflow: 'hidden',
+                    boxShadow: '0 1px 6px rgba(74,55,40,0.09)',
+                    marginTop: 4,
+                    marginBottom: 4,
+                  }}
+                >
+                  <Box style={{ padding: '16px 16px 0' }}>
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 10,
+                        fontWeight: 700,
+                        letterSpacing: '0.12em',
+                        textTransform: 'uppercase',
+                        color: TERRA,
+                        marginBottom: 8,
+                      }}
+                    >
+                      Inspiration
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: '"Epilogue", sans-serif',
+                        fontWeight: 800,
+                        fontSize: 20,
+                        color: '#1C1410',
+                        lineHeight: 1.2,
+                        marginBottom: 6,
+                      }}
+                    >
+                      Dags att laga något av din{' '}
+                      <em style={{ color: TERRA, fontStyle: 'italic' }}>
+                        {featuredItem.name.toLowerCase()}?
+                      </em>
+                    </Text>
+                    <Text
+                      style={{
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 13,
+                        color: '#7A6A5A',
+                        marginBottom: 14,
+                        lineHeight: 1.5,
+                      }}
+                    >
+                      Vi har hittat recept som använder ingredienser som går ut snart.
+                    </Text>
+                    <Button
+                      size="sm"
+                      radius="xl"
+                      onClick={() => navigate('/recipes')}
+                      style={{
+                        background: '#1C1410',
+                        color: '#FFFFFF',
+                        fontFamily: '"Manrope", sans-serif',
+                        fontWeight: 700,
+                        marginBottom: inspirationImage ? 14 : 16,
+                      }}
+                    >
+                      Se förslag
+                    </Button>
+                  </Box>
+                  {inspirationImage && (
+                    <img
+                      src={inspirationImage}
+                      alt={featuredItem.name}
+                      style={{
+                        width: '100%',
+                        height: 180,
+                        objectFit: 'cover',
+                        display: 'block',
+                      }}
+                    />
+                  )}
+                </Box>
+              )}
+            </>
           ))}
         </Stack>
       )}
