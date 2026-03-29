@@ -122,12 +122,57 @@ const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
 
 const DEFAULT_ICON_STYLE = { bg: '#F0EEE8', icon: '#7A6A5A' }
 
-const TIMER_PRESETS = [
-  { label: 'Ägg (löskokt)', seconds: 4 * 60 },
-  { label: 'Ägg (hårdkokt)', seconds: 10 * 60 },
-  { label: 'Pasta', seconds: 8 * 60 },
-  { label: 'Ris', seconds: 18 * 60 },
+interface TimerPreset {
+  id: string
+  label: string
+  seconds: number
+}
+
+const PRESETS_KEY = 'lagret:timer-presets'
+
+const DEFAULT_PRESETS: TimerPreset[] = [
+  { id: 'egg-soft', label: 'Ägg (löskokt)', seconds: 4 * 60 },
+  { id: 'egg-hard', label: 'Ägg (hårdkokt)', seconds: 10 * 60 },
+  { id: 'pasta', label: 'Pasta', seconds: 8 * 60 },
+  { id: 'ris', label: 'Ris', seconds: 18 * 60 },
 ]
+
+function loadPresets(): TimerPreset[] {
+  try {
+    const raw = localStorage.getItem(PRESETS_KEY)
+    return raw ? (JSON.parse(raw) as TimerPreset[]) : DEFAULT_PRESETS
+  } catch {
+    return DEFAULT_PRESETS
+  }
+}
+
+function savePresets(presets: TimerPreset[]) {
+  try {
+    localStorage.setItem(PRESETS_KEY, JSON.stringify(presets))
+  } catch {
+    // ignore
+  }
+}
+
+const timeInputStyle: React.CSSProperties = {
+  width: 52,
+  height: 40,
+  borderRadius: 10,
+  border: '1.5px solid #E8E0D8',
+  background: '#FFFFFF',
+  fontFamily: '"Manrope", sans-serif',
+  fontSize: 16,
+  fontWeight: 700,
+  color: '#1C1410',
+  textAlign: 'center',
+  outline: 'none',
+}
+
+const timeLabelStyle: React.CSSProperties = {
+  fontFamily: '"Manrope", sans-serif',
+  fontSize: 12,
+  color: '#7A6A5A',
+}
 
 function formatTime(s: number) {
   const m = Math.floor(s / 60)
@@ -151,14 +196,22 @@ export function CookingMode({ opened, onClose }: Props) {
   const [timerOpen, setTimerOpen] = useState(false)
   const [timerSeconds, setTimerSeconds] = useState(0)
   const [timerRunning, setTimerRunning] = useState(false)
-  const [customMin, setCustomMin] = useState('')
-  const [customSec, setCustomSec] = useState('')
+  const [presets, setPresets] = useState<TimerPreset[]>(DEFAULT_PRESETS)
+  const [editingPresetId, setEditingPresetId] = useState<string | null>(null)
+  const [editLabel, setEditLabel] = useState('')
+  const [editMin, setEditMin] = useState('')
+  const [editSec, setEditSec] = useState('')
+  const [addingPreset, setAddingPreset] = useState(false)
+  const [newLabel, setNewLabel] = useState('')
+  const [newMin, setNewMin] = useState('')
+  const [newSec, setNewSec] = useState('')
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
   useEffect(() => {
     if (opened) {
       setCustomSteps(loadCustomSteps())
       setCookingUnits(loadCookingUnits())
+      setPresets(loadPresets())
     } else {
       setTimerRunning(false)
       setTimerOpen(false)
@@ -365,157 +418,316 @@ export function CookingMode({ opened, onClose }: Props) {
                   Snabb-timer
                 </Text>
 
-                <Text
-                  style={{
-                    fontFamily: '"Manrope", sans-serif',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: '#7A6A5A',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    marginBottom: 10,
-                  }}
-                >
-                  Välj preset
-                </Text>
-
-                <Group gap={8} wrap="wrap" mb={16}>
-                  {TIMER_PRESETS.map((p) => {
+                {/* Preset list */}
+                <Stack gap={8} mb={16}>
+                  {presets.map((p) => {
                     const active = timerSeconds === p.seconds && !timerRunning
+                    const isEditing = editingPresetId === p.id
+                    if (isEditing) {
+                      return (
+                        <Box
+                          key={p.id}
+                          style={{
+                            background: '#FFFFFF',
+                            borderRadius: 14,
+                            padding: '12px 14px',
+                            boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
+                          }}
+                        >
+                          <input
+                            // eslint-disable-next-line jsx-a11y/no-autofocus
+                            autoFocus
+                            value={editLabel}
+                            onChange={(e) => setEditLabel(e.currentTarget.value)}
+                            placeholder="Namn"
+                            style={{
+                              width: '100%',
+                              marginBottom: 10,
+                              border: 'none',
+                              borderBottom: `1.5px solid ${TERRA}`,
+                              background: 'transparent',
+                              fontFamily: '"Manrope", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: '#1C1410',
+                              outline: 'none',
+                              padding: '2px 0',
+                            }}
+                          />
+                          <Group gap={6} align="center">
+                            <input
+                              type="number"
+                              min={0}
+                              max={99}
+                              value={editMin}
+                              onChange={(e) => setEditMin(e.currentTarget.value)}
+                              style={timeInputStyle}
+                            />
+                            <Text style={timeLabelStyle}>min</Text>
+                            <input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={editSec}
+                              onChange={(e) => setEditSec(e.currentTarget.value)}
+                              style={timeInputStyle}
+                            />
+                            <Text style={timeLabelStyle}>sek</Text>
+                            <UnstyledButton
+                              onClick={() => {
+                                const m = parseInt(editMin || '0', 10)
+                                const s = parseInt(editSec || '0', 10)
+                                const total = m * 60 + s
+                                if (total > 0 && editLabel.trim()) {
+                                  const updated = presets.map((x) =>
+                                    x.id === p.id
+                                      ? { ...x, label: editLabel.trim(), seconds: total }
+                                      : x
+                                  )
+                                  setPresets(updated)
+                                  savePresets(updated)
+                                }
+                                setEditingPresetId(null)
+                              }}
+                              style={{
+                                marginLeft: 4,
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                background: TERRA,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <IconCheck size={14} color="#fff" stroke={2.5} />
+                            </UnstyledButton>
+                            <UnstyledButton
+                              onClick={() => setEditingPresetId(null)}
+                              style={{
+                                width: 32,
+                                height: 32,
+                                borderRadius: '50%',
+                                background: '#EDE8E2',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                              }}
+                            >
+                              <IconX size={14} color="#7A6A5A" />
+                            </UnstyledButton>
+                          </Group>
+                        </Box>
+                      )
+                    }
                     return (
-                      <UnstyledButton
-                        key={p.label}
+                      <Box
+                        key={p.id}
+                        style={{
+                          background: active ? TERRA : '#FFFFFF',
+                          borderRadius: 14,
+                          padding: '12px 14px',
+                          boxShadow: active
+                            ? '0 2px 8px rgba(181,67,42,0.25)'
+                            : '0 1px 4px rgba(74,55,40,0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 10,
+                          transition: 'background 0.15s ease',
+                          cursor: 'pointer',
+                        }}
                         onClick={() => {
                           setTimerSeconds(p.seconds)
                           setTimerRunning(false)
                         }}
-                        style={{
-                          background: active ? TERRA : '#EDE8E2',
-                          borderRadius: 20,
-                          padding: '8px 16px',
-                          transition: 'background 0.15s ease',
-                        }}
                       >
-                        <Text
-                          style={{
-                            fontFamily: '"Manrope", sans-serif',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: active ? '#fff' : '#4A3728',
+                        <Box style={{ flex: 1 }}>
+                          <Text
+                            style={{
+                              fontFamily: '"Manrope", sans-serif',
+                              fontSize: 14,
+                              fontWeight: 600,
+                              color: active ? '#fff' : '#1C1410',
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {p.label}
+                          </Text>
+                          <Text
+                            style={{
+                              fontFamily: '"Manrope", sans-serif',
+                              fontSize: 12,
+                              color: active ? 'rgba(255,255,255,0.75)' : '#7A6A5A',
+                            }}
+                          >
+                            {formatTime(p.seconds)}
+                          </Text>
+                        </Box>
+                        <UnstyledButton
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setEditLabel(p.label)
+                            const m = Math.floor(p.seconds / 60)
+                            const s = p.seconds % 60
+                            setEditMin(String(m))
+                            setEditSec(s > 0 ? String(s) : '')
+                            setEditingPresetId(p.id)
                           }}
+                          style={{
+                            padding: 6,
+                            color: active ? 'rgba(255,255,255,0.7)' : '#9A8A7A',
+                          }}
+                          aria-label={`Redigera ${p.label}`}
                         >
-                          {p.label}
-                        </Text>
-                      </UnstyledButton>
+                          <IconPencil size={14} />
+                        </UnstyledButton>
+                        <UnstyledButton
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            const updated = presets.filter((x) => x.id !== p.id)
+                            setPresets(updated)
+                            savePresets(updated)
+                          }}
+                          style={{
+                            padding: 6,
+                            color: active ? 'rgba(255,255,255,0.7)' : '#C42A2A',
+                          }}
+                          aria-label={`Ta bort ${p.label}`}
+                        >
+                          <IconX size={14} />
+                        </UnstyledButton>
+                      </Box>
                     )
                   })}
-                </Group>
+                </Stack>
 
-                {/* Custom time input */}
-                <Text
-                  style={{
-                    fontFamily: '"Manrope", sans-serif',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    color: '#7A6A5A',
-                    letterSpacing: '0.1em',
-                    textTransform: 'uppercase',
-                    marginBottom: 10,
-                  }}
-                >
-                  Egen tid
-                </Text>
-                <Group gap={8} align="center" mb={32}>
-                  <Box style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <input
-                      type="number"
-                      min={0}
-                      max={99}
-                      placeholder="0"
-                      value={customMin}
-                      onChange={(e) => setCustomMin(e.currentTarget.value)}
-                      style={{
-                        width: 60,
-                        height: 44,
-                        borderRadius: 12,
-                        border: '1.5px solid #E8E0D8',
-                        background: '#FFFFFF',
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: '#1C1410',
-                        textAlign: 'center',
-                        outline: 'none',
-                      }}
-                    />
-                    <Text
-                      style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 13,
-                        color: '#7A6A5A',
-                      }}
-                    >
-                      min
-                    </Text>
-                    <input
-                      type="number"
-                      min={0}
-                      max={59}
-                      placeholder="0"
-                      value={customSec}
-                      onChange={(e) => setCustomSec(e.currentTarget.value)}
-                      style={{
-                        width: 60,
-                        height: 44,
-                        borderRadius: 12,
-                        border: '1.5px solid #E8E0D8',
-                        background: '#FFFFFF',
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 18,
-                        fontWeight: 700,
-                        color: '#1C1410',
-                        textAlign: 'center',
-                        outline: 'none',
-                      }}
-                    />
-                    <Text
-                      style={{
-                        fontFamily: '"Manrope", sans-serif',
-                        fontSize: 13,
-                        color: '#7A6A5A',
-                      }}
-                    >
-                      sek
-                    </Text>
-                  </Box>
-                  <UnstyledButton
-                    onClick={() => {
-                      const m = parseInt(customMin || '0', 10)
-                      const s = parseInt(customSec || '0', 10)
-                      const total = m * 60 + s
-                      if (total > 0) {
-                        setTimerSeconds(total)
-                        setTimerRunning(false)
-                      }
-                    }}
+                {/* Add new preset */}
+                {addingPreset ? (
+                  <Box
                     style={{
-                      background: TERRA,
-                      borderRadius: 20,
-                      padding: '8px 16px',
+                      background: '#FFFFFF',
+                      borderRadius: 14,
+                      padding: '12px 14px',
+                      boxShadow: '0 1px 4px rgba(74,55,40,0.08)',
+                      marginBottom: 24,
                     }}
                   >
+                    <input
+                      // eslint-disable-next-line jsx-a11y/no-autofocus
+                      autoFocus
+                      value={newLabel}
+                      onChange={(e) => setNewLabel(e.currentTarget.value)}
+                      placeholder="Namn på preset"
+                      style={{
+                        width: '100%',
+                        marginBottom: 10,
+                        border: 'none',
+                        borderBottom: `1.5px solid ${TERRA}`,
+                        background: 'transparent',
+                        fontFamily: '"Manrope", sans-serif',
+                        fontSize: 14,
+                        fontWeight: 600,
+                        color: '#1C1410',
+                        outline: 'none',
+                        padding: '2px 0',
+                      }}
+                    />
+                    <Group gap={6} align="center">
+                      <input
+                        type="number"
+                        min={0}
+                        max={99}
+                        placeholder="0"
+                        value={newMin}
+                        onChange={(e) => setNewMin(e.currentTarget.value)}
+                        style={timeInputStyle}
+                      />
+                      <Text style={timeLabelStyle}>min</Text>
+                      <input
+                        type="number"
+                        min={0}
+                        max={59}
+                        placeholder="0"
+                        value={newSec}
+                        onChange={(e) => setNewSec(e.currentTarget.value)}
+                        style={timeInputStyle}
+                      />
+                      <Text style={timeLabelStyle}>sek</Text>
+                      <UnstyledButton
+                        onClick={() => {
+                          const m = parseInt(newMin || '0', 10)
+                          const s = parseInt(newSec || '0', 10)
+                          const total = m * 60 + s
+                          if (total > 0 && newLabel.trim()) {
+                            const updated = [
+                              ...presets,
+                              { id: Date.now().toString(), label: newLabel.trim(), seconds: total },
+                            ]
+                            setPresets(updated)
+                            savePresets(updated)
+                            setNewLabel('')
+                            setNewMin('')
+                            setNewSec('')
+                            setAddingPreset(false)
+                          }
+                        }}
+                        style={{
+                          marginLeft: 4,
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          background: TERRA,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <IconCheck size={14} color="#fff" stroke={2.5} />
+                      </UnstyledButton>
+                      <UnstyledButton
+                        onClick={() => setAddingPreset(false)}
+                        style={{
+                          width: 32,
+                          height: 32,
+                          borderRadius: '50%',
+                          background: '#EDE8E2',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        <IconX size={14} color="#7A6A5A" />
+                      </UnstyledButton>
+                    </Group>
+                  </Box>
+                ) : (
+                  <UnstyledButton
+                    onClick={() => setAddingPreset(true)}
+                    style={{
+                      border: '2px dashed #D0C4B8',
+                      borderRadius: 14,
+                      padding: '12px 14px',
+                      width: '100%',
+                      marginBottom: 24,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                    }}
+                  >
+                    <IconPlus size={14} color={TERRA} />
                     <Text
                       style={{
                         fontFamily: '"Manrope", sans-serif',
                         fontSize: 13,
                         fontWeight: 700,
-                        color: '#fff',
+                        color: TERRA,
+                        letterSpacing: '0.04em',
                       }}
                     >
-                      Sätt
+                      Lägg till preset
                     </Text>
                   </UnstyledButton>
-                </Group>
+                )}
 
                 <Box style={{ textAlign: 'center', marginBottom: 32 }}>
                   <Text
