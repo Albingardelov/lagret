@@ -30,3 +30,9 @@ dist-ssr
 
 # Test coverage
 coverage/
+
+# Worktrees
+.worktrees/
+
+# Superpowers brainstorm
+.superpowers/
