@@ -19,6 +19,8 @@ vi.mock('../../store/locationsStore', () => ({
 
 vi.mock('../../lib/categories', () => ({
   ITEM_CATEGORIES: [{ value: 'dairy', label: 'Mejeri' }],
+  CATEGORY_DEFAULT_UNIT: {} as Record<string, string>,
+  CATEGORY_DEFAULT_QTY: {} as Record<string, number>,
 }))
 
 vi.mock('../../lib/storageDurations', () => ({
@@ -26,6 +28,11 @@ vi.mock('../../lib/storageDurations', () => ({
 }))
 
 vi.mock('../../lib/units', () => ({
+  UNITS: [
+    { group: 'Vikt', items: ['g', 'kg'] },
+    { group: 'Volym', items: ['l'] },
+    { group: 'Styck', items: ['st'] },
+  ],
   UNITS_FLAT: [
     { value: 'st', label: 'st' },
     { value: 'l', label: 'l' },
