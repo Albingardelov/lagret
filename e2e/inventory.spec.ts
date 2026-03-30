@@ -8,7 +8,7 @@ test.beforeEach(async ({ authedPage: page }) => {
 test('visar lagersidan med befintliga varor', async ({ authedPage: page }) => {
   await page.goto('/')
 
-  await expect(page.getByText('Lagret')).toBeVisible()
+  await expect(page.getByRole('banner').getByText('Lagret')).toBeVisible()
 
   // Pasta is in pantry (default tab/pill)
   await expect(page.getByText('Pasta')).toBeVisible()
