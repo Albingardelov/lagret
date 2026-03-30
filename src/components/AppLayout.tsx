@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { AppShell, UnstyledButton, Text, Box, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { IconBox, IconBook2, IconShoppingCart, IconHome } from '@tabler/icons-react'
+import { IconBox, IconBook2, IconShoppingCart, IconHome, IconCalendarEvent } from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { path: '/', label: 'Lagret', icon: IconBox },
   { path: '/recipes', label: 'Recept', icon: IconBook2 },
   { path: '/shopping', label: 'Inköp', icon: IconShoppingCart },
+  { path: '/meal-plan', label: 'Veckoplan', icon: IconCalendarEvent },
   { path: '/household', label: 'Hushåll', icon: IconHome },
 ]
 

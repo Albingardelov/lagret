@@ -18,6 +18,9 @@ const ShoppingListPage = lazy(() =>
 const HouseholdPage = lazy(() =>
   import('./pages/HouseholdPage').then((m) => ({ default: m.HouseholdPage }))
 )
+const MealPlanPage = lazy(() =>
+  import('./pages/MealPlanPage').then((m) => ({ default: m.MealPlanPage }))
+)
 
 function SuspenseWrapper({ children }: { children: React.ReactNode }) {
   return <Suspense fallback={<PageLoader />}>{children}</Suspense>
@@ -57,6 +60,14 @@ export const router = createBrowserRouter([
         element: (
           <SuspenseWrapper>
             <ShoppingListPage />
+          </SuspenseWrapper>
+        ),
+      },
+      {
+        path: 'meal-plan',
+        element: (
+          <SuspenseWrapper>
+            <MealPlanPage />
           </SuspenseWrapper>
         ),
       },
