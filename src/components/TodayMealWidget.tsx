@@ -7,6 +7,7 @@ import { useMealPlanStore } from '../store/mealPlanStore'
 import { useInventoryStore } from '../store/inventoryStore'
 import { getRecipeById } from '../lib/recipes'
 import { matchRecipe, getAllIngredients } from '../lib/recipeMatching'
+import { RecipeDetailSheet } from './RecipeDetailSheet'
 import type { Recipe } from '../types'
 
 export function TodayMealWidget() {
@@ -14,6 +15,7 @@ export function TodayMealWidget() {
   const { items: mealItems, fetchItems } = useMealPlanStore()
   const { items: inventoryItems } = useInventoryStore()
   const [recipe, setRecipe] = useState<Recipe | null>(null)
+  const [sheetOpen, setSheetOpen] = useState(false)
 
   const today = dayjs().format('YYYY-MM-DD')
   const todayMeal = mealItems.find((m) => m.date === today)
@@ -49,59 +51,62 @@ export function TodayMealWidget() {
 
   if (todayMeal) {
     return (
-      <Box
-        onClick={() => navigate('/meal-plan')}
-        px="md"
-        py="sm"
-        style={{
-          borderLeft: '3px solid #53642e',
-          background: '#f8fbee',
-          cursor: 'pointer',
-        }}
-      >
-        <Group justify="space-between" align="center" wrap="nowrap">
-          <Box style={{ minWidth: 0 }}>
-            <Text
-              style={{
-                fontFamily: '"Manrope", sans-serif',
-                fontSize: 10,
-                fontWeight: 700,
-                letterSpacing: '0.08em',
-                textTransform: 'uppercase',
-                color: '#7a8a6a',
-                marginBottom: 2,
-              }}
-            >
-              Dagens middag
-            </Text>
-            <Text
-              style={{
-                fontFamily: '"Manrope", sans-serif',
-                fontSize: 15,
-                fontWeight: 700,
-                color: '#191d16',
-                lineHeight: 1.3,
-              }}
-              lineClamp={1}
-            >
-              {todayMeal.title}
-            </Text>
-            {ingredientStatus && (
+      <>
+        <Box
+          onClick={() => (recipe ? setSheetOpen(true) : navigate('/meal-plan'))}
+          px="md"
+          py="sm"
+          style={{
+            borderLeft: '3px solid #53642e',
+            background: '#f8fbee',
+            cursor: 'pointer',
+          }}
+        >
+          <Group justify="space-between" align="center" wrap="nowrap">
+            <Box style={{ minWidth: 0 }}>
               <Text
                 style={{
                   fontFamily: '"Manrope", sans-serif',
-                  fontSize: 12,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  letterSpacing: '0.08em',
+                  textTransform: 'uppercase',
                   color: '#7a8a6a',
-                  marginTop: 1,
+                  marginBottom: 2,
                 }}
               >
-                {ingredientStatus.matched}/{ingredientStatus.total} ingredienser
+                Dagens middag
               </Text>
-            )}
-          </Box>
-          <IconChevronRight size={18} color="#7a8a6a" style={{ flexShrink: 0 }} />
-        </Group>
-      </Box>
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: '#191d16',
+                  lineHeight: 1.3,
+                }}
+                lineClamp={1}
+              >
+                {todayMeal.title}
+              </Text>
+              {ingredientStatus && (
+                <Text
+                  style={{
+                    fontFamily: '"Manrope", sans-serif',
+                    fontSize: 12,
+                    color: '#7a8a6a',
+                    marginTop: 1,
+                  }}
+                >
+                  {ingredientStatus.matched}/{ingredientStatus.total} ingredienser
+                </Text>
+              )}
+            </Box>
+            <IconChevronRight size={18} color="#7a8a6a" style={{ flexShrink: 0 }} />
+          </Group>
+        </Box>
+        <RecipeDetailSheet recipe={recipe} opened={sheetOpen} onClose={() => setSheetOpen(false)} />
+      </>
     )
   }
 

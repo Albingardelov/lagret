@@ -11,6 +11,7 @@ import { getRecipeById } from '../lib/recipes'
 import { matchRecipe, getAllIngredients, getCached, setCache } from '../lib/recipeMatching'
 import { AddMealModal } from '../components/AddMealModal'
 import { IngredientReviewModal } from '../components/IngredientReviewModal'
+import { RecipeDetailSheet } from '../components/RecipeDetailSheet'
 import type { Recipe } from '../types'
 
 dayjs.extend(isoWeek)
@@ -36,6 +37,7 @@ export function MealPlanPage() {
   const [addModalDate, setAddModalDate] = useState<string | null>(null)
   const [reviewOpen, setReviewOpen] = useState(false)
   const [recipes, setRecipes] = useState<Record<string, Recipe>>({})
+  const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null)
 
   const { items, loading, fetchItems, removeItem, subscribeRealtime } = useMealPlanStore()
   const inventoryItems = useInventoryStore((s) => s.items)
@@ -165,6 +167,13 @@ export function MealPlanPage() {
                   border: meal ? '1px solid #dde4d0' : '1px dashed #c5ccb8',
                   borderLeft: isToday ? '4px solid #6b8e3a' : undefined,
                   background: meal ? '#f8fbee' : 'transparent',
+                  cursor: meal?.recipeId ? 'pointer' : undefined,
+                }}
+                onClick={() => {
+                  if (meal?.recipeId) {
+                    const r = recipes[String(meal.recipeId)]
+                    if (r) setSelectedRecipe(r)
+                  }
                 }}
               >
                 {meal ? (
@@ -191,7 +200,10 @@ export function MealPlanPage() {
                       variant="subtle"
                       color="gray"
                       size="sm"
-                      onClick={() => handleRemove(meal.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleRemove(meal.id)
+                      }}
                       aria-label="Ta bort måltid"
                     >
                       <IconX size={14} />
@@ -246,6 +258,12 @@ export function MealPlanPage() {
         onClose={() => setReviewOpen(false)}
         mealPlans={items.filter((i) => i.recipeId !== null)}
         recipes={recipes}
+      />
+
+      <RecipeDetailSheet
+        recipe={selectedRecipe}
+        opened={selectedRecipe !== null}
+        onClose={() => setSelectedRecipe(null)}
       />
     </Box>
   )
