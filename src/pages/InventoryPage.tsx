@@ -20,6 +20,7 @@ import { EditItemModal } from '../components/EditItemModal'
 import { CookingMode } from '../components/CookingMode'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { NotificationBanner } from '../components/NotificationBanner'
+import { TodayMealWidget } from '../components/TodayMealWidget'
 import { searchRecipes } from '../lib/recipes'
 import { useNavigate } from 'react-router-dom'
 const BG = '#F7F2EB'
@@ -75,6 +76,7 @@ export function InventoryPage() {
   return (
     <Stack gap={0} style={{ background: BG, minHeight: '100%' }}>
       <NotificationBanner />
+      <TodayMealWidget />
 
       {/* Hero header */}
       <Box px="md" pt="lg" pb="md">
