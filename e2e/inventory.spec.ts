@@ -17,8 +17,8 @@ test('visar lagersidan med befintliga varor', async ({ authedPage: page }) => {
 test('kan lägga till en ny vara', async ({ authedPage: page }) => {
   await page.goto('/')
 
-  // Click the FAB button
-  await page.getByRole('button', { name: /Lägg till vara/i }).click()
+  // Click the Inskanning chip to open the add-item modal
+  await page.getByText('Inskanning').click()
 
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()

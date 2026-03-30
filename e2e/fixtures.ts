@@ -118,12 +118,39 @@ export async function setupInventoryMocks(page: Page, items = MOCK_INVENTORY) {
     }
   })
 
-  // Mock households
+  // Mock households (must return array for .select('*'))
   await page.route('**/rest/v1/households**', (route) => {
     route.fulfill({
       status: 200,
       contentType: 'application/json',
-      body: JSON.stringify({ id: 'hh-1', name: 'Testfamiljen', invite_code: 'TEST123' }),
+      body: JSON.stringify([{ id: 'hh-1', name: 'Testfamiljen', invite_code: 'TEST123' }]),
+    })
+  })
+
+  // Mock household members RPC
+  await page.route('**/rest/v1/rpc/get_household_members', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([{ user_id: 'e2e-user-id', email: 'e2e@test.com' }]),
+    })
+  })
+
+  // Mock meal_plans (TodayMealWidget fetches on mount)
+  await page.route('**/rest/v1/meal_plans**', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
+    })
+  })
+
+  // Mock recipes (used by TodayMealWidget / search)
+  await page.route('**/rest/v1/recipes**', (route) => {
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify([]),
     })
   })
 

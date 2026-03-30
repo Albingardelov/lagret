@@ -1,7 +1,13 @@
 import { useEffect } from 'react'
 import { AppShell, UnstyledButton, Text, Box, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { IconBox, IconBook2, IconShoppingCart, IconHome, IconCalendarEvent } from '@tabler/icons-react'
+import {
+  IconBox,
+  IconBook2,
+  IconShoppingCart,
+  IconHome,
+  IconCalendarEvent,
+} from '@tabler/icons-react'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
