@@ -67,3 +67,12 @@ export interface ShoppingItem {
   isBought: boolean
   createdAt: string
 }
+
+export interface MealPlan {
+  id: string
+  householdId: string
+  date: string
+  recipeId: number | null
+  title: string
+  createdAt: string
+}
