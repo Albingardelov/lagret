@@ -6,7 +6,7 @@ type AuthState = {
   loading: boolean
   user: { id: string; email?: string } | null
   signInWithPassword: (email: string, password: string) => Promise<void>
-  signOut: () => void
+  signOut: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthState | null>(null)

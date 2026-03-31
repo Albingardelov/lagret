@@ -25,6 +25,13 @@ export default defineConfig([
     },
   },
   {
+    // Expo använder process.env för EXPO_PUBLIC_*
+    files: ['apps/mobile/**/*.{ts,tsx}'],
+    languageOptions: {
+      globals: { ...globals.browser, ...globals.node },
+    },
+  },
+  {
     // react-refresh-regler är inte relevanta för testfiler eller router
     files: [
       '**/__tests__/**/*.{ts,tsx}',
