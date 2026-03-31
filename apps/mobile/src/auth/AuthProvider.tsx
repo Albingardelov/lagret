@@ -13,7 +13,12 @@ const AuthContext = createContext<AuthState | null>(null)
 
 export function AuthProvider({ children }: PropsWithChildren) {
   const { user, loading, initialize, signInWithPassword, signOut } = store.useAuthStore()
-  useEffect(() => initialize(), [initialize])
+  useEffect(() => {
+    const unsub = initialize()
+    return () => {
+      unsub()
+    }
+  }, [initialize])
 
   const value = useMemo<AuthState>(
     () => ({
