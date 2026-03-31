@@ -57,6 +57,7 @@ import dayjs from 'dayjs'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { AddItemModal } from './AddItemModal'
+import { categoryKey } from '../lib/categories'
 
 interface Props {
   opened: boolean
@@ -917,7 +918,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {cat ?? t('cookingMode.all')}
+                          {cat ? t(categoryKey(cat)) : t('cookingMode.all')}
                         </Text>
                       </UnstyledButton>
                     )
@@ -937,7 +938,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       lineHeight: 1,
                     }}
                   >
-                    {activeCategory ?? t('cookingMode.allItems')}
+                    {activeCategory ? t(categoryKey(activeCategory)) : t('cookingMode.allItems')}
                   </Text>
                   <Text
                     style={{

@@ -20,6 +20,7 @@ import dayjs from 'dayjs'
 import { useTranslation } from 'react-i18next'
 import type { TFunction } from 'i18next'
 import type { InventoryItem } from '../types'
+import { categoryKey } from '../lib/categories'
 
 interface ItemCardProps {
   item: InventoryItem
@@ -190,7 +191,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
             }}
           >
             {item.quantity} {item.unit}
-            {item.category ? ` · ${item.category}` : ''}
+            {item.category ? ` · ${t(categoryKey(item.category))}` : ''}
           </Text>
         </Box>
 

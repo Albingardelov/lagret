@@ -72,6 +72,7 @@
     "totalItems_other": "{{count}} varor totalt",
     "expiringSoon": "{{count}} utgår snart",
     "expiringSoon_one": "{{count}} utgår snart",
+    "expiringSoon_other": "{{count}} utgår snart",
     "scan": "Inskanning",
     "cook": "Laga mat",
     "all": "Allt",

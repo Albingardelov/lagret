@@ -72,6 +72,7 @@
     "totalItems_other": "{{count}} items total",
     "expiringSoon": "{{count}} expiring soon",
     "expiringSoon_one": "{{count}} expiring soon",
+    "expiringSoon_other": "{{count}} expiring soon",
     "scan": "Scan",
     "cook": "Cook",
     "all": "All",
