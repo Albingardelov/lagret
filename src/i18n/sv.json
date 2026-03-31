@@ -1,0 +1,218 @@
+{
+  "common": {
+    "buttons": {
+      "add": "Lägg till",
+      "save": "Spara",
+      "cancel": "Avbryt",
+      "confirm": "Bekräfta",
+      "create": "Skapa",
+      "join": "Gå med",
+      "login": "Logga in",
+      "logout": "Logga ut",
+      "back": "Tillbaka",
+      "close": "Stäng",
+      "delete": "Ta bort",
+      "edit": "Redigera",
+      "search": "Sök"
+    },
+    "fields": {
+      "name": "Namn",
+      "quantity": "Antal",
+      "unit": "Enhet",
+      "location": "Förvaringsplats",
+      "expiryDate": "Bäst-före datum",
+      "category": "Kategori",
+      "note": "Notering",
+      "email": "E-postadress",
+      "password": "Lösenord"
+    },
+    "errors": {
+      "noHousehold": "Inget hushåll laddat – logga ut och in igen",
+      "noHouseholdShort": "Inget hushåll laddat",
+      "locationHasItems": "Platsen har varor – töm den först",
+      "unknownError": "Okänt fel"
+    }
+  },
+  "nav": {
+    "inventory": "Lagret",
+    "recipes": "Recept",
+    "shopping": "Inköp",
+    "household": "Hushåll"
+  },
+  "categories": {
+    "Mejeri": "Mejeri",
+    "Kött": "Kött",
+    "Fisk & skaldjur": "Fisk & skaldjur",
+    "Grönsaker": "Grönsaker",
+    "Frukt": "Frukt",
+    "Pasta & ris": "Pasta & ris",
+    "Bakning": "Bakning",
+    "Frukost": "Frukost",
+    "Konserver": "Konserver",
+    "Snacks": "Snacks",
+    "Dryck": "Dryck",
+    "Skafferi": "Skafferi",
+    "Såser & kryddor": "Såser & kryddor",
+    "Örter & kryddor": "Örter & kryddor"
+  },
+  "unitGroups": {
+    "Vikt": "Vikt",
+    "Volym": "Volym",
+    "Styck": "Styck"
+  },
+  "inventory": {
+    "title": "Lagret",
+    "subtitle": "Håll koll på dina råvaror",
+    "totalItems": "{{count}} vara totalt",
+    "totalItems_other": "{{count}} varor totalt",
+    "expiringSoon": "{{count}} utgår snart",
+    "scan": "Inskanning",
+    "cook": "Laga mat",
+    "all": "Allt",
+    "empty": "Inga varor här än",
+    "inspiration": "Inspiration",
+    "seeRecipes": "Se förslag",
+    "welcome": "Välkommen tillbaka"
+  },
+  "itemCard": {
+    "expired": "Utgången",
+    "today": "Idag",
+    "daysLeft": "{{count}} dag kvar",
+    "daysLeft_other": "{{count}} dagar kvar",
+    "fresh": "Fräscht"
+  },
+  "scanner": {
+    "cameraError": "Kamerafel",
+    "aim": "Rikta kameran mot streckkoden...",
+    "starting": "Startar kameran...",
+    "cancel": "Avbryt"
+  },
+  "addItem": {
+    "title": "Lägg till vara",
+    "barcode": "Streckkod",
+    "barcodeHint": "Skanna eller ange manuellt",
+    "scan": "Skanna",
+    "searching": "Söker produktinformation...",
+    "productFound": "Produkt hittad och ifylld automatiskt",
+    "unknownBarcode": "Okänd streckkod",
+    "unknownBarcodeHint": "Fyll i namn och enhet så sparas den för nästa gång",
+    "namePlaceholder": "T.ex. Mjölk",
+    "splitPortions": "Dela upp i portioner",
+    "portionCount": "Antal delar",
+    "eachPortion": "Varje del"
+  },
+  "editItem": {
+    "title": "Redigera vara",
+    "minLevel": "Minimumnivå",
+    "minLevelHint": "Läggs automatiskt i inköpslistan när antalet understiger detta"
+  },
+  "shopping": {
+    "title": "Inköpslista",
+    "subtitle": "Organisera din handling",
+    "addManual": "Lägg till vara manuellt",
+    "boughtItems": "Köpta varor",
+    "clearBought": "Rensa köpta varor",
+    "moveToInventory": "Lägg i lagret",
+    "empty": "Inköpslistan är tom",
+    "emptyHint": "Köp och flytta till lagret",
+    "addItem": "Lägg till vara",
+    "selectLocation": "Välj förvaringsplats för varje vara"
+  },
+  "recipes": {
+    "title": "Recept",
+    "subtitle": "Baserat på ditt lager",
+    "searchPlaceholder": "Sök recept, ingredienser...",
+    "emptyState": "Vad ska vi äta idag?",
+    "suggest": "Föreslå recept baserat på mitt lager",
+    "all": "Alla",
+    "favorites": "Favoriter",
+    "canCookNow": "Kan laga nu",
+    "almost": "Nästan",
+    "haveAll": "Du har allt",
+    "missingIngredient": "Saknar {{count}} ingrediens",
+    "missingIngredient_other": "Saknar {{count}} ingredienser",
+    "ingredients": "Ingredienser",
+    "shopMissing": "Handla saknade ingredienser",
+    "startCooking": "Laga rätten",
+    "cookingConfirmTitle": "Bocka av ingredienser du använt",
+    "cookingConfirmHint": "Varor från lagret minskas med 1 st",
+    "inventoryUpdated": "Lagret uppdaterat! Smaklig måltid 🍽️"
+  },
+  "cookingMode": {
+    "title": "Laga mat",
+    "done": "Färdig",
+    "presets": "Presets",
+    "addPreset": "Lägg till preset",
+    "searchIngredients": "Sök ingredienser...",
+    "allItems": "Alla varor",
+    "expiringSoon": "Utgår snart",
+    "unknownLocation": "OKÄND",
+    "all": "Alla",
+    "addItem": "Lägg till vara",
+    "presetName": "Namn på preset",
+    "editPreset": "Redigera {{name}}",
+    "deletePreset": "Ta bort {{name}}"
+  },
+  "household": {
+    "title": "Mitt Hushåll",
+    "getStarted": "Kom igång",
+    "create": "Skapa ett hushåll",
+    "createDescription": "Hantera ditt hem",
+    "householdName": "Hushållets namn",
+    "joinTitle": "Gå med i ett hushåll",
+    "inviteCode": "Inbjudningskod",
+    "myHouseholds": "Mina hushåll",
+    "active": "Aktivt",
+    "activeHousehold": "Aktivt hushåll",
+    "members": "Medlemmar",
+    "noMembers": "Inga medlemmar hittades",
+    "locations": "Dina behållare",
+    "addLocation": "Lägg till behållare",
+    "noLocations": "Inga förvaringsplatser än",
+    "manage": "Hantera hushåll",
+    "createOrJoin": "Skapa eller gå med i hushåll",
+    "settings": "Inställningar",
+    "leaveHousehold": "Lämna aktivt hushåll",
+    "addHousehold": "Lägg till hushåll",
+    "newLocation": "Ny förvaringsplats",
+    "editLocation": "Redigera förvaringsplats",
+    "notFound": "Hittade inget hushåll med den koden",
+    "language": "Språk",
+    "languageSwedish": "Svenska",
+    "languageEnglish": "Engelska"
+  },
+  "login": {
+    "createAccount": "Skapa konto",
+    "signIn": "Logga in",
+    "noAccount": "Inget konto? Skapa ett här",
+    "haveAccount": "Har du redan ett konto? Logga in",
+    "continueWithGoogle": "Fortsätt med Google",
+    "magicLink": "Skicka magic link",
+    "checkInbox": "Kolla din inbox!",
+    "magicLinkSent": "Vi har skickat en magic link till din e-post"
+  },
+  "notifications": {
+    "title": "Påminnelser om utgående varor",
+    "description": "Aktivera notiser för att få påminnelser när varor snart går ut",
+    "enable": "Aktivera",
+    "noThanks": "Nej tack",
+    "expiringSoon": "{{count}} vara går snart ut",
+    "expiringSoon_other": "{{count}} varor går snart ut"
+  },
+  "offline": {
+    "title": "Offline",
+    "description": "Du är offline. Senaste datan visas"
+  },
+  "notFound": {
+    "title": "Sidan hittades inte",
+    "goHome": "Gå till startsidan"
+  },
+  "expiryNotification": {
+    "appName": "Lagret – utgångsdatum",
+    "singleItem": "{{name}} går ut snart",
+    "multipleItems": "{{count}} varor går ut inom 3 dagar"
+  },
+  "errors": {
+    "label": "Fel"
+  }
+}

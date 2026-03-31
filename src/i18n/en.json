@@ -1,0 +1,218 @@
+{
+  "common": {
+    "buttons": {
+      "add": "Add",
+      "save": "Save",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "create": "Create",
+      "join": "Join",
+      "login": "Sign in",
+      "logout": "Sign out",
+      "back": "Back",
+      "close": "Close",
+      "delete": "Delete",
+      "edit": "Edit",
+      "search": "Search"
+    },
+    "fields": {
+      "name": "Name",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "location": "Storage location",
+      "expiryDate": "Best before",
+      "category": "Category",
+      "note": "Note",
+      "email": "Email address",
+      "password": "Password"
+    },
+    "errors": {
+      "noHousehold": "No household loaded – sign out and back in",
+      "noHouseholdShort": "No household loaded",
+      "locationHasItems": "Location has items – empty it first",
+      "unknownError": "Unknown error"
+    }
+  },
+  "nav": {
+    "inventory": "Pantry",
+    "recipes": "Recipes",
+    "shopping": "Shopping",
+    "household": "Household"
+  },
+  "categories": {
+    "Mejeri": "Dairy",
+    "Kött": "Meat",
+    "Fisk & skaldjur": "Fish & seafood",
+    "Grönsaker": "Vegetables",
+    "Frukt": "Fruit",
+    "Pasta & ris": "Pasta & rice",
+    "Bakning": "Baking",
+    "Frukost": "Breakfast",
+    "Konserver": "Canned goods",
+    "Snacks": "Snacks",
+    "Dryck": "Drinks",
+    "Skafferi": "Pantry",
+    "Såser & kryddor": "Sauces & spices",
+    "Örter & kryddor": "Herbs & spices"
+  },
+  "unitGroups": {
+    "Vikt": "Weight",
+    "Volym": "Volume",
+    "Styck": "Count"
+  },
+  "inventory": {
+    "title": "Pantry",
+    "subtitle": "Keep track of your ingredients",
+    "totalItems": "{{count}} item total",
+    "totalItems_other": "{{count}} items total",
+    "expiringSoon": "{{count}} expiring soon",
+    "scan": "Scan",
+    "cook": "Cook",
+    "all": "All",
+    "empty": "No items yet",
+    "inspiration": "Inspiration",
+    "seeRecipes": "See suggestions",
+    "welcome": "Welcome back"
+  },
+  "itemCard": {
+    "expired": "Expired",
+    "today": "Today",
+    "daysLeft": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left",
+    "fresh": "Fresh"
+  },
+  "scanner": {
+    "cameraError": "Camera error",
+    "aim": "Point the camera at the barcode...",
+    "starting": "Starting camera...",
+    "cancel": "Cancel"
+  },
+  "addItem": {
+    "title": "Add item",
+    "barcode": "Barcode",
+    "barcodeHint": "Scan or enter manually",
+    "scan": "Scan",
+    "searching": "Looking up product...",
+    "productFound": "Product found and filled in automatically",
+    "unknownBarcode": "Unknown barcode",
+    "unknownBarcodeHint": "Fill in name and unit and it will be saved for next time",
+    "namePlaceholder": "E.g. Milk",
+    "splitPortions": "Split into portions",
+    "portionCount": "Number of portions",
+    "eachPortion": "Each portion"
+  },
+  "editItem": {
+    "title": "Edit item",
+    "minLevel": "Minimum level",
+    "minLevelHint": "Automatically added to shopping list when quantity drops below this"
+  },
+  "shopping": {
+    "title": "Shopping list",
+    "subtitle": "Organise your groceries",
+    "addManual": "Add item manually",
+    "boughtItems": "Bought items",
+    "clearBought": "Clear bought items",
+    "moveToInventory": "Move to pantry",
+    "empty": "Shopping list is empty",
+    "emptyHint": "Buy and move to pantry",
+    "addItem": "Add item",
+    "selectLocation": "Select storage location for each item"
+  },
+  "recipes": {
+    "title": "Recipes",
+    "subtitle": "Based on your pantry",
+    "searchPlaceholder": "Search recipes, ingredients...",
+    "emptyState": "What are we eating today?",
+    "suggest": "Suggest recipes based on my pantry",
+    "all": "All",
+    "favorites": "Favorites",
+    "canCookNow": "Can cook now",
+    "almost": "Almost",
+    "haveAll": "You have everything",
+    "missingIngredient": "Missing {{count}} ingredient",
+    "missingIngredient_other": "Missing {{count}} ingredients",
+    "ingredients": "Ingredients",
+    "shopMissing": "Shop missing ingredients",
+    "startCooking": "Start cooking",
+    "cookingConfirmTitle": "Tick off ingredients you used",
+    "cookingConfirmHint": "Items in pantry will be reduced by 1",
+    "inventoryUpdated": "Pantry updated! Enjoy your meal 🍽️"
+  },
+  "cookingMode": {
+    "title": "Cook",
+    "done": "Done",
+    "presets": "Presets",
+    "addPreset": "Add preset",
+    "searchIngredients": "Search ingredients...",
+    "allItems": "All items",
+    "expiringSoon": "Expiring soon",
+    "unknownLocation": "UNKNOWN",
+    "all": "All",
+    "addItem": "Add item",
+    "presetName": "Preset name",
+    "editPreset": "Edit {{name}}",
+    "deletePreset": "Delete {{name}}"
+  },
+  "household": {
+    "title": "My Household",
+    "getStarted": "Get started",
+    "create": "Create a household",
+    "createDescription": "Manage your home",
+    "householdName": "Household name",
+    "joinTitle": "Join a household",
+    "inviteCode": "Invite code",
+    "myHouseholds": "My households",
+    "active": "Active",
+    "activeHousehold": "Active household",
+    "members": "Members",
+    "noMembers": "No members found",
+    "locations": "Your containers",
+    "addLocation": "Add container",
+    "noLocations": "No storage locations yet",
+    "manage": "Manage household",
+    "createOrJoin": "Create or join a household",
+    "settings": "Settings",
+    "leaveHousehold": "Leave active household",
+    "addHousehold": "Add household",
+    "newLocation": "New storage location",
+    "editLocation": "Edit storage location",
+    "notFound": "No household found with that code",
+    "language": "Language",
+    "languageSwedish": "Swedish",
+    "languageEnglish": "English"
+  },
+  "login": {
+    "createAccount": "Create account",
+    "signIn": "Sign in",
+    "noAccount": "No account? Create one here",
+    "haveAccount": "Already have an account? Sign in",
+    "continueWithGoogle": "Continue with Google",
+    "magicLink": "Send magic link",
+    "checkInbox": "Check your inbox!",
+    "magicLinkSent": "We've sent a magic link to your email"
+  },
+  "notifications": {
+    "title": "Expiry reminders",
+    "description": "Enable notifications to get reminders when items are about to expire",
+    "enable": "Enable",
+    "noThanks": "No thanks",
+    "expiringSoon": "{{count}} item expiring soon",
+    "expiringSoon_other": "{{count}} items expiring soon"
+  },
+  "offline": {
+    "title": "Offline",
+    "description": "You're offline. Showing last known data"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "goHome": "Go to home"
+  },
+  "expiryNotification": {
+    "appName": "Pantry – expiry dates",
+    "singleItem": "{{name}} is expiring soon",
+    "multipleItems": "{{count}} items expire within 3 days"
+  },
+  "errors": {
+    "label": "Error"
+  }
+}
