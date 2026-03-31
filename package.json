@@ -3,6 +3,10 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -14,7 +18,21 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "dev:pwa": "npm run dev --workspace=@lagret/pwa",
+    "build:pwa": "npm run build --workspace=@lagret/pwa",
+    "lint:pwa": "npm run lint --workspace=@lagret/pwa",
+    "format:pwa": "npm run format --workspace=@lagret/pwa",
+    "format:check:pwa": "npm run format:check --workspace=@lagret/pwa",
+    "preview:pwa": "npm run preview --workspace=@lagret/pwa",
+    "test:pwa": "npm run test --workspace=@lagret/pwa",
+    "test:pwa:watch": "npm run test:watch --workspace=@lagret/pwa",
+    "test:pwa:coverage": "npm run test:coverage --workspace=@lagret/pwa",
+    "test:pwa:e2e": "npm run test:e2e --workspace=@lagret/pwa",
+    "dev:mobile": "npm run dev --workspace=@lagret/mobile",
+    "build:mobile": "npm run build --workspace=@lagret/mobile",
+    "lint:mobile": "npm run lint --workspace=@lagret/mobile",
+    "build:core": "npm run build --workspace=@lagret/core"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
