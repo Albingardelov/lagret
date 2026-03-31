@@ -64,8 +64,10 @@
     "title": "Lagret",
     "subtitle": "Håll koll på dina råvaror",
     "totalItems": "{{count}} vara totalt",
+    "totalItems_one": "{{count}} vara totalt",
     "totalItems_other": "{{count}} varor totalt",
     "expiringSoon": "{{count}} utgår snart",
+    "expiringSoon_one": "{{count}} utgår snart",
     "scan": "Inskanning",
     "cook": "Laga mat",
     "all": "Allt",
@@ -78,6 +80,7 @@
     "expired": "Utgången",
     "today": "Idag",
     "daysLeft": "{{count}} dag kvar",
+    "daysLeft_one": "{{count}} dag kvar",
     "daysLeft_other": "{{count}} dagar kvar",
     "fresh": "Fräscht"
   },
@@ -130,6 +133,7 @@
     "almost": "Nästan",
     "haveAll": "Du har allt",
     "missingIngredient": "Saknar {{count}} ingrediens",
+    "missingIngredient_one": "Saknar {{count}} ingrediens",
     "missingIngredient_other": "Saknar {{count}} ingredienser",
     "ingredients": "Ingredienser",
     "shopMissing": "Handla saknade ingredienser",
@@ -197,6 +201,7 @@
     "enable": "Aktivera",
     "noThanks": "Nej tack",
     "expiringSoon": "{{count}} vara går snart ut",
+    "expiringSoon_one": "{{count}} vara går snart ut",
     "expiringSoon_other": "{{count}} varor går snart ut"
   },
   "offline": {

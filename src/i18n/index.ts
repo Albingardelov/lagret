@@ -3,7 +3,6 @@ import { initReactI18next } from 'react-i18next'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import dayjs from 'dayjs'
 import 'dayjs/locale/sv'
-import 'dayjs/locale/en'
 
 import sv from './sv.json'
 import en from './en.json'

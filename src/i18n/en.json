@@ -64,8 +64,10 @@
     "title": "Pantry",
     "subtitle": "Keep track of your ingredients",
     "totalItems": "{{count}} item total",
+    "totalItems_one": "{{count}} item total",
     "totalItems_other": "{{count}} items total",
     "expiringSoon": "{{count}} expiring soon",
+    "expiringSoon_one": "{{count}} expiring soon",
     "scan": "Scan",
     "cook": "Cook",
     "all": "All",
@@ -78,6 +80,7 @@
     "expired": "Expired",
     "today": "Today",
     "daysLeft": "{{count}} day left",
+    "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left",
     "fresh": "Fresh"
   },
@@ -130,6 +133,7 @@
     "almost": "Almost",
     "haveAll": "You have everything",
     "missingIngredient": "Missing {{count}} ingredient",
+    "missingIngredient_one": "Missing {{count}} ingredient",
     "missingIngredient_other": "Missing {{count}} ingredients",
     "ingredients": "Ingredients",
     "shopMissing": "Shop missing ingredients",
@@ -197,6 +201,7 @@
     "enable": "Enable",
     "noThanks": "No thanks",
     "expiringSoon": "{{count}} item expiring soon",
+    "expiringSoon_one": "{{count}} item expiring soon",
     "expiringSoon_other": "{{count}} items expiring soon"
   },
   "offline": {
