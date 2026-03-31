@@ -94,7 +94,11 @@ export function HouseholdPage() {
   const signOut = useAuthStore((s) => s.signOut)
   const navigate = useNavigate()
 
-  useErrorNotification(error, t('household.errorLabel'))
+  const notifyError = useErrorNotification()
+  useEffect(() => {
+    if (error) notifyError(error, t('household.errorLabel'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
 
   useEffect(() => {
     if (household) fetchLocations()

@@ -1,14 +1,14 @@
-import { useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { notifications } from '@mantine/notifications'
 
-export function useErrorNotification(error: string | null, title = 'Fel') {
-  useEffect(() => {
-    if (!error) return
+export function useErrorNotification() {
+  const { t } = useTranslation()
+  return (message: string, label?: string) => {
     notifications.show({
-      title,
-      message: error,
+      title: label ?? t('errors.label'),
+      message: t(message, { defaultValue: message }),
       color: 'red',
       autoClose: 5000,
     })
-  }, [error, title])
+  }
 }

@@ -77,8 +77,12 @@
     "all": "Allt",
     "empty": "Inga varor här än",
     "inspiration": "Inspiration",
+    "inspirationHint": "Vi har hittat recept som använder ingredienser som går ut snart.",
+    "inspirationQuestion": "Dags att laga något av din {{name}}?",
     "seeRecipes": "Se förslag",
-    "welcome": "Välkommen tillbaka"
+    "welcome": "Välkommen tillbaka",
+    "errorLabel": "Lagerfel",
+    "addItem": "Lägg till vara"
   },
   "itemCard": {
     "expired": "Utgången",
@@ -86,7 +90,10 @@
     "daysLeft": "{{count}} dag kvar",
     "daysLeft_one": "{{count}} dag kvar",
     "daysLeft_other": "{{count}} dagar kvar",
-    "fresh": "Fräscht"
+    "fresh": "Fräscht",
+    "lowStock": "Lågt lager",
+    "editItem": "Redigera {{name}}",
+    "deleteItem": "Ta bort {{name}}"
   },
   "scanner": {
     "cameraError": "Kamerafel",

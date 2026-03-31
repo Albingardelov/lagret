@@ -57,7 +57,11 @@ export function ShoppingListPage() {
   const [bulkDone, setBulkDone] = useState(false)
   const addInventoryItem = useInventoryStore((s) => s.addItem)
   const locations = useLocationsStore((s) => s.locations)
-  useErrorNotification(error, t('shopping.errorLabel'))
+  const notifyError = useErrorNotification()
+  useEffect(() => {
+    if (error) notifyError(error, t('shopping.errorLabel'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
 
   useEffect(() => {
     fetchItems()

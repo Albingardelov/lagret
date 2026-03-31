@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Button,
   Stack,
@@ -28,6 +29,7 @@ const MANROPE = '"Manrope", sans-serif'
 const EPILOGUE = '"Epilogue", sans-serif'
 
 export function InventoryPage() {
+  const { t } = useTranslation()
   const { loading, error, fetchItems, deleteItem, getExpiringSoon, subscribeRealtime, items } =
     useInventoryStore()
   const { locations, fetchLocations } = useLocationsStore()
@@ -38,7 +40,11 @@ export function InventoryPage() {
   const [cookingOpen, setCookingOpen] = useState(false)
   const [inspirationImage, setInspirationImage] = useState<string | null>(null)
   const navigate = useNavigate()
-  useErrorNotification(error, 'Lagerfel')
+  const notifyError = useErrorNotification()
+  useEffect(() => {
+    if (error) notifyError(error, t('inventory.errorLabel'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
   const expiring = getExpiringSoon(3)
   const featuredItem = expiring[0] ?? null
 
@@ -89,7 +95,7 @@ export function InventoryPage() {
             marginBottom: 6,
           }}
         >
-          Välkommen tillbaka
+          {t('inventory.welcome')}
         </Text>
         <Text
           style={{
@@ -102,13 +108,13 @@ export function InventoryPage() {
             marginBottom: 2,
           }}
         >
-          Håll koll på dina <em style={{ color: TERRA, fontStyle: 'italic' }}>råvaror.</em>
+          {t('inventory.subtitle')}
         </Text>
 
         {/* Stats row */}
         <Group gap="sm" mt={8} align="center">
           <Text style={{ fontFamily: MANROPE, fontSize: 13, color: '#7A6A5A' }}>
-            {items.length} varor totalt
+            {t('inventory.totalItems', { count: items.length })}
           </Text>
           {expiring.length > 0 && (
             <Group gap={4} align="center">
@@ -121,7 +127,7 @@ export function InventoryPage() {
                   fontWeight: 600,
                 }}
               >
-                {expiring.length} utgår snart
+                {t('inventory.expiringSoon', { count: expiring.length })}
               </Text>
             </Group>
           )}
@@ -151,7 +157,7 @@ export function InventoryPage() {
                 textTransform: 'uppercase',
               }}
             >
-              Inskanning
+              {t('inventory.scan')}
             </Text>
           </UnstyledButton>
           <Button
@@ -165,7 +171,7 @@ export function InventoryPage() {
               fontWeight: 600,
             }}
           >
-            Laga mat
+            {t('inventory.cook')}
           </Button>
         </Group>
       </Box>
@@ -174,7 +180,7 @@ export function InventoryPage() {
       <Box style={{ borderBottom: '1px solid rgba(180,160,140,0.25)' }}>
         <ScrollArea scrollbarSize={0} offsetScrollbars={false} px="md">
           <Group gap={0} wrap="nowrap">
-            {[{ id: 'all', name: 'Allt' }, ...locations].map((loc) => {
+            {[{ id: 'all', name: t('inventory.all') }, ...locations].map((loc) => {
               const active = activeTab === loc.id
               return (
                 <UnstyledButton
@@ -236,7 +242,7 @@ export function InventoryPage() {
                 fontWeight: 600,
               }}
             >
-              Inga varor här ännu
+              {t('inventory.empty')}
             </Text>
           </Stack>
         </Center>
@@ -269,7 +275,7 @@ export function InventoryPage() {
                         marginBottom: 8,
                       }}
                     >
-                      Inspiration
+                      {t('inventory.inspiration')}
                     </Text>
                     <Text
                       style={{
@@ -281,10 +287,9 @@ export function InventoryPage() {
                         marginBottom: 6,
                       }}
                     >
-                      Dags att laga något av din{' '}
-                      <em style={{ color: TERRA, fontStyle: 'italic' }}>
-                        {featuredItem.name.toLowerCase()}?
-                      </em>
+                      {t('inventory.inspirationQuestion', {
+                        name: featuredItem.name.toLowerCase(),
+                      })}
                     </Text>
                     <Text
                       style={{
@@ -295,7 +300,7 @@ export function InventoryPage() {
                         lineHeight: 1.5,
                       }}
                     >
-                      Vi har hittat recept som använder ingredienser som går ut snart.
+                      {t('inventory.inspirationHint')}
                     </Text>
                     <Button
                       size="sm"
@@ -309,7 +314,7 @@ export function InventoryPage() {
                         marginBottom: inspirationImage ? 14 : 16,
                       }}
                     >
-                      Se förslag
+                      {t('inventory.seeRecipes')}
                     </Button>
                   </Box>
                   {inspirationImage && (
@@ -349,7 +354,7 @@ export function InventoryPage() {
             border: 'none',
             boxShadow: '0 4px 16px rgba(181,67,42,0.4), 0 0 0 1.5px rgba(247,242,235,0.9)',
           }}
-          aria-label="Lägg till vara"
+          aria-label={t('inventory.addItem')}
         >
           <IconPlus size={24} color="#fff" />
         </ActionIcon>

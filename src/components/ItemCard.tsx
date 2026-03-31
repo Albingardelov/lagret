@@ -17,6 +17,8 @@ import {
   IconPlant,
 } from '@tabler/icons-react'
 import dayjs from 'dayjs'
+import { useTranslation } from 'react-i18next'
+import type { TFunction } from 'i18next'
 import type { InventoryItem } from '../types'
 
 interface ItemCardProps {
@@ -63,32 +65,48 @@ const CATEGORY_COLORS: Record<string, { bg: string; icon: string }> = {
 
 const DEFAULT_ICON_STYLE = { bg: '#F0EEE8', icon: '#7A6A5A' }
 
-function expiryStatus(dateStr?: string) {
+function expiryStatus(dateStr: string | undefined, t: TFunction) {
   if (!dateStr) return null
   const diff = dayjs(dateStr).diff(dayjs(), 'day')
   if (diff < 0)
-    return { label: 'Utgången', borderColor: '#DC2626', badgeBg: '#FEE2E2', badgeText: '#991B1B' }
+    return {
+      label: t('itemCard.expired'),
+      borderColor: '#DC2626',
+      badgeBg: '#FEE2E2',
+      badgeText: '#991B1B',
+    }
   if (diff === 0)
-    return { label: 'Idag', borderColor: '#EA580C', badgeBg: '#FFEDD5', badgeText: '#9A3412' }
+    return {
+      label: t('itemCard.today'),
+      borderColor: '#EA580C',
+      badgeBg: '#FFEDD5',
+      badgeText: '#9A3412',
+    }
   if (diff <= 3)
     return {
-      label: `${diff} dag${diff === 1 ? '' : 'ar'} kvar`,
+      label: t('itemCard.daysLeft', { count: diff }),
       borderColor: '#EA580C',
       badgeBg: '#FFEDD5',
       badgeText: '#9A3412',
     }
   if (diff <= 7)
     return {
-      label: `${diff} dagar kvar`,
+      label: t('itemCard.daysLeft', { count: diff }),
       borderColor: '#16A34A',
       badgeBg: '#DCFCE7',
       badgeText: '#166534',
     }
-  return { label: 'Fräscht', borderColor: '#16A34A', badgeBg: '#DCFCE7', badgeText: '#166534' }
+  return {
+    label: t('itemCard.fresh'),
+    borderColor: '#16A34A',
+    badgeBg: '#DCFCE7',
+    badgeText: '#166534',
+  }
 }
 
 export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
-  const expiry = expiryStatus(item.expiryDate)
+  const { t } = useTranslation()
+  const expiry = expiryStatus(item.expiryDate, t)
   const isUrgent = item.expiryDate !== undefined && dayjs(item.expiryDate).diff(dayjs(), 'day') <= 0
   const isLowStock =
     item.minQuantity !== undefined && item.minQuantity > 0 && item.quantity < item.minQuantity
@@ -229,7 +247,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
                   textTransform: 'uppercase',
                 }}
               >
-                Lågt lager
+                {t('itemCard.lowStock')}
               </Text>
             </Box>
           )}
@@ -238,7 +256,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
               size={28}
               variant="subtle"
               onClick={() => onEdit(item)}
-              aria-label={`Redigera ${item.name}`}
+              aria-label={t('itemCard.editItem', { name: item.name })}
               style={{ color: '#7A6A5A' }}
             >
               <IconEdit size={14} />
@@ -247,7 +265,7 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
               size={28}
               variant="subtle"
               onClick={() => onDelete(item.id)}
-              aria-label={`Ta bort ${item.name}`}
+              aria-label={t('itemCard.deleteItem', { name: item.name })}
               style={{ color: '#C42A2A' }}
             >
               <IconTrash size={14} />

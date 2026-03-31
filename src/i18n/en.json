@@ -77,8 +77,12 @@
     "all": "All",
     "empty": "No items yet",
     "inspiration": "Inspiration",
+    "inspirationHint": "We found recipes that use ingredients expiring soon.",
+    "inspirationQuestion": "Time to cook something with your {{name}}?",
     "seeRecipes": "See suggestions",
-    "welcome": "Welcome back"
+    "welcome": "Welcome back",
+    "errorLabel": "Inventory error",
+    "addItem": "Add item"
   },
   "itemCard": {
     "expired": "Expired",
@@ -86,7 +90,10 @@
     "daysLeft": "{{count}} day left",
     "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left",
-    "fresh": "Fresh"
+    "fresh": "Fresh",
+    "lowStock": "Low stock",
+    "editItem": "Edit {{name}}",
+    "deleteItem": "Delete {{name}}"
   },
   "scanner": {
     "cameraError": "Camera error",
