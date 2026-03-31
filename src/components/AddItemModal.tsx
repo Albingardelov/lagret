@@ -48,7 +48,7 @@ export function AddItemModal({
   defaultName,
   onAdded,
 }: Props) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
   const locations = useLocationsStore((s) => s.locations)
@@ -123,7 +123,8 @@ export function AddItemModal({
     const entry = await lookupBarcodeRegistry(code)
     setLookupLoading(false)
     if (entry) {
-      form.setFieldValue('name', entry.name)
+      const productName = i18n.language.startsWith('en') && entry.nameEn ? entry.nameEn : entry.name
+      form.setFieldValue('name', productName)
       form.setFieldValue('unit', entry.unit)
       if (entry.category) form.setFieldValue('category', entry.category)
       setLookupSuccess(true)
