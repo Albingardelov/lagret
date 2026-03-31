@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Create a monorepo with `apps/pwa`, `apps/mobile` (Expo), and `packages/core` so the RN app can reuse the PWA’s domain logic and match UX/design closely.
+**Goal:** Add `apps/mobile` (Expo) and `packages/core` so the RN app can reuse the PWA’s domain logic and match UX/design closely, while keeping the existing PWA in place initially.
 
 **Architecture:** Keep platform UI and navigation separate (Mantine/React Router for web, React Navigation for mobile) while centralizing domain logic (Zustand stores, Supabase queries, mapping helpers, types) in `packages/core` with small platform adapters.
 
@@ -21,9 +21,8 @@ export PATH="$HOME/.nvm/versions/node/v24.14.1/bin:/usr/bin:/bin:$PATH"
 
 ## Target file structure (end state)
 
-- `apps/pwa/` (existing web app, minimally changed)
-  - `apps/pwa/src/*` (web UI, routes, Mantine)
-  - `apps/pwa/vite.config.ts`, `apps/pwa/index.html`, etc.
+- `apps/mobile/` (new Expo app)
+  - `apps/mobile/app/*` or `apps/mobile/src/*` (mobile screens + navigation + theme)
 - `apps/mobile/` (new Expo app)
   - `apps/mobile/app/*` or `apps/mobile/src/*` (mobile screens + navigation + theme)
 - `packages/core/` (shared domain)
@@ -32,9 +31,11 @@ export PATH="$HOME/.nvm/versions/node/v24.14.1/bin:/usr/bin:/bin:$PATH"
   - `packages/core/src/types/*`
   - `packages/core/src/platform/*` (storage + auth redirect/linking adapters)
 
+PWA stays at repo root (initially). After mobile is working, we incrementally switch PWA imports to use `packages/core` (option B) to avoid logic drift.
+
 ## Manual verification checklist (run occasionally)
 
-- PWA still starts: `npm run dev` from `apps/pwa`
+- PWA still starts (root): `npm run dev`
 - Mobile starts: `npm run dev` from `apps/mobile` (Expo)
 - Shared package builds typecheck: `npm run build` (root orchestrator)
 
@@ -77,7 +78,7 @@ Expected: Now on `feat/react-native-monorepo`.
 
 Edit `package.json`:
 - Add `"workspaces": ["apps/*", "packages/*"]`
-- Keep existing scripts for now (we’ll rewire after moving PWA into `apps/pwa`)
+- Keep existing scripts for now (PWA remains at repo root)
 
 - [ ] **Step 2: Add root scripts to delegate**
 
@@ -113,75 +114,7 @@ EOF
 
 ---
 
-### Task 3: Move current PWA into `apps/pwa` (minimal behavior changes)
-
-**Files:**
-- Move/Create/Modify: many under `apps/pwa/*`
-
-- [ ] **Step 1: Create directory**
-
-Run:
-
-```bash
-mkdir -p apps/pwa
-```
-
-- [ ] **Step 2: Move PWA files into `apps/pwa`**
-
-Move these into `apps/pwa/`:
-- `src/`, `public/`, `index.html`
-- `vite.config.ts`, `vitest.config.ts`, `playwright.config.ts`
-- `tsconfig*.json`, `eslint.config.js`
-- `vercel.json` (if PWA is deployed from repo root, decide later; for now keep with PWA)
-
-Keep these at repo root:
-- `supabase/`, `docs/`, `e2e/` (unless `e2e` is PWA-specific; then move under `apps/pwa/e2e`)
-
-- [ ] **Step 3: Add `apps/pwa/package.json`**
-
-Create `apps/pwa/package.json` with:
-- name like `@lagret/pwa`
-- dependencies/devDependencies copied from current root `package.json` (PWA-specific)
-- scripts: `dev`, `build`, `lint`, `test`, `test:e2e`
-
-- [ ] **Step 4: Update paths in configs**
-
-Fix any config files that assume root paths (examples):
-- Vite `root` and `publicDir`
-- Playwright `testDir`
-- TSConfig references
-
-- [ ] **Step 5: Root scripts delegate to PWA**
-
-Update root `package.json` scripts to run `npm --workspace @lagret/pwa ...` for PWA tasks.
-
-- [ ] **Step 6: Smoke-run PWA**
-
-Run:
-
-```bash
-export PATH="$HOME/.nvm/versions/node/v24.14.1/bin:/usr/bin:/bin:$PATH"
-npm --workspace @lagret/pwa run dev
-```
-
-Expected: Vite starts; app loads.
-
-- [ ] **Step 7: Commit PWA move**
-
-Run:
-
-```bash
-git add -A
-git commit -m "$(cat <<'EOF'
-refactor: move PWA into apps/pwa workspace
-
-EOF
-)"
-```
-
----
-
-### Task 4: Create `packages/core` skeleton (shared domain)
+### Task 3: Create `packages/core` skeleton (shared domain)
 
 **Files:**
 - Create: `packages/core/package.json`
@@ -242,11 +175,70 @@ EOF
 
 ---
 
-### Task 5: Migrate shared types + pure helpers from PWA to `packages/core`
+### Task 4: Migrate shared types + pure helpers from PWA to `packages/core`
+
+**Files:**
+- Create: `packages/core/package.json`
+- Create: `packages/core/tsconfig.json`
+- Create: `packages/core/src/index.ts`
+- Create: `packages/core/src/lib/*`
+- Create: `packages/core/src/store/*`
+- Create: `packages/core/src/types/*`
+- Create: `packages/core/src/platform/*`
+
+- [ ] **Step 1: Create package skeleton**
+
+Run:
+
+```bash
+mkdir -p packages/core/src/{lib,store,types,platform}
+```
+
+- [ ] **Step 2: Create `packages/core/package.json`**
+
+Include:
+- name: `@lagret/core`
+- main/exports for TS (prefer `"type": "module"`, `"exports": { ".": "./src/index.ts" }` initially)
+- deps: `zustand`, `@supabase/supabase-js`, `dayjs` (only if used in shared code)
+
+- [ ] **Step 3: Add `supabase` client factory**
+
+Create `packages/core/src/lib/supabase.ts` exporting something like:
+- `createSupabaseClient({ url, anonKey })`
+
+Avoid `import.meta.env` usage in core.
+
+- [ ] **Step 4: Add platform adapters (stubs)**
+
+Create:
+- `packages/core/src/platform/storage.ts` (interface)
+- `packages/core/src/platform/webStorage.ts` (localStorage impl; used by PWA)
+- `packages/core/src/platform/nativeStorage.ts` (AsyncStorage impl; used by mobile)
+
+Keep these thin and dependency-contained.
+
+- [ ] **Step 5: Export barrel**
+
+In `packages/core/src/index.ts`, export `lib`, `store`, and `types` public API.
+
+- [ ] **Step 6: Commit core skeleton**
+
+Run:
+
+```bash
+git add packages/core
+git commit -m "$(cat <<'EOF'
+chore: add shared core package skeleton
+
+EOF
+)"
+```
+
+---
 
 **Files:**
 - Modify/Create: `packages/core/src/types/*`
-- Modify: `apps/pwa/src/*` imports
+- Modify: PWA imports (repo root `src/*`)
 
 - [ ] **Step 1: Move `src/types` (or equivalent) to core**
 
@@ -261,7 +253,7 @@ Update PWA imports to use `@lagret/core` exports.
 Run:
 
 ```bash
-git add packages/core apps/pwa
+git add packages/core src
 git commit -m "$(cat <<'EOF'
 refactor: share domain types via @lagret/core
 
@@ -271,11 +263,11 @@ EOF
 
 ---
 
-### Task 6: Migrate Supabase wrapper + mapping helpers to core
+### Task 5: Migrate Supabase wrapper + mapping helpers to core
 
 **Files:**
 - Create/Modify: `packages/core/src/lib/*`
-- Modify: `apps/pwa/src/lib/supabase.ts` (becomes thin wrapper)
+- Modify: `src/lib/supabase.ts` (becomes thin wrapper)
 
 - [ ] **Step 1: Move logic into core**
 
@@ -289,7 +281,7 @@ Refactor so:
 Run:
 
 ```bash
-git add packages/core apps/pwa
+git add packages/core src
 git commit -m "$(cat <<'EOF'
 refactor: centralize supabase client factory in @lagret/core
 
@@ -299,12 +291,12 @@ EOF
 
 ---
 
-### Task 7: Migrate Zustand stores into `packages/core` with platform adapter injections
+### Task 6: Migrate Zustand stores into `packages/core` with platform adapter injections
 
 **Files:**
 - Create/Modify: `packages/core/src/store/*`
-- Modify: `apps/pwa/src/store/*` (becomes re-exports or removed)
-- Modify: `apps/pwa/src/App.tsx` and store imports as needed
+- Modify: `src/store/*` (becomes re-exports or removed)
+- Modify: `src/App.tsx` and store imports as needed
 
 - [ ] **Step 1: Move one store at a time (start with auth)**
 
@@ -320,14 +312,14 @@ Goal: stores in core have zero `window` usage and no direct `localStorage`.
 
 - [ ] **Step 3: Ensure PWA still runs**
 
-Smoke run `apps/pwa` dev server again.
+Smoke run root dev server again.
 
 - [ ] **Step 4: Commit store migration**
 
 Run:
 
 ```bash
-git add packages/core apps/pwa
+git add packages/core src
 git commit -m "$(cat <<'EOF'
 refactor: move zustand stores into shared @lagret/core
 
@@ -337,7 +329,7 @@ EOF
 
 ---
 
-### Task 8: Scaffold Expo app in `apps/mobile`
+### Task 7: Scaffold Expo app in `apps/mobile`
 
 **Files:**
 - Create: `apps/mobile/*`
@@ -381,7 +373,7 @@ EOF
 
 ---
 
-### Task 9: Implement mobile theme + navigation shell matching PWA
+### Task 8: Implement mobile theme + navigation shell matching PWA
 
 **Files:**
 - Create/Modify: `apps/mobile/src/theme/*` (or `app/theme/*`)
@@ -421,7 +413,7 @@ EOF
 
 ---
 
-### Task 10: Wire mobile screens to shared stores (incremental)
+### Task 9: Wire mobile screens to shared stores (incremental)
 
 **Files:**
 - Modify: `apps/mobile/src/screens/*`
@@ -443,7 +435,7 @@ One commit per screen to keep history readable.
 
 ## Self-review (plan vs spec)
 
-- Spec requires: Expo + bottom tabs + shared `packages/core` + platform adapters + terra theme → covered by Tasks 2–10.
+- Spec requires: Expo + bottom tabs + shared `packages/core` + platform adapters + terra theme → covered by Tasks 2–9.
 - No placeholders like TBD/TODO in steps → OK.
-- Naming consistency: `@lagret/pwa`, `@lagret/mobile`, `@lagret/core` used throughout.
+- Naming consistency: `@lagret/mobile`, `@lagret/core` used throughout.
 
