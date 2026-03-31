@@ -254,7 +254,12 @@
     "continueWithGoogle": "Fortsätt med Google",
     "magicLink": "Skicka magic link",
     "checkInbox": "Kolla din inbox!",
-    "magicLinkSent": "Vi har skickat en magic link till din e-post"
+    "magicLinkSent": "Vi har skickat en magic link till {{email}}",
+    "accountCreated": "Konto skapat!",
+    "confirmEmail": "Kolla {{email}} och bekräfta din e-postadress för att aktivera kontot.",
+    "useMagicLink": "Logga in med magic link istället",
+    "backToPassword": "Tillbaka till lösenordsinloggning",
+    "passwordPlaceholder": "Minst 6 tecken"
   },
   "notifications": {
     "title": "Påminnelser om utgående varor",

@@ -13,6 +13,7 @@ import {
 } from '@mantine/core'
 import { IconBrandGoogle, IconCheck, IconMail } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuthStore } from '../store/authStore'
 
 type Mode = 'login' | 'register' | 'magic'
@@ -21,6 +22,7 @@ export function LoginPage() {
   const { signInWithEmail, signInWithPassword, signUpWithPassword, signInWithGoogle } =
     useAuthStore()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [mode, setMode] = useState<Mode>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -44,7 +46,7 @@ export function LoginPage() {
         setSent(true)
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Något gick fel')
+      setError(e instanceof Error ? e.message : t('common.errors.unknownError'))
     } finally {
       setLoading(false)
     }
@@ -62,29 +64,29 @@ export function LoginPage() {
       <Paper withBorder p="xl" radius="md" w="100%" maw={400}>
         <Stack gap="md">
           <Text size="xl" fw={700} ta="center">
-            {mode === 'register' ? 'Skapa konto' : 'Logga in'}
+            {mode === 'register' ? t('login.createAccount') : t('login.signIn')}
           </Text>
 
           {sent ? (
             <Alert
               icon={<IconCheck size={16} />}
               color="green"
-              title={mode === 'register' ? 'Konto skapat!' : 'Kolla din inbox!'}
+              title={mode === 'register' ? t('login.accountCreated') : t('login.checkInbox')}
             >
               {mode === 'register'
-                ? `Kolla ${email} och bekräfta din e-postadress för att aktivera kontot.`
-                : `Vi har skickat en magic link till ${email}.`}
+                ? t('login.confirmEmail', { email })
+                : t('login.magicLinkSent', { email })}
             </Alert>
           ) : (
             <>
               {error && (
-                <Alert color="red" title="Fel">
+                <Alert color="red" title={t('errors.label')}>
                   {error}
                 </Alert>
               )}
 
               <TextInput
-                label="E-postadress"
+                label={t('common.fields.email')}
                 placeholder="din@epost.se"
                 type="email"
                 value={email}
@@ -94,8 +96,8 @@ export function LoginPage() {
 
               {mode !== 'magic' && (
                 <PasswordInput
-                  label="Lösenord"
-                  placeholder="Minst 6 tecken"
+                  label={t('common.fields.password')}
+                  placeholder={t('login.passwordPlaceholder')}
                   value={password}
                   onChange={(e) => setPassword(e.currentTarget.value)}
                   onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
@@ -109,36 +111,36 @@ export function LoginPage() {
                 fullWidth
               >
                 {mode === 'login'
-                  ? 'Logga in'
+                  ? t('login.signIn')
                   : mode === 'register'
-                    ? 'Skapa konto'
-                    : 'Skicka magic link'}
+                    ? t('login.createAccount')
+                    : t('login.magicLink')}
               </Button>
 
               <Stack gap={4} align="center">
                 {mode === 'login' && (
                   <>
                     <Anchor size="sm" onClick={() => resetState('register')}>
-                      Inget konto? Skapa ett här
+                      {t('login.noAccount')}
                     </Anchor>
                     <Anchor size="sm" c="dimmed" onClick={() => resetState('magic')}>
-                      Logga in med magic link istället
+                      {t('login.useMagicLink')}
                     </Anchor>
                   </>
                 )}
                 {mode === 'register' && (
                   <Anchor size="sm" onClick={() => resetState('login')}>
-                    Har du redan ett konto? Logga in
+                    {t('login.haveAccount')}
                   </Anchor>
                 )}
                 {mode === 'magic' && (
                   <Anchor size="sm" onClick={() => resetState('login')}>
-                    Tillbaka till lösenordsinloggning
+                    {t('login.backToPassword')}
                   </Anchor>
                 )}
               </Stack>
 
-              <Divider label="eller" labelPosition="center" />
+              <Divider label={t('common.or')} labelPosition="center" />
 
               <Button
                 leftSection={<IconBrandGoogle size={16} />}
@@ -146,7 +148,7 @@ export function LoginPage() {
                 onClick={signInWithGoogle}
                 fullWidth
               >
-                Fortsätt med Google
+                {t('login.continueWithGoogle')}
               </Button>
 
               {mode === 'magic' && (
@@ -158,7 +160,7 @@ export function LoginPage() {
                   disabled={!email.trim()}
                   fullWidth
                 >
-                  Skicka magic link
+                  {t('login.magicLink')}
                 </Button>
               )}
             </>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Notification as MantineNotification, Button, Group, Text } from '@mantine/core'
 import { IconBell, IconBellOff } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 export const NOTIF_DEFAULT_DAYS = 3
 
@@ -9,6 +10,7 @@ interface Props {
 }
 
 export function NotificationBanner({ daysThreshold = NOTIF_DEFAULT_DAYS }: Props) {
+  const { t } = useTranslation()
   const [dismissed, setDismissed] = useState(
     () => localStorage.getItem('lagret:notif-dismissed') === 'true'
   )
@@ -39,16 +41,16 @@ export function NotificationBanner({ daysThreshold = NOTIF_DEFAULT_DAYS }: Props
     <MantineNotification
       icon={<IconBell size={18} />}
       color="blue"
-      title="Påminnelser om utgående varor"
+      title={t('notifications.title')}
       onClose={dismiss}
       style={{ marginBottom: 'var(--mantine-spacing-md)' }}
     >
       <Text size="sm" mb="xs">
-        Aktivera notiser för att få påminnelser när varor snart går ut.
+        {t('notifications.description')}
       </Text>
       <Group gap="xs">
         <Button size="xs" onClick={requestPermission}>
-          Aktivera
+          {t('notifications.enable')}
         </Button>
         <Button
           size="xs"
@@ -57,7 +59,7 @@ export function NotificationBanner({ daysThreshold = NOTIF_DEFAULT_DAYS }: Props
           leftSection={<IconBellOff size={14} />}
           onClick={dismiss}
         >
-          Nej tack
+          {t('notifications.noThanks')}
         </Button>
       </Group>
     </MantineNotification>

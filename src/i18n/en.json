@@ -254,7 +254,12 @@
     "continueWithGoogle": "Continue with Google",
     "magicLink": "Send magic link",
     "checkInbox": "Check your inbox!",
-    "magicLinkSent": "We've sent a magic link to your email"
+    "magicLinkSent": "We've sent a magic link to {{email}}",
+    "accountCreated": "Account created!",
+    "confirmEmail": "Check {{email}} and confirm your email address to activate your account.",
+    "useMagicLink": "Sign in with magic link instead",
+    "backToPassword": "Back to password sign in",
+    "passwordPlaceholder": "At least 6 characters"
   },
   "notifications": {
     "title": "Expiry reminders",
