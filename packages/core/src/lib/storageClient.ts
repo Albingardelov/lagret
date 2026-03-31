@@ -1,4 +1,4 @@
-import type { StorageAdapter } from '../platform/storage.ts'
+import type { StorageAdapter } from '../platform/storage'
 
 let storage: StorageAdapter | null = null
 

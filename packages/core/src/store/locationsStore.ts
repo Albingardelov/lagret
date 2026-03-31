@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import type { LocationIcon, StorageLocation } from '../types/index.ts'
-import { getSupabaseClient } from '../lib/supabaseClient.ts'
-import { useHouseholdStore } from './householdStore.ts'
+import type { LocationIcon, StorageLocation } from '../types'
+import { getSupabaseClient } from '../lib/supabaseClient'
+import { useHouseholdStore } from './householdStore'
 
 interface LocationsState {
   locations: StorageLocation[]

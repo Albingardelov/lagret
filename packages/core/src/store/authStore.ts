@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { Session, User } from '@supabase/supabase-js'
-import { getAuthRedirectUrl, getSupabaseClient } from '../lib/supabaseClient.ts'
+import { getAuthRedirectUrl, getSupabaseClient } from '../lib/supabaseClient'
 
 interface AuthState {
   user: User | null

@@ -1,7 +1,7 @@
 import { create } from 'zustand'
-import type { Household, HouseholdMember } from '../types/index.ts'
-import { getStorageAdapter } from '../lib/storageClient.ts'
-import { getSupabaseClient } from '../lib/supabaseClient.ts'
+import type { Household, HouseholdMember } from '../types'
+import { getStorageAdapter } from '../lib/storageClient'
+import { getSupabaseClient } from '../lib/supabaseClient'
 
 const ACTIVE_HH_KEY = 'lagret:activeHousehold'
 

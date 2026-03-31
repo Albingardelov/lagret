@@ -1,8 +1,8 @@
 import { create } from 'zustand'
-import type { InventoryItem } from '../types/index.ts'
-import { getSupabaseClient } from '../lib/supabaseClient.ts'
-import { useHouseholdStore } from './householdStore.ts'
-import { useShoppingStore } from './shoppingStore.ts'
+import type { InventoryItem } from '../types'
+import { getSupabaseClient } from '../lib/supabaseClient'
+import { useHouseholdStore } from './householdStore'
+import { useShoppingStore } from './shoppingStore'
 
 type InventoryRow = {
   id: string

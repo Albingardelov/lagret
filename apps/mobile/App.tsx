@@ -1,7 +1,7 @@
 import 'react-native-gesture-handler'
 
 import { StatusBar } from 'expo-status-bar'
-import { NavigationContainer } from '@react-navigation/native'
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StyleSheet } from 'react-native'
 
@@ -28,8 +28,9 @@ function AppShell() {
   return (
     <NavigationContainer
       theme={{
-        dark: false,
+        ...DefaultTheme,
         colors: {
+          ...DefaultTheme.colors,
           primary: colors.terra,
           background: colors.bg,
           card: colors.surface,

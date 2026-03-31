@@ -1,4 +1,4 @@
-import type { StorageAdapter } from './storage.ts'
+import type { StorageAdapter } from './storage'
 
 export function createWebStorage(): StorageAdapter {
   return {

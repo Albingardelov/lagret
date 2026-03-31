@@ -1,16 +1,16 @@
-export { createSupabaseClient } from './lib/supabase.ts'
-export type { CreateSupabaseClientOptions } from './lib/supabase.ts'
+export { createSupabaseClient } from './lib/supabase'
+export type { CreateSupabaseClientOptions } from './lib/supabase'
 export {
   getSupabaseClient,
   setSupabaseClient,
   getAuthRedirectUrl,
   setAuthRedirectUrl,
-} from './lib/supabaseClient.ts'
-export { getStorageAdapter, setStorageAdapter } from './lib/storageClient.ts'
+} from './lib/supabaseClient'
+export { getStorageAdapter, setStorageAdapter } from './lib/storageClient'
 
-export type { StorageAdapter } from './platform/storage.ts'
-export { createWebStorage } from './platform/webStorage.ts'
-export { createNativeStorage } from './platform/nativeStorage.ts'
+export type { StorageAdapter } from './platform/storage'
+export { createWebStorage } from './platform/webStorage'
+export { createNativeStorage } from './platform/nativeStorage'
 
-export * as store from './store/index.ts'
-export * as types from './types/index.ts'
+export * as store from './store'
+export * as types from './types'
