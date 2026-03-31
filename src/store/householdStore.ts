@@ -97,7 +97,7 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
       .select()
       .single()
     if (hhError || !hh) {
-      set({ error: hhError?.message ?? 'Okänt fel', loading: false })
+      set({ error: hhError?.message ?? 'common.errors.unknownError', loading: false })
       return
     }
     const {
@@ -134,7 +134,7 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
       .eq('invite_code', inviteCode.trim().toLowerCase())
       .maybeSingle()
     if (findError || !hh) {
-      set({ error: 'Hittade inget hushåll med den koden', loading: false })
+      set({ error: 'household.notFound', loading: false })
       return
     }
     const {

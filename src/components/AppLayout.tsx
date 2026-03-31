@@ -2,22 +2,23 @@ import { useEffect } from 'react'
 import { AppShell, UnstyledButton, Text, Box, Group } from '@mantine/core'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { IconBox, IconBook2, IconShoppingCart, IconHome } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import { useHouseholdStore } from '../store/householdStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { OfflineBanner } from './OfflineBanner'
 import { useExpiryNotifications } from '../hooks/useExpiryNotifications'
 
-const NAV_ITEMS = [
-  { path: '/', label: 'Lagret', icon: IconBox },
-  { path: '/recipes', label: 'Recept', icon: IconBook2 },
-  { path: '/shopping', label: 'Inköp', icon: IconShoppingCart },
-  { path: '/household', label: 'Hushåll', icon: IconHome },
-]
-
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
 
 export function AppLayout() {
+  const { t } = useTranslation()
+  const NAV_ITEMS = [
+    { path: '/', label: t('nav.inventory'), icon: IconBox },
+    { path: '/recipes', label: t('nav.recipes'), icon: IconBook2 },
+    { path: '/shopping', label: t('nav.shopping'), icon: IconShoppingCart },
+    { path: '/household', label: t('nav.household'), icon: IconHome },
+  ]
   const navigate = useNavigate()
   const { pathname } = useLocation()
   const fetchHousehold = useHouseholdStore((s) => s.fetchHousehold)

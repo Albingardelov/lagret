@@ -58,7 +58,7 @@ export const useShoppingStore = create<ShoppingState>((set, get) => ({
 
   addItem: async (name, quantity, unit, note, category) => {
     const householdId = useHouseholdStore.getState().household?.id
-    if (!householdId) throw new Error('Inget hushåll laddat')
+    if (!householdId) throw new Error('common.errors.noHouseholdShort')
     const { data, error } = await supabase
       .from('shopping_list')
       .insert({
