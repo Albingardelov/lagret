@@ -1,32 +1,28 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo } from 'react'
 import type { PropsWithChildren } from 'react'
+import { store } from '@lagret/core'
 
 type AuthState = {
   loading: boolean
   user: { id: string; email?: string } | null
-  signIn: () => void
+  signInWithPassword: (email: string, password: string) => Promise<void>
   signOut: () => void
 }
 
 const AuthContext = createContext<AuthState | null>(null)
 
 export function AuthProvider({ children }: PropsWithChildren) {
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<AuthState['user']>(null)
-
-  useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 350)
-    return () => clearTimeout(t)
-  }, [])
+  const { user, loading, initialize, signInWithPassword, signOut } = store.useAuthStore()
+  useEffect(() => initialize(), [initialize])
 
   const value = useMemo<AuthState>(
     () => ({
       loading,
       user,
-      signIn: () => setUser({ id: 'dev-user', email: 'dev@example.com' }),
-      signOut: () => setUser(null),
+      signInWithPassword,
+      signOut,
     }),
-    [loading, user]
+    [loading, user, signInWithPassword, signOut]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

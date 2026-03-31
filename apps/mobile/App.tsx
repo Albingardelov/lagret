@@ -5,6 +5,7 @@ import { NavigationContainer } from '@react-navigation/native'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { StyleSheet } from 'react-native'
 
+import './src/lib/supabase'
 import { AuthProvider } from './src/auth/AuthProvider'
 import { AuthGate } from './src/auth/AuthGate'
 import { ThemeProvider, useTheme } from './src/theme/ThemeProvider'
@@ -35,12 +36,6 @@ function AppShell() {
           text: colors.text,
           border: colors.border,
           notification: colors.terra,
-        },
-        fonts: {
-          regular: { fontFamily: 'System', fontWeight: '400' },
-          medium: { fontFamily: 'System', fontWeight: '500' },
-          bold: { fontFamily: 'System', fontWeight: '700' },
-          heavy: { fontFamily: 'System', fontWeight: '800' },
         },
       }}
     >
