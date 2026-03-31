@@ -15,6 +15,7 @@ import {
   Select,
   Box,
   UnstyledButton,
+  SegmentedControl,
 } from '@mantine/core'
 import { BottomSheet } from '../components/BottomSheet'
 import {
@@ -38,6 +39,8 @@ import { useErrorNotification } from '../hooks/useErrorNotification'
 import { useAuthStore } from '../store/authStore'
 import { useNavigate } from 'react-router-dom'
 import type { LocationIcon, HouseholdMember } from '../types'
+import { useTranslation } from 'react-i18next'
+import i18n from '../i18n'
 
 const BG = '#F7F2EB'
 const TERRA = '#B5432A'
@@ -62,6 +65,7 @@ const ICON_OPTIONS = [
 ]
 
 export function HouseholdPage() {
+  const { t } = useTranslation()
   const {
     households,
     household,
@@ -157,7 +161,7 @@ export function HouseholdPage() {
               marginBottom: 6,
             }}
           >
-            Kom igång
+            {t('household.getStarted')}
           </Text>
           <Text
             style={{
@@ -167,7 +171,7 @@ export function HouseholdPage() {
               color: '#1C1410',
             }}
           >
-            Mitt Hushåll
+            {t('household.title')}
           </Text>
         </Box>
 
@@ -188,10 +192,10 @@ export function HouseholdPage() {
                 color: '#1C1410',
               }}
             >
-              Skapa ett hushåll
+              {t('household.create')}
             </Text>
             <TextInput
-              placeholder="Hushållets namn"
+              placeholder={t('household.householdName')}
               value={householdName}
               onChange={(e) => setHouseholdName(e.currentTarget.value)}
             />
@@ -202,7 +206,7 @@ export function HouseholdPage() {
               onClick={() => createHousehold(householdName.trim())}
               style={{ background: TERRA }}
             >
-              Skapa
+              {t('common.buttons.create')}
             </Button>
           </Stack>
         </Box>
@@ -226,10 +230,10 @@ export function HouseholdPage() {
                 color: '#1C1410',
               }}
             >
-              Gå med i ett hushåll
+              {t('household.joinTitle')}
             </Text>
             <TextInput
-              placeholder="Inbjudningskod (8 tecken)"
+              placeholder={`${t('household.inviteCode')} (8 tecken)`}
               value={inviteCode}
               onChange={(e) => setInviteCode(e.currentTarget.value)}
             />
@@ -241,7 +245,7 @@ export function HouseholdPage() {
               onClick={() => joinHousehold(inviteCode)}
               color="terra"
             >
-              Gå med
+              {t('common.buttons.join')}
             </Button>
           </Stack>
         </Box>
@@ -264,7 +268,7 @@ export function HouseholdPage() {
             marginBottom: 6,
           }}
         >
-          Hantera ditt hem
+          {t('household.createDescription')}
         </Text>
         <Text
           style={{
@@ -276,7 +280,7 @@ export function HouseholdPage() {
             letterSpacing: '-0.5px',
           }}
         >
-          Mitt Hushåll
+          {t('household.title')}
         </Text>
         <Text
           style={{
@@ -304,7 +308,7 @@ export function HouseholdPage() {
               marginBottom: 10,
             }}
           >
-            Mina hushåll
+            {t('household.myHouseholds')}
           </Text>
           <Stack gap={8}>
             {households.map((hh) => {
@@ -365,7 +369,7 @@ export function HouseholdPage() {
                           textTransform: 'uppercase',
                         }}
                       >
-                        Aktivt
+                        {t('household.active')}
                       </Text>
                     </Box>
                   )}
@@ -410,7 +414,7 @@ export function HouseholdPage() {
             marginBottom: 4,
           }}
         >
-          Aktivt hushåll
+          {t('household.activeHousehold')}
         </Text>
         <Text
           style={{
@@ -431,7 +435,7 @@ export function HouseholdPage() {
               color: 'rgba(255,255,255,0.75)',
             }}
           >
-            Inbjudningskod:
+            {t('household.inviteCode')}:
           </Text>
           <Text
             style={{
@@ -475,7 +479,7 @@ export function HouseholdPage() {
               color: '#7A6A5A',
             }}
           >
-            Medlemmar
+            {t('household.members')}
           </Text>
         </Group>
         <Stack gap={6}>
@@ -510,7 +514,7 @@ export function HouseholdPage() {
                 padding: '8px 0',
               }}
             >
-              Inga medlemmar hittades
+              {t('household.noMembers')}
             </Text>
           )}
         </Stack>
@@ -529,7 +533,7 @@ export function HouseholdPage() {
               color: '#7A6A5A',
             }}
           >
-            Dina behållare
+            {t('household.locations')}
           </Text>
           <UnstyledButton
             onClick={() => {
@@ -547,7 +551,7 @@ export function HouseholdPage() {
                 color: TERRA,
               }}
             >
-              Lägg till behållare
+              {t('household.addLocation')}
             </Text>
           </UnstyledButton>
         </Group>
@@ -641,7 +645,7 @@ export function HouseholdPage() {
                 padding: '16px 0',
               }}
             >
-              Inga förvaringsplatser än
+              {t('household.noLocations')}
             </Text>
           )}
         </Stack>
@@ -660,7 +664,7 @@ export function HouseholdPage() {
             marginBottom: 10,
           }}
         >
-          Hantera hushåll
+          {t('household.manage')}
         </Text>
         <UnstyledButton
           onClick={() => setAddHouseholdOpen(true)}
@@ -697,7 +701,7 @@ export function HouseholdPage() {
               color: '#1C1410',
             }}
           >
-            Skapa eller gå med i hushåll
+            {t('household.createOrJoin')}
           </Text>
         </UnstyledButton>
       </Box>
@@ -715,7 +719,7 @@ export function HouseholdPage() {
             marginBottom: 10,
           }}
         >
-          Inställningar
+          {t('household.settings')}
         </Text>
         <Box
           style={{
@@ -762,7 +766,7 @@ export function HouseholdPage() {
                   color: '#C47820',
                 }}
               >
-                Lämna aktivt hushåll
+                {t('household.leaveHousehold')}
               </Text>
             </UnstyledButton>
           ) : (
@@ -804,11 +808,25 @@ export function HouseholdPage() {
                   color="gray"
                   onClick={() => setConfirmLeave(false)}
                 >
-                  Avbryt
+                  {t('common.buttons.cancel')}
                 </Button>
               </Group>
             </Box>
           )}
+          <Box style={{ padding: '14px 16px', borderBottom: '1px solid #F0EAE0' }}>
+            <Text size="sm" fw={500} mb={6}>
+              {t('household.language')}
+            </Text>
+            <SegmentedControl
+              data={[
+                { value: 'sv', label: t('household.languageSwedish') },
+                { value: 'en', label: t('household.languageEnglish') },
+              ]}
+              value={i18n.language.startsWith('en') ? 'en' : 'sv'}
+              onChange={(val) => i18n.changeLanguage(val)}
+              fullWidth
+            />
+          </Box>
           <UnstyledButton
             onClick={handleSignOut}
             style={{
@@ -841,7 +859,7 @@ export function HouseholdPage() {
                 color: '#C42A2A',
               }}
             >
-              Logga ut
+              {t('common.buttons.logout')}
             </Text>
           </UnstyledButton>
         </Box>
@@ -855,7 +873,7 @@ export function HouseholdPage() {
           setHouseholdName('')
           setInviteCode('')
         }}
-        title="Lägg till hushåll"
+        title={t('household.addHousehold')}
       >
         <Stack>
           <Text
@@ -866,10 +884,10 @@ export function HouseholdPage() {
               color: '#1C1410',
             }}
           >
-            Skapa nytt hushåll
+            {t('household.create')}
           </Text>
           <TextInput
-            placeholder="Hushållets namn"
+            placeholder={t('household.householdName')}
             value={householdName}
             onChange={(e) => setHouseholdName(e.currentTarget.value)}
           />
@@ -884,7 +902,7 @@ export function HouseholdPage() {
             }}
             style={{ background: TERRA }}
           >
-            Skapa
+            {t('common.buttons.create')}
           </Button>
 
           <Divider label="eller" labelPosition="center" color="#D0C4B8" />
@@ -897,10 +915,10 @@ export function HouseholdPage() {
               color: '#1C1410',
             }}
           >
-            Gå med i ett hushåll
+            {t('household.joinTitle')}
           </Text>
           <TextInput
-            placeholder="Inbjudningskod (8 tecken)"
+            placeholder={`${t('household.inviteCode')} (8 tecken)`}
             value={inviteCode}
             onChange={(e) => setInviteCode(e.currentTarget.value)}
           />
@@ -916,7 +934,7 @@ export function HouseholdPage() {
             }}
             color="terra"
           >
-            Gå med
+            {t('common.buttons.join')}
           </Button>
         </Stack>
       </BottomSheet>
@@ -929,11 +947,11 @@ export function HouseholdPage() {
           setNewLocName('')
           setLocError(null)
         }}
-        title="Ny förvaringsplats"
+        title={t('household.newLocation')}
       >
         <Stack>
           <TextInput
-            label="Namn"
+            label={t('common.fields.name')}
             placeholder="T.ex. Hallkylskåp"
             value={newLocName}
             onChange={(e) => setNewLocName(e.currentTarget.value)}
@@ -950,7 +968,7 @@ export function HouseholdPage() {
             </Alert>
           )}
           <Button onClick={handleAddLocation} disabled={!newLocName.trim()} fullWidth>
-            Lägg till
+            {t('common.buttons.add')}
           </Button>
         </Stack>
       </BottomSheet>
@@ -962,11 +980,11 @@ export function HouseholdPage() {
           setEditingId(null)
           setLocError(null)
         }}
-        title="Redigera förvaringsplats"
+        title={t('household.editLocation')}
       >
         <Stack>
           <TextInput
-            label="Namn"
+            label={t('common.fields.name')}
             value={editName}
             onChange={(e) => setEditName(e.currentTarget.value)}
           />
@@ -982,7 +1000,7 @@ export function HouseholdPage() {
             </Alert>
           )}
           <Button onClick={() => editingId && handleUpdateLocation(editingId)} fullWidth>
-            Spara
+            {t('common.buttons.save')}
           </Button>
         </Stack>
       </BottomSheet>
