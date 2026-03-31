@@ -60,10 +60,16 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
 
   fetchItems: async () => {
     const supabase = getSupabaseClient()
+    const householdId = useHouseholdStore.getState().household?.id
+    if (!householdId) {
+      set({ items: [], loading: false, error: null })
+      return
+    }
     set({ loading: true, error: null })
     const { data, error } = await supabase
       .from('inventory')
       .select('*')
+      .eq('household_id', householdId)
       .order('name')
       .returns<InventoryRow[]>()
     if (error) {

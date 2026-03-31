@@ -34,16 +34,27 @@ export function InventoryScreen() {
       </Pressable>
 
       <Pressable
-        onPress={() => fetchItems().catch(() => {})}
+        disabled={!household}
+        onPress={() => {
+          if (!household) return
+          fetchItems().catch(() => {})
+        }}
         style={{
           alignSelf: 'flex-start',
-          backgroundColor: colors.terraSoft,
+          backgroundColor: household ? colors.terraSoft : 'rgba(181,67,42,0.05)',
           paddingVertical: 10,
           paddingHorizontal: 14,
           borderRadius: 999,
         }}
       >
-        <Text style={{ color: colors.terra, fontWeight: '700' }}>Ladda varor</Text>
+        <Text
+          style={{
+            color: household ? colors.terra : colors.mutedText,
+            fontWeight: '700',
+          }}
+        >
+          Ladda varor
+        </Text>
       </Pressable>
 
       <FlatList
