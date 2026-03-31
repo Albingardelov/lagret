@@ -46,13 +46,13 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     const storage = getStorageAdapter()
 
     set({ loading: true, error: null })
-    const { data, error } = await supabase.from('households').select('*')
+    const { data, error } = await supabase.from('households').select('*').returns<HouseholdRow[]>()
     if (error) {
       set({ error: error.message, loading: false })
       throw new Error(error.message)
     }
 
-    const households = (data ?? []).map((row) => mapHousehold(row as HouseholdRow))
+    const households = (data ?? []).map(mapHousehold)
     set({ households, loading: false })
     if (households.length === 0) return
 
@@ -76,14 +76,19 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
   fetchMembers: async (id: string) => {
     const supabase = getSupabaseClient()
     const { data, error } = await supabase.rpc('get_household_members', { hid: id })
-    if (error || !data) {
+    if (error) {
       set({ members: [] })
-      if (error) throw new Error(error.message)
-      return
+      throw new Error(error.message)
     }
-    const members: HouseholdMember[] = (data as { user_id: string; email: string }[]).map(
-      (row) => ({ userId: row.user_id, email: row.email })
-    )
+    if (!Array.isArray(data)) {
+      set({ members: [] })
+      throw new Error('Kunde inte hämta hushållsmedlemmar')
+    }
+    const rows = data as { user_id: string; email: string }[]
+    const members: HouseholdMember[] = rows.map((row) => ({
+      userId: row.user_id,
+      email: row.email,
+    }))
     set({ members })
   },
 }))
