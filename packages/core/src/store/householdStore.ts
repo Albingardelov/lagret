@@ -17,7 +17,14 @@ interface HouseholdState {
   setActiveHousehold: (id: string) => Promise<void>
 }
 
-function mapHousehold(row: Record<string, string>): Household {
+type HouseholdRow = {
+  id: string
+  name: string
+  invite_code: string
+  created_at: string
+}
+
+function mapHousehold(row: HouseholdRow): Household {
   return {
     id: row.id,
     name: row.name,
@@ -42,10 +49,10 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     const { data, error } = await supabase.from('households').select('*')
     if (error) {
       set({ error: error.message, loading: false })
-      return
+      throw new Error(error.message)
     }
 
-    const households = (data ?? []).map((row) => mapHousehold(row as Record<string, string>))
+    const households = (data ?? []).map((row) => mapHousehold(row as HouseholdRow))
     set({ households, loading: false })
     if (households.length === 0) return
 
@@ -71,6 +78,7 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
     const { data, error } = await supabase.rpc('get_household_members', { hid: id })
     if (error || !data) {
       set({ members: [] })
+      if (error) throw new Error(error.message)
       return
     }
     const members: HouseholdMember[] = (data as { user_id: string; email: string }[]).map(
