@@ -48,7 +48,7 @@ export function Tabs() {
         headerTitleStyle: { color: colors.terra, fontWeight: '900', fontSize: 20 },
         headerShadowVisible: false,
         tabBarStyle: {
-          backgroundColor: 'rgba(247,242,235,0.96)',
+          backgroundColor: colors.bg,
           borderTopColor: colors.border,
           height: 68,
           paddingTop: 6,
@@ -72,7 +72,7 @@ export function Tabs() {
         name="Recipes"
         component={RecipesScreen}
         options={{
-          title: 'Lagret',
+          title: 'Recept',
           tabBarLabel: 'Recept',
           tabBarIcon: ({ focused }) => <TabIcon label="Recept" focused={focused} />,
         }}
@@ -81,7 +81,7 @@ export function Tabs() {
         name="Shopping"
         component={ShoppingScreen}
         options={{
-          title: 'Lagret',
+          title: 'Inköp',
           tabBarLabel: 'Inköp',
           tabBarIcon: ({ focused }) => <TabIcon label="Inköp" focused={focused} />,
         }}
@@ -90,7 +90,7 @@ export function Tabs() {
         name="Household"
         component={HouseholdScreen}
         options={{
-          title: 'Lagret',
+          title: 'Hushåll',
           tabBarLabel: 'Hushåll',
           tabBarIcon: ({ focused }) => <TabIcon label="Hushåll" focused={focused} />,
         }}
