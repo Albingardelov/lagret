@@ -31,7 +31,8 @@
       "noHouseholdShort": "No household loaded",
       "locationHasItems": "Location has items – empty it first",
       "unknownError": "Unknown error"
-    }
+    },
+    "or": "or"
   },
   "nav": {
     "inventory": "Pantry",
@@ -183,7 +184,19 @@
     "notFound": "No household found with that code",
     "language": "Language",
     "languageSwedish": "Swedish",
-    "languageEnglish": "English"
+    "languageEnglish": "English",
+    "errorLabel": "Household error",
+    "subtitle": "Organise your storage spaces and invite family members.",
+    "copied": "Copied!",
+    "copy": "Copy",
+    "iconPantry": "Pantry",
+    "iconFridge": "Fridge",
+    "iconFreezer": "Freezer",
+    "leaveConfirm": "Leave **{{name}}**? You can rejoin using the invite code.",
+    "confirmLeave": "Yes, leave",
+    "locationPlaceholder": "E.g. Hall fridge",
+    "locationType": "Type",
+    "inviteCodeHint": "(8 chars)"
   },
   "login": {
     "createAccount": "Create account",

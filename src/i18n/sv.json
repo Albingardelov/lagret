@@ -31,7 +31,8 @@
       "noHouseholdShort": "Inget hushåll laddat",
       "locationHasItems": "Platsen har varor – töm den först",
       "unknownError": "Okänt fel"
-    }
+    },
+    "or": "eller"
   },
   "nav": {
     "inventory": "Lagret",
@@ -183,7 +184,19 @@
     "notFound": "Hittade inget hushåll med den koden",
     "language": "Språk",
     "languageSwedish": "Svenska",
-    "languageEnglish": "Engelska"
+    "languageEnglish": "Engelska",
+    "errorLabel": "Hushållsfel",
+    "subtitle": "Organisera dina lagringsutrymmen och bjud in familjemedlemmar.",
+    "copied": "Kopierat!",
+    "copy": "Kopiera",
+    "iconPantry": "Skafferi",
+    "iconFridge": "Kylskåp",
+    "iconFreezer": "Frys",
+    "leaveConfirm": "Lämna **{{name}}**? Du kan gå med igen med inbjudningskoden.",
+    "confirmLeave": "Ja, lämna",
+    "locationPlaceholder": "T.ex. Hallkylskåp",
+    "locationType": "Typ",
+    "inviteCodeHint": "(8 tecken)"
   },
   "login": {
     "createAccount": "Skapa konto",

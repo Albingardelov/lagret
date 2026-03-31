@@ -58,14 +58,14 @@ const ICON_COLORS: Record<LocationIcon, { bg: string; color: string }> = {
   pantry: { bg: '#FBF0E8', color: '#A05025' },
 }
 
-const ICON_OPTIONS = [
-  { value: 'pantry', label: 'Skafferi' },
-  { value: 'fridge', label: 'Kylskåp' },
-  { value: 'freezer', label: 'Frys' },
-]
-
 export function HouseholdPage() {
   const { t } = useTranslation()
+
+  const ICON_OPTIONS = [
+    { value: 'pantry', label: t('household.iconPantry') },
+    { value: 'fridge', label: t('household.iconFridge') },
+    { value: 'freezer', label: t('household.iconFreezer') },
+  ]
   const {
     households,
     household,
@@ -94,7 +94,7 @@ export function HouseholdPage() {
   const signOut = useAuthStore((s) => s.signOut)
   const navigate = useNavigate()
 
-  useErrorNotification(error, 'Hushållsfel')
+  useErrorNotification(error, t('household.errorLabel'))
 
   useEffect(() => {
     if (household) fetchLocations()
@@ -109,7 +109,7 @@ export function HouseholdPage() {
       setNewLocIcon('fridge')
       setAddingLocation(false)
     } catch (e) {
-      setLocError(e instanceof Error ? e.message : 'Något gick fel')
+      setLocError(e instanceof Error ? e.message : t('common.errors.unknownError'))
     }
   }
 
@@ -120,7 +120,7 @@ export function HouseholdPage() {
       await updateLocation(id, editName.trim(), editIcon)
       setEditingId(null)
     } catch (e) {
-      setLocError(e instanceof Error ? e.message : 'Något gick fel')
+      setLocError(e instanceof Error ? e.message : t('common.errors.unknownError'))
     }
   }
 
@@ -129,7 +129,7 @@ export function HouseholdPage() {
     try {
       await deleteLocation(id)
     } catch (e) {
-      setLocError(e instanceof Error ? e.message : 'Något gick fel')
+      setLocError(e instanceof Error ? e.message : t('common.errors.unknownError'))
     }
   }
 
@@ -211,7 +211,7 @@ export function HouseholdPage() {
           </Stack>
         </Box>
 
-        <Divider label="eller" labelPosition="center" color="#D0C4B8" />
+        <Divider label={t('common.or')} labelPosition="center" color="#D0C4B8" />
 
         <Box
           style={{
@@ -233,7 +233,7 @@ export function HouseholdPage() {
               {t('household.joinTitle')}
             </Text>
             <TextInput
-              placeholder={`${t('household.inviteCode')} (8 tecken)`}
+              placeholder={`${t('household.inviteCode')} ${t('household.inviteCodeHint')}`}
               value={inviteCode}
               onChange={(e) => setInviteCode(e.currentTarget.value)}
             />
@@ -290,7 +290,7 @@ export function HouseholdPage() {
             marginTop: 6,
           }}
         >
-          Organisera dina lagringsutrymmen och bjud in familjemedlemmar.
+          {t('household.subtitle')}
         </Text>
       </Box>
 
@@ -450,7 +450,7 @@ export function HouseholdPage() {
           </Text>
           <CopyButton value={household?.inviteCode ?? ''} timeout={2000}>
             {({ copied, copy }) => (
-              <Tooltip label={copied ? 'Kopierat!' : 'Kopiera'} withArrow>
+              <Tooltip label={copied ? t('household.copied') : t('household.copy')} withArrow>
                 <ActionIcon
                   variant="filled"
                   onClick={copy}
@@ -779,7 +779,7 @@ export function HouseholdPage() {
                   marginBottom: 10,
                 }}
               >
-                Lämna <strong>{household.name}</strong>? Du kan gå med igen med inbjudningskoden.
+                {t('household.leaveConfirm', { name: household.name })}
               </Text>
               {leaveError && (
                 <Alert color="red" mb="sm">
@@ -796,11 +796,13 @@ export function HouseholdPage() {
                       await leaveHousehold(household.id)
                       setConfirmLeave(false)
                     } catch (e) {
-                      setLeaveError(e instanceof Error ? e.message : 'Något gick fel')
+                      setLeaveError(
+                        e instanceof Error ? e.message : t('common.errors.unknownError')
+                      )
                     }
                   }}
                 >
-                  Ja, lämna
+                  {t('household.confirmLeave')}
                 </Button>
                 <Button
                   size="xs"
@@ -905,7 +907,7 @@ export function HouseholdPage() {
             {t('common.buttons.create')}
           </Button>
 
-          <Divider label="eller" labelPosition="center" color="#D0C4B8" />
+          <Divider label={t('common.or')} labelPosition="center" color="#D0C4B8" />
 
           <Text
             style={{
@@ -918,7 +920,7 @@ export function HouseholdPage() {
             {t('household.joinTitle')}
           </Text>
           <TextInput
-            placeholder={`${t('household.inviteCode')} (8 tecken)`}
+            placeholder={`${t('household.inviteCode')} ${t('household.inviteCodeHint')}`}
             value={inviteCode}
             onChange={(e) => setInviteCode(e.currentTarget.value)}
           />
@@ -952,18 +954,18 @@ export function HouseholdPage() {
         <Stack>
           <TextInput
             label={t('common.fields.name')}
-            placeholder="T.ex. Hallkylskåp"
+            placeholder={t('household.locationPlaceholder')}
             value={newLocName}
             onChange={(e) => setNewLocName(e.currentTarget.value)}
           />
           <Select
-            label="Typ"
+            label={t('household.locationType')}
             data={ICON_OPTIONS}
             value={newLocIcon}
             onChange={(v) => setNewLocIcon((v as LocationIcon) ?? 'fridge')}
           />
           {locError && (
-            <Alert color="red" title="Fel">
+            <Alert color="red" title={t('errors.label')}>
               {locError}
             </Alert>
           )}
@@ -989,13 +991,13 @@ export function HouseholdPage() {
             onChange={(e) => setEditName(e.currentTarget.value)}
           />
           <Select
-            label="Typ"
+            label={t('household.locationType')}
             data={ICON_OPTIONS}
             value={editIcon}
             onChange={(v) => setEditIcon((v as LocationIcon) ?? 'fridge')}
           />
           {locError && (
-            <Alert color="red" title="Fel">
+            <Alert color="red" title={t('errors.label')}>
               {locError}
             </Alert>
           )}
