@@ -7,6 +7,8 @@ export {
   setAuthRedirectUrl,
 } from './lib/supabaseClient'
 export { getStorageAdapter, setStorageAdapter } from './lib/storageClient'
+export { getRecentRecipes, searchRecipes, suggestRecipes } from './lib/recipes'
+export * as recipeMatching from './lib/recipeMatching'
 
 export type { StorageAdapter } from './platform/storage'
 export { createWebStorage } from './platform/webStorage'
