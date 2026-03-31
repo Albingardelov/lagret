@@ -24,14 +24,17 @@
       "category": "Kategori",
       "note": "Notering",
       "email": "E-postadress",
-      "password": "Lösenord"
+      "password": "Lösenord",
+      "chooseDate": "Välj datum",
+      "chooseCategory": "Välj kategori"
     },
     "errors": {
       "noHousehold": "Inget hushåll laddat – logga ut och in igen",
       "noHouseholdShort": "Inget hushåll laddat",
       "locationHasItems": "Platsen har varor – töm den först",
-      "unknownError": "Okänt fel"
+      "unknownError": "Något gick fel"
     },
+    "loading": "Laddar...",
     "or": "eller"
   },
   "nav": {
@@ -103,24 +106,37 @@
     "namePlaceholder": "T.ex. Mjölk",
     "splitPortions": "Dela upp i portioner",
     "portionCount": "Antal delar",
-    "eachPortion": "Varje del"
+    "eachPortion": "Varje del",
+    "addPortions": "Lägg till {{count}} delar",
+    "error": "Fel"
   },
   "editItem": {
     "title": "Redigera vara",
     "minLevel": "Minimumnivå",
-    "minLevelHint": "Läggs automatiskt i inköpslistan när antalet understiger detta"
+    "minLevelHint": "Läggs automatiskt i inköpslistan när antalet understiger detta",
+    "minLevelPlaceholder": "Inget minimum",
+    "error": "Fel"
   },
   "shopping": {
     "title": "Inköpslista",
-    "subtitle": "Organisera din handling",
-    "addManual": "Lägg till vara manuellt",
+    "subtitle": "Organisera din handling och fyll på förrådet.",
+    "addManual": "Lägg till vara manuellt...",
     "boughtItems": "Köpta varor",
     "clearBought": "Rensa köpta varor",
     "moveToInventory": "Lägg i lagret",
     "empty": "Inköpslistan är tom",
+    "addHint": "Tryck på + för att lägga till varor",
     "emptyHint": "Köp och flytta till lagret",
     "addItem": "Lägg till vara",
-    "selectLocation": "Välj förvaringsplats för varje vara"
+    "selectLocation": "Välj förvaringsplats för varje vara",
+    "bulkTitle": "Flytta till lagret",
+    "allMovedToInventory": "Alla varor har lagts in i lagret!",
+    "moveCount": "Lägg in {{count}} varor i lagret",
+    "itemCount": "{{count}} vara",
+    "itemCount_one": "{{count}} vara",
+    "itemCount_other": "{{count}} varor",
+    "errorLabel": "Inköpslistefel",
+    "openInput": "Öppna inmatningsfält"
   },
   "recipes": {
     "title": "Recept",

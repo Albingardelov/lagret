@@ -24,14 +24,17 @@
       "category": "Category",
       "note": "Note",
       "email": "Email address",
-      "password": "Password"
+      "password": "Password",
+      "chooseDate": "Choose date",
+      "chooseCategory": "Choose category"
     },
     "errors": {
       "noHousehold": "No household loaded – sign out and back in",
       "noHouseholdShort": "No household loaded",
       "locationHasItems": "Location has items – empty it first",
-      "unknownError": "Unknown error"
+      "unknownError": "Something went wrong"
     },
+    "loading": "Loading...",
     "or": "or"
   },
   "nav": {
@@ -103,24 +106,37 @@
     "namePlaceholder": "E.g. Milk",
     "splitPortions": "Split into portions",
     "portionCount": "Number of portions",
-    "eachPortion": "Each portion"
+    "eachPortion": "Each portion",
+    "addPortions": "Add {{count}} portions",
+    "error": "Error"
   },
   "editItem": {
     "title": "Edit item",
     "minLevel": "Minimum level",
-    "minLevelHint": "Automatically added to shopping list when quantity drops below this"
+    "minLevelHint": "Automatically added to shopping list when quantity drops below this",
+    "minLevelPlaceholder": "No minimum",
+    "error": "Error"
   },
   "shopping": {
     "title": "Shopping list",
-    "subtitle": "Organise your groceries",
-    "addManual": "Add item manually",
+    "subtitle": "Organise your groceries and restock your pantry.",
+    "addManual": "Add item manually...",
     "boughtItems": "Bought items",
     "clearBought": "Clear bought items",
     "moveToInventory": "Move to pantry",
     "empty": "Shopping list is empty",
+    "addHint": "Tap + to add items",
     "emptyHint": "Buy and move to pantry",
     "addItem": "Add item",
-    "selectLocation": "Select storage location for each item"
+    "selectLocation": "Select storage location for each item",
+    "bulkTitle": "Move to pantry",
+    "allMovedToInventory": "All items have been moved to the pantry!",
+    "moveCount": "Move {{count}} items to pantry",
+    "itemCount": "{{count}} item",
+    "itemCount_one": "{{count}} item",
+    "itemCount_other": "{{count}} items",
+    "errorLabel": "Shopping list error",
+    "openInput": "Open input field"
   },
   "recipes": {
     "title": "Recipes",
