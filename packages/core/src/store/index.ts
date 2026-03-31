@@ -1,2 +1,5 @@
 export { useAuthStore } from './authStore.ts'
 export { useHouseholdStore } from './householdStore.ts'
+export { useLocationsStore } from './locationsStore.ts'
+export { useShoppingStore } from './shoppingStore.ts'
+export { useInventoryStore } from './inventoryStore.ts'
