@@ -6,6 +6,7 @@ export {
   getAuthRedirectUrl,
   setAuthRedirectUrl,
 } from './lib/supabaseClient.ts'
+export { getStorageAdapter, setStorageAdapter } from './lib/storageClient.ts'
 
 export type { StorageAdapter } from './platform/storage.ts'
 export { createWebStorage } from './platform/webStorage.ts'
