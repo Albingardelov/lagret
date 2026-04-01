@@ -32,6 +32,11 @@ export const CATEGORY_DEFAULT_UNIT: Record<string, string> = {
   'Örter & kryddor': 'g',
 }
 
+/** Returns the i18n translation key for a category DB value */
+export function categoryKey(category: string): string {
+  return `categories.${category}`
+}
+
 export const CATEGORY_DEFAULT_QTY: Record<string, number> = {
   Mejeri: 1,
   Kött: 0.5,

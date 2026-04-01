@@ -12,6 +12,7 @@ import {
 import { suggestCookingUnit } from '../lib/cookingUnitSuggestions'
 
 import { useState, useMemo, useEffect, useRef } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Modal,
   Stack,
@@ -56,6 +57,7 @@ import dayjs from 'dayjs'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { AddItemModal } from './AddItemModal'
+import { categoryKey } from '../lib/categories'
 
 interface Props {
   opened: boolean
@@ -242,6 +244,7 @@ function formatTime(s: number) {
 }
 
 export function CookingMode({ opened, onClose }: Props) {
+  const { t } = useTranslation()
   const items = useInventoryStore((s) => s.items)
   const updateItem = useInventoryStore((s) => s.updateItem)
   const locations = useLocationsStore((s) => s.locations)
@@ -288,7 +291,7 @@ export function CookingMode({ opened, onClose }: Props) {
           if (s <= 1) {
             setTimerRunning(false)
             notifications.show({
-              message: 'Timern är klar! 🔔',
+              message: t('cookingMode.timerDone'),
               color: 'green',
               autoClose: 6000,
             })
@@ -337,7 +340,7 @@ export function CookingMode({ opened, onClose }: Props) {
       setTimeout(() => setZeroPuffId(null), 500)
     }
     notifications.show({
-      message: `-${formatQty(step)} ${unit} avdraget`,
+      message: t('cookingMode.decremented', { amount: formatQty(step), unit }),
       color: 'terra',
       autoClose: 2000,
       withCloseButton: true,
@@ -430,7 +433,7 @@ export function CookingMode({ opened, onClose }: Props) {
           >
             <UnstyledButton
               onClick={onClose}
-              aria-label="Stäng"
+              aria-label={t('common.buttons.close')}
               className="cm-press"
               style={{
                 ...flexCenter,
@@ -452,7 +455,7 @@ export function CookingMode({ opened, onClose }: Props) {
                 letterSpacing: '-0.3px',
               }}
             >
-              Laga mat
+              {t('cookingMode.title')}
             </Text>
 
             <UnstyledButton
@@ -475,7 +478,7 @@ export function CookingMode({ opened, onClose }: Props) {
                   color: '#fff',
                 }}
               >
-                Färdig
+                {t('cookingMode.done')}
               </Text>
             </UnstyledButton>
           </Box>
@@ -503,7 +506,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       color: '#7A6A5A',
                     }}
                   >
-                    Tillbaka
+                    {t('common.buttons.back')}
                   </Text>
                 </UnstyledButton>
 
@@ -544,7 +547,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         marginTop: 8,
                       }}
                     >
-                      Kör…
+                      {t('cookingMode.running')}
                     </Text>
                   )}
                   <Group justify="center" gap={12} mt={20}>
@@ -596,7 +599,7 @@ export function CookingMode({ opened, onClose }: Props) {
                     marginBottom: 10,
                   }}
                 >
-                  Presets
+                  {t('cookingMode.presets')}
                 </Text>
 
                 {/* Preset list */}
@@ -612,7 +615,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             autoFocus
                             value={editLabel}
                             onChange={(e) => setEditLabel(e.currentTarget.value)}
-                            placeholder="Namn"
+                            placeholder={t('common.fields.name')}
                             style={presetNameInputStyle}
                           />
                           <Group gap={6} align="center">
@@ -624,7 +627,7 @@ export function CookingMode({ opened, onClose }: Props) {
                               onChange={(e) => setEditMin(e.currentTarget.value)}
                               style={timeInputStyle}
                             />
-                            <Text style={timeLabelStyle}>min</Text>
+                            <Text style={timeLabelStyle}>{t('cookingMode.min')}</Text>
                             <input
                               type="number"
                               min={0}
@@ -633,7 +636,7 @@ export function CookingMode({ opened, onClose }: Props) {
                               onChange={(e) => setEditSec(e.currentTarget.value)}
                               style={timeInputStyle}
                             />
-                            <Text style={timeLabelStyle}>sek</Text>
+                            <Text style={timeLabelStyle}>{t('cookingMode.sec')}</Text>
                             <UnstyledButton
                               onClick={() => {
                                 const m = parseInt(editMin || '0', 10)
@@ -721,7 +724,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             padding: 6,
                             color: active ? 'rgba(255,255,255,0.7)' : '#9A8A7A',
                           }}
-                          aria-label={`Redigera ${p.label}`}
+                          aria-label={t('cookingMode.editPreset', { name: p.label })}
                         >
                           <IconPencil size={14} />
                         </UnstyledButton>
@@ -736,7 +739,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             padding: 6,
                             color: active ? 'rgba(255,255,255,0.7)' : '#C42A2A',
                           }}
-                          aria-label={`Ta bort ${p.label}`}
+                          aria-label={t('cookingMode.deletePreset', { name: p.label })}
                         >
                           <IconX size={14} />
                         </UnstyledButton>
@@ -758,7 +761,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       autoFocus
                       value={newLabel}
                       onChange={(e) => setNewLabel(e.currentTarget.value)}
-                      placeholder="Namn på preset"
+                      placeholder={t('cookingMode.presetName')}
                       style={presetNameInputStyle}
                     />
                     <Group gap={6} align="center">
@@ -836,7 +839,7 @@ export function CookingMode({ opened, onClose }: Props) {
                         letterSpacing: '0.04em',
                       }}
                     >
-                      Lägg till preset
+                      {t('cookingMode.addPreset')}
                     </Text>
                   </UnstyledButton>
                 )}
@@ -849,7 +852,7 @@ export function CookingMode({ opened, onClose }: Props) {
               {/* Search */}
               <Box px={16} pt={12} pb={8}>
                 <TextInput
-                  placeholder="Sök ingredienser..."
+                  placeholder={t('cookingMode.searchIngredients')}
                   leftSection={<IconSearch size={16} />}
                   value={search}
                   onChange={(e) => setSearch(e.currentTarget.value)}
@@ -915,7 +918,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             whiteSpace: 'nowrap',
                           }}
                         >
-                          {cat ?? 'Alla'}
+                          {cat ? t(categoryKey(cat)) : t('cookingMode.all')}
                         </Text>
                       </UnstyledButton>
                     )
@@ -935,7 +938,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       lineHeight: 1,
                     }}
                   >
-                    {activeCategory ?? 'Alla varor'}
+                    {activeCategory ? t(categoryKey(activeCategory)) : t('cookingMode.allItems')}
                   </Text>
                   <Text
                     style={{
@@ -947,7 +950,7 @@ export function CookingMode({ opened, onClose }: Props) {
                       textTransform: 'uppercase',
                     }}
                   >
-                    {filtered.length} st
+                    {t('cookingMode.itemCount', { count: filtered.length })}
                   </Text>
                 </Group>
               </Box>
@@ -971,7 +974,8 @@ export function CookingMode({ opened, onClose }: Props) {
                     )
                     const expiringSoon = isExpiringSoon(item.expiryDate)
                     const locationName =
-                      locations.find((l) => l.id === item.location)?.name ?? 'OKÄND'
+                      locations.find((l) => l.id === item.location)?.name ??
+                      t('cookingMode.unknownLocation')
 
                     return (
                       <Box
@@ -1004,7 +1008,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                 letterSpacing: '0.05em',
                               }}
                             >
-                              ⚠ Bör användas snart
+                              {t('cookingMode.expiringSoon')}
                             </Text>
                           </Box>
                         )}
@@ -1062,7 +1066,10 @@ export function CookingMode({ opened, onClose }: Props) {
                                   lineHeight: 1.3,
                                 }}
                               >
-                                {formatQty(item.quantity)} {item.unit} kvar
+                                {t('cookingMode.remaining', {
+                                  quantity: formatQty(item.quantity),
+                                  unit: item.unit,
+                                })}
                               </Text>
 
                               {/* Unit picker */}
@@ -1074,7 +1081,7 @@ export function CookingMode({ opened, onClose }: Props) {
                               >
                                 <Popover.Target>
                                   <UnstyledButton
-                                    aria-label="byt enhet"
+                                    aria-label={t('cookingMode.changeUnit')}
                                     onClick={() =>
                                       setEditingUnit(editingUnit === item.id ? null : item.id)
                                     }
@@ -1109,7 +1116,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                     data={['st', 'g', 'kg', 'dl', 'l', 'ml', 'msk', 'tsk', 'krm']}
                                     value={cookingUnit}
                                     onChange={(e) => setCookingUnit(item.id, e.currentTarget.value)}
-                                    label="Kokenhet"
+                                    label={t('cookingMode.cookingUnit')}
                                   />
                                 </Popover.Dropdown>
                               </Popover>
@@ -1182,7 +1189,7 @@ export function CookingMode({ opened, onClose }: Props) {
                                 <Popover.Dropdown>
                                   <Stack gap={8}>
                                     <Text size="xs" c="#888">
-                                      Ange eget steg ({cookingUnit})
+                                      {t('cookingMode.customStep', { unit: cookingUnit })}
                                     </Text>
                                     <NumberInput
                                       min={0.1}
@@ -1241,7 +1248,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           fontSize: 14,
                         }}
                       >
-                        Inga varor hittades
+                        {t('cookingMode.noItems')}
                       </Text>
                       <Text
                         style={{
@@ -1251,7 +1258,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           marginTop: 4,
                         }}
                       >
-                        Prova ett annat sökord eller byt kategori
+                        {t('cookingMode.noItemsHint')}
                       </Text>
                     </Box>
                   )}
@@ -1279,7 +1286,7 @@ export function CookingMode({ opened, onClose }: Props) {
                           letterSpacing: '0.08em',
                         }}
                       >
-                        LÄGG TILL INGREDIENS
+                        {t('cookingMode.addItem').toUpperCase()}
                       </Text>
                     </Group>
                   </UnstyledButton>
@@ -1306,7 +1313,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             lineHeight: 1.2,
                           }}
                         >
-                          Snabb-timer
+                          {t('cookingMode.quickTimer')}
                         </Text>
                         <Text
                           style={{
@@ -1316,7 +1323,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             lineHeight: 1.3,
                           }}
                         >
-                          För ägg, pasta eller kaffe
+                          {t('cookingMode.quickTimerHint')}
                         </Text>
                       </Stack>
                     </UnstyledButton>
@@ -1339,7 +1346,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             lineHeight: 1.2,
                           }}
                         >
-                          Slut i lager?
+                          {t('cookingMode.outOfStock')}
                         </Text>
                         <Text
                           style={{
@@ -1349,7 +1356,7 @@ export function CookingMode({ opened, onClose }: Props) {
                             lineHeight: 1.3,
                           }}
                         >
-                          Varan läggs till i inköpslistan automatiskt.
+                          {t('cookingMode.outOfStockHint')}
                         </Text>
                       </Stack>
                     </Box>

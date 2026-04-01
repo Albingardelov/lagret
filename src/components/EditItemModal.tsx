@@ -3,10 +3,11 @@ import { BottomSheet } from './BottomSheet'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
-import { ITEM_CATEGORIES } from '../lib/categories'
-import { UNITS_FLAT } from '../lib/units'
+import { ITEM_CATEGORIES, categoryKey } from '../lib/categories'
+import { UNITS_FLAT, unitGroupKey } from '../lib/units'
 import type { InventoryItem } from '../types'
 
 interface Props {
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export function EditItemModal({ item, onClose }: Props) {
+  const { t } = useTranslation()
   const updateItem = useInventoryStore((s) => s.updateItem)
   const locations = useLocationsStore((s) => s.locations)
   const [submitting, setSubmitting] = useState(false)
@@ -64,7 +66,7 @@ export function EditItemModal({ item, onClose }: Props) {
         minQuantity: values.minQuantity ?? undefined,
       })
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Något gick fel')
+      setSubmitError(e instanceof Error ? e.message : t('common.errors.unknownError'))
       setSubmitting(false)
       return
     }
@@ -73,56 +75,61 @@ export function EditItemModal({ item, onClose }: Props) {
   })
 
   return (
-    <BottomSheet opened={!!item} onClose={onClose} title="Redigera vara">
+    <BottomSheet opened={!!item} onClose={onClose} title={t('editItem.title')}>
       <form onSubmit={handleSubmit}>
         <Stack>
-          <TextInput label="Namn" required {...form.getInputProps('name')} />
+          <TextInput label={t('common.fields.name')} required {...form.getInputProps('name')} />
           <Group grow>
-            <NumberInput label="Antal" min={0} step={0.5} {...form.getInputProps('quantity')} />
+            <NumberInput
+              label={t('common.fields.quantity')}
+              min={0}
+              step={0.5}
+              {...form.getInputProps('quantity')}
+            />
             <Select
-              label="Enhet"
-              data={UNITS_FLAT}
+              label={t('common.fields.unit')}
+              data={UNITS_FLAT.map((g) => ({ ...g, group: t(unitGroupKey(g.group)) }))}
               searchable
               allowDeselect={false}
               {...form.getInputProps('unit')}
             />
           </Group>
           <Select
-            label="Förvaringsplats"
+            label={t('common.fields.location')}
             data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
             {...form.getInputProps('location')}
           />
           <DateInput
-            label="Bäst-före datum"
-            placeholder="Välj datum"
+            label={t('common.fields.expiryDate')}
+            placeholder={t('common.fields.chooseDate')}
             clearable
             {...form.getInputProps('expiryDate')}
           />
           <Select
-            label="Kategori"
-            placeholder="Välj kategori"
-            data={ITEM_CATEGORIES}
+            label={t('common.fields.category')}
+            placeholder={t('common.fields.chooseCategory')}
+            data={ITEM_CATEGORIES.map((cat) => ({ value: cat, label: t(categoryKey(cat)) }))}
             clearable
             searchable
             {...form.getInputProps('category')}
           />
           <NumberInput
-            label="Minimumnivå"
-            description="Läggs automatiskt i inköpslistan när antalet understiger detta"
-            placeholder="Inget minimum"
+            label={t('editItem.minLevel')}
+            description={t('editItem.minLevelHint')}
+            placeholder={t('editItem.minLevelPlaceholder')}
             min={0}
             step={1}
             {...form.getInputProps('minQuantity')}
           />
 
           {submitError && (
-            <Alert color="red" title="Fel">
-              {submitError}
+            <Alert color="red" title={t('editItem.error')}>
+              {t(submitError, { defaultValue: submitError })}
             </Alert>
           )}
 
           <Button type="submit" fullWidth loading={submitting}>
-            Spara
+            {t('common.buttons.save')}
           </Button>
         </Stack>
       </form>

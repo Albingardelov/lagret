@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useInventoryStore } from '../store/inventoryStore'
+import i18n from '../i18n'
 
 const STORAGE_KEY = 'lagret:expiry-notified'
 
@@ -22,9 +23,9 @@ export function useExpiryNotifications() {
       localStorage.setItem(STORAGE_KEY, today)
       const body =
         expiring.length === 1
-          ? `${expiring[0].name} går ut snart`
-          : `${expiring.length} varor går ut inom 3 dagar`
-      new Notification('Lagret – utgångsdatum', { body, icon: '/favicon.svg' })
+          ? i18n.t('expiryNotification.singleItem', { name: expiring[0].name })
+          : i18n.t('expiryNotification.multipleItems', { count: expiring.length })
+      new Notification(i18n.t('expiryNotification.appName'), { body, icon: '/favicon.svg' })
     }
 
     if (Notification.permission === 'granted') {

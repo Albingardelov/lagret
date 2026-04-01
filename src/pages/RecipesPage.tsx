@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import {
   Stack,
   Text,
@@ -76,6 +77,7 @@ function saveFavorites(ids: Set<number>) {
 type FilterMode = 'all' | 'ready' | 'almost' | 'favorites'
 
 export function RecipesPage() {
+  const { t } = useTranslation()
   const items = useInventoryStore((s) => s.items)
   const updateItem = useInventoryStore((s) => s.updateItem)
   const addShoppingItem = useShoppingStore((s) => s.addItem)
@@ -238,7 +240,7 @@ export function RecipesPage() {
               letterSpacing: '-0.5px',
             }}
           >
-            Recept
+            {t('recipes.title')}
           </Text>
           <Text
             style={{
@@ -248,13 +250,13 @@ export function RecipesPage() {
               marginTop: 4,
             }}
           >
-            Baserat på ditt lager
+            {t('recipes.subtitle')}
           </Text>
         </Box>
 
         <Box px="md" pb="md">
           <TextInput
-            placeholder="Sök recept, ingredienser..."
+            placeholder={t('recipes.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.currentTarget.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -313,7 +315,7 @@ export function RecipesPage() {
                 marginBottom: 6,
               }}
             >
-              Vad ska vi äta idag?
+              {t('recipes.emptyState')}
             </Text>
             <Text
               style={{
@@ -323,7 +325,7 @@ export function RecipesPage() {
                 marginBottom: 14,
               }}
             >
-              Vi matchar innehållet i ditt skafferi med de mest populära recepten.
+              {t('recipes.suggestHint')}
             </Text>
             <Button
               size="sm"
@@ -338,7 +340,7 @@ export function RecipesPage() {
                 fontWeight: 700,
               }}
             >
-              Föreslå recept baserat på mitt lager
+              {t('recipes.suggest')}
             </Button>
           </Box>
         </Box>
@@ -358,7 +360,7 @@ export function RecipesPage() {
               border: 'none',
             }}
           >
-            Föreslå recept från mitt lager
+            {t('recipes.suggest')}
           </Button>
         </Box>
 
@@ -367,10 +369,10 @@ export function RecipesPage() {
             <Group gap={8} wrap="nowrap" py={4}>
               {(
                 [
-                  { label: 'Alla', value: 'all' },
-                  { label: 'Favoriter', value: 'favorites' },
-                  { label: 'Kan laga nu', value: 'ready' },
-                  { label: 'Nästan', value: 'almost' },
+                  { labelKey: 'recipes.all', value: 'all' },
+                  { labelKey: 'recipes.favorites', value: 'favorites' },
+                  { labelKey: 'recipes.canCookNow', value: 'ready' },
+                  { labelKey: 'recipes.almost', value: 'almost' },
                 ] as const
               ).map((opt) => {
                 const active = filter === opt.value
@@ -400,7 +402,7 @@ export function RecipesPage() {
                         lineHeight: 1,
                       }}
                     >
-                      {opt.label}
+                      {t(opt.labelKey)}
                     </Text>
                   </Box>
                 )
@@ -461,7 +463,7 @@ export function RecipesPage() {
                           e.stopPropagation()
                           toggleFavorite(m.recipe.id)
                         }}
-                        aria-label={isFav ? 'Ta bort favorit' : 'Spara som favorit'}
+                        aria-label={isFav ? t('recipes.removeFavorite') : t('recipes.addFavorite')}
                       >
                         {isFav ? (
                           <IconHeartFilled size={16} color={TERRA} />
@@ -492,8 +494,8 @@ export function RecipesPage() {
                         }}
                       >
                         {m.score >= 1
-                          ? 'Du har allt'
-                          : `Saknar ${m.missing.length} ingrediens${m.missing.length !== 1 ? 'er' : ''}`}
+                          ? t('recipes.haveAll')
+                          : t('recipes.missingIngredient', { count: m.missing.length })}
                       </Badge>
                       {m.recipe.totalTime && (
                         <Badge
@@ -537,7 +539,7 @@ export function RecipesPage() {
                           marginTop: 4,
                         }}
                       >
-                        Saknas: {m.missing.slice(0, 3).join(', ')}
+                        {t('recipes.missing')}: {m.missing.slice(0, 3).join(', ')}
                         {m.missing.length > 3 ? ` +${m.missing.length - 3}` : ''}
                       </Text>
                     )}
@@ -566,7 +568,7 @@ export function RecipesPage() {
               )}
               {selected.recipe.servings && (
                 <Text size="sm" c="dimmed">
-                  {selected.recipe.servings} portioner
+                  {t('recipes.servings', { count: selected.recipe.servings })}
                 </Text>
               )}
 
@@ -574,8 +576,10 @@ export function RecipesPage() {
                 <>
                   <Group justify="space-between">
                     <Text fw={600}>
-                      Ingredienser ({selected.matched.length}/
-                      {getAllIngredients(selected.recipe).length} hemma)
+                      {t('recipes.ingredientsSummary', {
+                        matched: selected.matched.length,
+                        total: getAllIngredients(selected.recipe).length,
+                      })}
                     </Text>
                     <Group gap="xs">
                       {selected.missing.length > 0 && (
@@ -590,7 +594,7 @@ export function RecipesPage() {
                           loading={addingToList}
                           disabled={addedToList}
                         >
-                          {addedToList ? 'Tillagda' : 'Handla saknade ingredienser'}
+                          {addedToList ? t('recipes.added') : t('recipes.shopMissing')}
                         </Button>
                       )}
                       {matchedInventoryItems.length > 0 && (
@@ -600,7 +604,7 @@ export function RecipesPage() {
                           leftSection={<IconCooker size={14} />}
                           onClick={openCook}
                         >
-                          Laga rätten
+                          {t('recipes.startCooking')}
                         </Button>
                       )}
                     </Group>
@@ -636,7 +640,7 @@ export function RecipesPage() {
                     </Stack>
                   ))}
                   <Divider />
-                  <Text fw={600}>Instruktioner</Text>
+                  <Text fw={600}>{t('recipes.instructions')}</Text>
                   <List type="ordered">
                     {selected.recipe.instructions.map((step, i) => (
                       <List.Item key={i}>
@@ -647,13 +651,13 @@ export function RecipesPage() {
                 </>
               ) : cookDone ? (
                 <Alert color="green" icon={<IconCheck size={16} />}>
-                  Lagret uppdaterat! Smaklig måltid.
+                  {t('recipes.inventoryUpdated')}
                 </Alert>
               ) : (
                 <>
-                  <Text fw={600}>Bocka av ingredienser du använt</Text>
+                  <Text fw={600}>{t('recipes.cookingConfirmTitle')}</Text>
                   <Text size="sm" c="dimmed">
-                    Varor från lagret minskas med 1 st.
+                    {t('recipes.cookingConfirmHint')}
                   </Text>
                   {mergeUnnamedGroups(selected.recipe.ingredientGroups).map((group, gi) => (
                     <Stack key={gi} gap="xs">
@@ -685,7 +689,10 @@ export function RecipesPage() {
                                 {invItem && (
                                   <Text span c="dimmed">
                                     {' '}
-                                    ({invItem.quantity} {invItem.unit} i lager)
+                                    {t('recipes.inStock', {
+                                      quantity: invItem.quantity,
+                                      unit: invItem.unit,
+                                    })}
                                   </Text>
                                 )}
                               </Text>
@@ -697,10 +704,10 @@ export function RecipesPage() {
                   ))}
                   <Group>
                     <Button variant="subtle" color="gray" onClick={() => setCooking(false)}>
-                      Avbryt
+                      {t('common.buttons.cancel')}
                     </Button>
                     <Button onClick={handleCook} disabled={cookChecked.size === 0}>
-                      Bekräfta
+                      {t('common.buttons.confirm')}
                     </Button>
                   </Group>
                 </>

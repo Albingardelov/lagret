@@ -47,7 +47,7 @@ export const useLocationsStore = create<LocationsState>((set, get) => ({
 
   addLocation: async (name, icon) => {
     const householdId = useHouseholdStore.getState().household?.id
-    if (!householdId) throw new Error('Inget hushåll laddat')
+    if (!householdId) throw new Error('common.errors.noHouseholdShort')
     const maxOrder = get().locations.reduce((m, l) => Math.max(m, l.sortOrder), -1)
     const { data, error } = await supabase
       .from('storage_locations')
@@ -79,7 +79,7 @@ export const useLocationsStore = create<LocationsState>((set, get) => ({
       .select('id', { count: 'exact', head: true })
       .eq('location', id)
     if (countError) throw new Error(countError.message)
-    if (count && count > 0) throw new Error('Platsen har varor – töm den först')
+    if (count && count > 0) throw new Error('common.errors.locationHasItems')
     const { error } = await supabase.from('storage_locations').delete().eq('id', id)
     if (error) throw new Error(error.message)
     set((s) => ({ locations: s.locations.filter((l) => l.id !== id) }))

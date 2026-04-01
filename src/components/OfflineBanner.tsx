@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Notification } from '@mantine/core'
 import { IconWifiOff } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 
 export function OfflineBanner() {
+  const { t } = useTranslation()
   const [offline, setOffline] = useState(!navigator.onLine)
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export function OfflineBanner() {
     <Notification
       icon={<IconWifiOff size={18} />}
       color="orange"
-      title="Offline"
+      title={t('offline.title')}
       withCloseButton={false}
       style={{
         position: 'fixed',
@@ -34,7 +36,7 @@ export function OfflineBanner() {
         maxWidth: '90vw',
       }}
     >
-      Du är offline. Senaste datan visas.
+      {t('offline.description')}
     </Notification>
   )
 }

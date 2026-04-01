@@ -54,7 +54,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   addItem: async (item) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      throw new Error('Inget hushåll laddat – logga ut och in igen')
+      throw new Error('common.errors.noHousehold')
     }
     const now = new Date().toISOString()
     const timeout = new Promise<never>((_, reject) =>
@@ -81,7 +81,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
   addItems: async (items) => {
     const householdId = useHouseholdStore.getState().household?.id
     if (!householdId) {
-      throw new Error('Inget hushåll laddat – logga ut och in igen')
+      throw new Error('common.errors.noHousehold')
     }
     const now = new Date().toISOString()
     const rows = items.map((item) => ({

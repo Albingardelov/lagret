@@ -14,13 +14,16 @@ import {
   UnstyledButton,
 } from '@mantine/core'
 import { IconPlus, IconTrash, IconPackage, IconCheck, IconSearch } from '@tabler/icons-react'
+import { useTranslation } from 'react-i18next'
 import { useShoppingStore } from '../store/shoppingStore'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { useErrorNotification } from '../hooks/useErrorNotification'
 import { AddItemModal } from '../components/AddItemModal'
 import { ITEM_CATEGORIES } from '../lib/categories'
+import { categoryKey } from '../lib/categories'
 import { UNITS_FLAT } from '../lib/units'
+import { unitGroupKey } from '../lib/units'
 import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { BottomSheet } from '../components/BottomSheet'
 
@@ -29,6 +32,7 @@ const TERRA = '#B5432A'
 const CARD_BG = '#FFFFFF'
 
 export function ShoppingListPage() {
+  const { t } = useTranslation()
   const {
     items,
     loading,
@@ -53,7 +57,11 @@ export function ShoppingListPage() {
   const [bulkDone, setBulkDone] = useState(false)
   const addInventoryItem = useInventoryStore((s) => s.addItem)
   const locations = useLocationsStore((s) => s.locations)
-  useErrorNotification(error, 'Inköpslistefel')
+  const notifyError = useErrorNotification()
+  useEffect(() => {
+    if (error) notifyError(error, t('shopping.errorLabel'))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error])
 
   useEffect(() => {
     fetchItems()
@@ -167,7 +175,7 @@ export function ShoppingListPage() {
             letterSpacing: '-0.5px',
           }}
         >
-          Inköpslista
+          {t('shopping.title')}
         </Text>
         <Text
           style={{
@@ -177,7 +185,7 @@ export function ShoppingListPage() {
             marginTop: 4,
           }}
         >
-          Organisera din handling och fyll på förrådet.
+          {t('shopping.subtitle')}
         </Text>
       </Box>
 
@@ -186,7 +194,7 @@ export function ShoppingListPage() {
         <Group gap={8} wrap="nowrap">
           <UnstyledButton
             onClick={() => setDetailsOpen(true)}
-            aria-label="Öppna inmatningsfält"
+            aria-label={t('shopping.openInput')}
             style={{
               flex: 1,
               background: CARD_BG,
@@ -206,7 +214,7 @@ export function ShoppingListPage() {
                 color: '#9A8A7A',
               }}
             >
-              Lägg till vara manuellt...
+              {t('shopping.addManual')}
             </Text>
           </UnstyledButton>
           <ActionIcon
@@ -218,7 +226,7 @@ export function ShoppingListPage() {
               flexShrink: 0,
               boxShadow: '0 2px 8px rgba(181,67,42,0.3)',
             }}
-            aria-label="Lägg till vara"
+            aria-label={t('shopping.addItem')}
           >
             <IconPlus size={22} color="#fff" />
           </ActionIcon>
@@ -227,7 +235,7 @@ export function ShoppingListPage() {
 
       {loading && (
         <Text c="dimmed" size="sm" px="md">
-          Laddar...
+          {t('common.loading')}
         </Text>
       )}
 
@@ -257,7 +265,7 @@ export function ShoppingListPage() {
                   }}
                 >
                   <Text style={{ fontSize: 10, fontWeight: 700, color: '#7A6A5A' }}>
-                    {groupItems.length} vara{groupItems.length !== 1 ? 'r' : ''}
+                    {t('shopping.itemCount', { count: groupItems.length })}
                   </Text>
                 </Box>
               </Group>
@@ -361,7 +369,7 @@ export function ShoppingListPage() {
                   textTransform: 'uppercase',
                 }}
               >
-                Köpta varor
+                {t('shopping.boughtItems')}
               </Text>
               <Box
                 style={{
@@ -379,7 +387,7 @@ export function ShoppingListPage() {
               variant="subtle"
               size="sm"
               onClick={clearBought}
-              aria-label="Rensa köpta varor"
+              aria-label={t('shopping.clearBought')}
               style={{ color: '#9A8A7A' }}
             >
               <IconTrash size={14} />
@@ -457,7 +465,7 @@ export function ShoppingListPage() {
                     radius={8}
                     variant="light"
                     onClick={() => setInventoryItem({ id: item.id, name: item.name })}
-                    aria-label="Lägg i lagret"
+                    aria-label={t('shopping.moveToInventory')}
                     style={{ background: '#EDE8E2', color: '#4A3728', flexShrink: 0 }}
                   >
                     <IconPackage size={14} />
@@ -481,7 +489,7 @@ export function ShoppingListPage() {
               fontWeight: 600,
             }}
           >
-            Inköpslistan är tom
+            {t('shopping.empty')}
           </Text>
           <Text
             style={{
@@ -491,7 +499,7 @@ export function ShoppingListPage() {
               marginTop: 4,
             }}
           >
-            Tryck på + för att lägga till varor
+            {t('shopping.addHint')}
           </Text>
         </Box>
       )}
@@ -521,7 +529,7 @@ export function ShoppingListPage() {
               fontSize: 15,
             }}
           >
-            Köp och flytta till lagret
+            {t('shopping.emptyHint')}
           </Button>
         </Box>
       )}
@@ -530,18 +538,18 @@ export function ShoppingListPage() {
       <BottomSheet
         opened={detailsOpen}
         onClose={() => setDetailsOpen(false)}
-        title="Lägg till vara"
+        title={t('shopping.addItem')}
       >
         <Stack>
           <TextInput
-            label="Namn"
+            label={t('common.fields.name')}
             placeholder="T.ex. 2 kg Mjöl"
             value={detailName}
             onChange={(e) => handleNameChange(e.currentTarget.value)}
           />
           <Group grow>
             <NumberInput
-              label="Antal"
+              label={t('common.fields.quantity')}
               value={detailQuantity}
               onChange={(v) => setDetailQuantity(typeof v === 'number' ? v : 1)}
               min={0.01}
@@ -549,8 +557,8 @@ export function ShoppingListPage() {
               decimalScale={2}
             />
             <Select
-              label="Enhet"
-              data={UNITS_FLAT}
+              label={t('common.fields.unit')}
+              data={UNITS_FLAT.map((g) => ({ ...g, group: t(unitGroupKey(g.group)) }))}
               value={detailUnit}
               onChange={(v) => setDetailUnit(v ?? 'st')}
               allowDeselect={false}
@@ -558,31 +566,34 @@ export function ShoppingListPage() {
             />
           </Group>
           <Select
-            label="Kategori"
-            placeholder="Valfritt"
-            data={ITEM_CATEGORIES}
+            label={t('common.fields.category')}
+            placeholder={t('common.fields.chooseCategory')}
+            data={ITEM_CATEGORIES.map((cat) => ({ value: cat, label: t(categoryKey(cat)) }))}
             value={detailCategory}
             onChange={setDetailCategory}
             clearable
             searchable
           />
           <TextInput
-            label="Notering"
-            placeholder="Valfritt"
+            label={t('common.fields.note')}
             value={detailNote}
             onChange={(e) => setDetailNote(e.currentTarget.value)}
           />
           <Button onClick={handleDetailAdd} disabled={!detailName.trim()} fullWidth>
-            Lägg till
+            {t('common.buttons.add')}
           </Button>
         </Stack>
       </BottomSheet>
 
       {/* Bulk add to inventory wizard */}
-      <BottomSheet opened={bulkOpen} onClose={() => setBulkOpen(false)} title="Flytta till lagret">
+      <BottomSheet
+        opened={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        title={t('shopping.bulkTitle')}
+      >
         {bulkDone ? (
           <Alert color="green" icon={<IconCheck size={16} />}>
-            Alla varor har lagts in i lagret!
+            {t('shopping.allMovedToInventory')}
           </Alert>
         ) : (
           <Stack>
@@ -593,7 +604,7 @@ export function ShoppingListPage() {
                 color: '#7A6A5A',
               }}
             >
-              Välj förvaringsplats för varje vara
+              {t('shopping.selectLocation')}
             </Text>
             {bought.map((item, idx) => (
               <Box
@@ -644,7 +655,7 @@ export function ShoppingListPage() {
               onClick={handleBulkAdd}
               loading={bulkSubmitting}
             >
-              Lägg in {bought.length} varor i lagret
+              {t('shopping.moveCount', { count: bought.length })}
             </Button>
           </Stack>
         )}

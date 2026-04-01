@@ -16,14 +16,20 @@ import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { IconBarcode, IconScissors, IconCheck, IconAlertTriangle } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useInventoryStore } from '../store/inventoryStore'
 import { Scanner } from './Scanner'
 import { lookupBarcodeRegistry, saveBarcodeRegistry } from '../lib/barcodeRegistry'
 import { useLocationsStore } from '../store/locationsStore'
-import { ITEM_CATEGORIES, CATEGORY_DEFAULT_UNIT, CATEGORY_DEFAULT_QTY } from '../lib/categories'
+import {
+  ITEM_CATEGORIES,
+  CATEGORY_DEFAULT_UNIT,
+  CATEGORY_DEFAULT_QTY,
+  categoryKey,
+} from '../lib/categories'
 import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { suggestExpiryDate } from '../lib/storageDurations'
-import { UNITS_FLAT } from '../lib/units'
+import { UNITS_FLAT, unitGroupKey } from '../lib/units'
 
 interface Props {
   opened: boolean
@@ -42,6 +48,7 @@ export function AddItemModal({
   defaultName,
   onAdded,
 }: Props) {
+  const { t, i18n } = useTranslation()
   const addItem = useInventoryStore((s) => s.addItem)
   const addItems = useInventoryStore((s) => s.addItems)
   const locations = useLocationsStore((s) => s.locations)
@@ -116,7 +123,8 @@ export function AddItemModal({
     const entry = await lookupBarcodeRegistry(code)
     setLookupLoading(false)
     if (entry) {
-      form.setFieldValue('name', entry.name)
+      const productName = i18n.language.startsWith('en') && entry.nameEn ? entry.nameEn : entry.name
+      form.setFieldValue('name', productName)
       form.setFieldValue('unit', entry.unit)
       if (entry.category) form.setFieldValue('category', entry.category)
       setLookupSuccess(true)
@@ -145,7 +153,7 @@ export function AddItemModal({
         await addItem(base)
       }
     } catch (e) {
-      setSubmitError(e instanceof Error ? e.message : 'Något gick fel')
+      setSubmitError(e instanceof Error ? e.message : t('common.errors.unknownError'))
       setSubmitting(false)
       return
     }
@@ -168,7 +176,7 @@ export function AddItemModal({
   })
 
   return (
-    <BottomSheet opened={opened} onClose={onClose} title="Lägg till vara">
+    <BottomSheet opened={opened} onClose={onClose} title={t('addItem.title')}>
       {showScanner ? (
         <Scanner onBarcode={handleBarcode} onClose={() => setShowScanner(false)} />
       ) : (
@@ -176,8 +184,8 @@ export function AddItemModal({
           <Stack>
             <Group align="flex-end">
               <TextInput
-                label="Streckkod"
-                placeholder="Skanna eller ange manuellt"
+                label={t('addItem.barcode')}
+                placeholder={t('addItem.barcodeHint')}
                 style={{ flex: 1 }}
                 {...form.getInputProps('barcode')}
               />
@@ -186,7 +194,7 @@ export function AddItemModal({
                 leftSection={<IconBarcode size={16} />}
                 onClick={() => setShowScanner(true)}
               >
-                Skanna
+                {t('addItem.scan')}
               </Button>
             </Group>
 
@@ -194,34 +202,43 @@ export function AddItemModal({
               <Group gap="xs">
                 <Loader size="xs" />
                 <Text size="sm" c="dimmed">
-                  Söker produktinformation...
+                  {t('addItem.searching')}
                 </Text>
               </Group>
             )}
 
             {lookupSuccess && (
               <Alert color="green" icon={<IconCheck size={16} />}>
-                Produkt hittad och ifylld automatiskt.
+                {t('addItem.productFound')}
               </Alert>
             )}
 
             {lookupFailed && (
-              <Alert color="orange" icon={<IconAlertTriangle size={16} />} title="Okänd streckkod">
-                Fyll i namn och enhet så sparas den för nästa gång.
+              <Alert
+                color="orange"
+                icon={<IconAlertTriangle size={16} />}
+                title={t('addItem.unknownBarcode')}
+              >
+                {t('addItem.unknownBarcodeHint')}
               </Alert>
             )}
 
             <TextInput
-              label="Namn"
-              placeholder="T.ex. Mjölk"
+              label={t('common.fields.name')}
+              placeholder={t('addItem.namePlaceholder')}
               required
               {...form.getInputProps('name')}
             />
             <Group grow>
-              <NumberInput label="Antal" min={0} step={0.5} {...form.getInputProps('quantity')} />
+              <NumberInput
+                label={t('common.fields.quantity')}
+                min={0}
+                step={0.5}
+                {...form.getInputProps('quantity')}
+              />
               <Select
-                label="Enhet"
-                data={UNITS_FLAT}
+                label={t('common.fields.unit')}
+                data={UNITS_FLAT.map((g) => ({ ...g, group: t(unitGroupKey(g.group)) }))}
                 searchable
                 allowDeselect={false}
                 comboboxProps={{ withinPortal: false }}
@@ -229,7 +246,7 @@ export function AddItemModal({
               />
             </Group>
             <Select
-              label="Förvaringsplats"
+              label={t('common.fields.location')}
               data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
               searchable
               allowDeselect={false}
@@ -237,16 +254,16 @@ export function AddItemModal({
               {...form.getInputProps('location')}
             />
             <DateInput
-              label="Bäst-före datum"
-              placeholder="Välj datum"
+              label={t('common.fields.expiryDate')}
+              placeholder={t('common.fields.chooseDate')}
               clearable
               popoverProps={{ withinPortal: false }}
               {...form.getInputProps('expiryDate')}
             />
             <Select
-              label="Kategori"
-              placeholder="Välj kategori"
-              data={ITEM_CATEGORIES}
+              label={t('common.fields.category')}
+              placeholder={t('common.fields.chooseCategory')}
+              data={ITEM_CATEGORIES.map((cat) => ({ value: cat, label: t(categoryKey(cat)) }))}
               clearable
               searchable
               comboboxProps={{ withinPortal: false }}
@@ -260,13 +277,13 @@ export function AddItemModal({
                 leftSection={<IconScissors size={16} />}
                 onClick={() => setSplitCount(2)}
               >
-                Dela upp i portioner
+                {t('addItem.splitPortions')}
               </Button>
             ) : (
               <Stack gap="xs">
                 <Group align="flex-end">
                   <NumberInput
-                    label="Antal delar"
+                    label={t('addItem.portionCount')}
                     min={2}
                     max={20}
                     value={splitCount}
@@ -274,13 +291,13 @@ export function AddItemModal({
                     style={{ flex: 1 }}
                   />
                   <Button variant="subtle" color="gray" onClick={() => setSplitCount(null)}>
-                    Avbryt
+                    {t('common.buttons.cancel')}
                   </Button>
                 </Group>
                 {quantityPerPart !== null && (
                   <Group gap="xs">
                     <Text size="sm" c="dimmed">
-                      Varje del:
+                      {t('addItem.eachPortion')}:
                     </Text>
                     <Badge variant="light">
                       {quantityPerPart} {form.values.unit}
@@ -291,13 +308,15 @@ export function AddItemModal({
             )}
 
             {submitError && (
-              <Alert color="red" title="Fel">
-                {submitError}
+              <Alert color="red" title={t('addItem.error')}>
+                {t(submitError, { defaultValue: submitError })}
               </Alert>
             )}
 
             <Button type="submit" fullWidth loading={submitting}>
-              {splitCount && splitCount > 1 ? `Lägg till ${splitCount} delar` : 'Lägg till'}
+              {splitCount && splitCount > 1
+                ? t('addItem.addPortions', { count: splitCount })
+                : t('common.buttons.add')}
             </Button>
           </Stack>
         </form>
