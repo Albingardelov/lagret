@@ -46,11 +46,13 @@ vi.mock('../../store/shoppingStore', () => ({
 }))
 
 vi.mock('../../lib/categories', () => ({
-  ITEM_CATEGORIES: [{ value: 'dairy', label: 'Mejeri' }],
+  ITEM_CATEGORIES: ['Mejeri'],
+  categoryKey: (cat: string) => `categories.${cat}`,
 }))
 
 vi.mock('../../lib/units', () => ({
   UNITS_FLAT: [{ group: 'Styck', items: [{ value: 'st', label: 'st' }] }],
+  unitGroupKey: (group: string) => `unitGroups.${group}`,
 }))
 
 vi.mock('../../lib/parseShoppingInput', () => ({

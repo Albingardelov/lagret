@@ -18,9 +18,10 @@ vi.mock('../../store/locationsStore', () => ({
 }))
 
 vi.mock('../../lib/categories', () => ({
-  ITEM_CATEGORIES: [{ value: 'dairy', label: 'Mejeri' }],
+  ITEM_CATEGORIES: ['Mejeri'],
   CATEGORY_DEFAULT_UNIT: {} as Record<string, string>,
   CATEGORY_DEFAULT_QTY: {} as Record<string, number>,
+  categoryKey: (cat: string) => `categories.${cat}`,
 }))
 
 vi.mock('../../lib/storageDurations', () => ({
@@ -34,9 +35,10 @@ vi.mock('../../lib/units', () => ({
     { group: 'Styck', items: ['st'] },
   ],
   UNITS_FLAT: [
-    { value: 'st', label: 'st' },
-    { value: 'l', label: 'l' },
+    { group: 'Styck', items: [{ value: 'st', label: 'st' }] },
+    { group: 'Volym', items: [{ value: 'l', label: 'l' }] },
   ],
+  unitGroupKey: (group: string) => `unitGroups.${group}`,
 }))
 
 // Scanner använder ZXing som inte fungerar i jsdom – mocka hela komponenten

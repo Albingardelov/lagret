@@ -139,7 +139,7 @@ describe('deleteLocation', () => {
   it('throws if location has items', async () => {
     mockEq.mockResolvedValueOnce({ count: 3, error: null })
     await expect(useLocationsStore.getState().deleteLocation('loc-1')).rejects.toThrow(
-      'Platsen har varor – töm den först'
+      'common.errors.locationHasItems'
     )
   })
 })
