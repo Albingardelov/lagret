@@ -19,6 +19,14 @@ npm run test:coverage
 npm run test:e2e     # Playwright E2E
 ```
 
+Kör enstaka test:
+
+```bash
+npx vitest run src/store/__tests__/inventoryStore.test.ts   # En specifik testfil
+npx vitest run -t "should add item"                          # Test by name
+npx playwright test e2e/inventory.spec.ts                    # En specifik E2E-test
+```
+
 ## Stack
 
 | Del                | Teknologi                                   |
@@ -49,6 +57,16 @@ src/
 ```
 
 **Dataflöde:** `pages` anropar `store` → `store` anropar `lib` → `lib` pratar med Supabase/externa API:er.
+
+## Kodstil
+
+Prettier: `semi: false`, `singleQuote: true`, `trailingComma: 'es5'`, `printWidth: 100`.
+
+## Routing
+
+`src/router.tsx` definierar alla routes med `createBrowserRouter()`.
+Alla skyddade routes ligger under `<AuthGuard>` + `<AppLayout>`.
+Sidor lazy-loadas med `React.lazy()` + `Suspense` + `<PageLoader />`.
 
 ## Databas
 
@@ -84,6 +102,22 @@ utan att vänta på `onAuthStateChange`.
 
 `useHouseholdStore.getState().household?.id` används i `inventoryStore` för att hämta `household_id`.
 `AppLayout` anropar `fetchHousehold()` på mount för att säkerställa att hushållet är laddat.
+
+**Kaskad vid byte av hushåll:** `setActiveHousehold()` triggar sekventiellt:
+`fetchMembers` → `fetchLocations` → `fetchItems` → `fetchShoppingItems`.
+Aktivt hushåll persisteras i `localStorage` (`lagret:activeHousehold`).
+
+## Realtime-prenumerationer
+
+`inventoryStore` och `shoppingStore` har `subscribeRealtime()` som returnerar en unsubscribe-funktion.
+Mönster i sidor:
+
+```ts
+useEffect(() => {
+  const unsub = subscribeRealtime()
+  return () => { unsub() }
+}, [subscribeRealtime])
+```
 
 ## Streckkod / produktinfo
 
@@ -124,3 +158,15 @@ VITE_SUPABASE_ANON_KEY=...
 ```
 
 På Vercel läggs samma variabler in i projektinställningarna (lagret.vercel.app).
+
+## Testinfrastruktur
+
+- **MSW (Mock Service Worker)** används för att mocka HTTP i enhetstester. Handlers i `src/test/mocks/handlers/`.
+- **`renderWithMantine()`** i `src/test/utils.tsx` – custom render-wrapper med MantineProvider. Använd alltid denna istället för RTL:s `render()`.
+- **`vi.hoisted()`** krävs för mockar som behöver initialiseras innan moduler importeras (t.ex. Supabase-mockar i store-tester).
+- **E2E-fixtures** i `e2e/fixtures.ts` – `authedPage` injicerar fake JWT + localStorage-session och interceptar Supabase-anrop.
+
+## Tema
+
+Custom Mantine-tema i `App.tsx`: `primaryColor: 'terra'` (terrakotta-palett).
+Typsnitt: `Manrope` (brödtext), `Epilogue` (rubriker) – laddas via Google Fonts i `index.html`.

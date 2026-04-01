@@ -57,9 +57,17 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
 
     if (households.length === 0) return
 
-    // Återställ aktivt hushåll från localStorage, annars välj första
+    // Återställ aktivt hushåll från localStorage — välj INTE ett slumpmässigt hushåll
     const saved = localStorage.getItem(ACTIVE_HH_KEY)
-    const active = households.find((h) => h.id === saved) ?? households[0]
+    const active = households.find((h) => h.id === saved)
+    if (!active) {
+      // Inget sparat eller sparat id matchar inte — välj första egna hushållet
+      const fallback = households[0]
+      set({ household: fallback, activeHouseholdId: fallback.id })
+      localStorage.setItem(ACTIVE_HH_KEY, fallback.id)
+      await get().fetchMembers(fallback.id)
+      return
+    }
     set({ household: active, activeHouseholdId: active.id })
     localStorage.setItem(ACTIVE_HH_KEY, active.id)
     await get().fetchMembers(active.id)
@@ -128,11 +136,10 @@ export const useHouseholdStore = create<HouseholdState>((set, get) => ({
 
   joinHousehold: async (inviteCode) => {
     set({ loading: true, error: null })
-    const { data: hh, error: findError } = await supabase
-      .from('households')
-      .select('*')
-      .eq('invite_code', inviteCode.trim().toLowerCase())
-      .maybeSingle()
+    const { data, error: findError } = await supabase.rpc('find_household_by_invite_code', {
+      code: inviteCode,
+    })
+    const hh = data?.[0] ?? null
     if (findError || !hh) {
       set({ error: 'Hittade inget hushåll med den koden', loading: false })
       return

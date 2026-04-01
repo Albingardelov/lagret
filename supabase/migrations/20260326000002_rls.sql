@@ -21,11 +21,22 @@ RETURNS boolean AS $$
 $$ LANGUAGE sql SECURITY DEFINER;
 
 -- ---- households ----
--- Inloggad användare kan se hushåll (krävs för att söka på inbjudningskod).
--- Åtkomst till känslig data (inventory, shopping) skyddas av egna policies.
+-- Bara medlemmar kan se sina hushåll.
+-- Sökning via inbjudningskod sker via find_household_by_invite_code() (SECURITY DEFINER).
 CREATE POLICY "households: member read"
   ON households FOR SELECT
-  USING (is_household_member(id) OR auth.uid() IS NOT NULL);
+  USING (is_household_member(id));
+
+-- RPC-funktion för att hitta hushåll via inbjudningskod utan att
+-- exponera alla hushåll via SELECT.
+CREATE OR REPLACE FUNCTION find_household_by_invite_code(code text)
+RETURNS TABLE(id uuid, name text, invite_code text, created_at timestamptz)
+LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
+  SELECT h.id, h.name, h.invite_code, h.created_at
+  FROM households h
+  WHERE h.invite_code = lower(trim(code))
+  LIMIT 1;
+$$;
 
 -- Ny rad: vem som helst som är inloggad kan skapa ett hushåll
 CREATE POLICY "households: authenticated create"
