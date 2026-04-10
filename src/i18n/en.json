@@ -92,7 +92,6 @@
     "daysLeft": "{{count}} day left",
     "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left",
-    "fresh": "Fresh",
     "lowStock": "Low stock",
     "editItem": "Edit {{name}}",
     "deleteItem": "Delete {{name}}"

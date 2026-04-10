@@ -98,7 +98,7 @@ function expiryStatus(dateStr: string | undefined, t: TFunction) {
       badgeText: '#166534',
     }
   return {
-    label: t('itemCard.fresh'),
+    label: dayjs(dateStr).format('YYYY-MM-DD'),
     borderColor: '#16A34A',
     badgeBg: '#DCFCE7',
     badgeText: '#166534',

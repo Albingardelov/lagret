@@ -92,7 +92,6 @@
     "daysLeft": "{{count}} dag kvar",
     "daysLeft_one": "{{count}} dag kvar",
     "daysLeft_other": "{{count}} dagar kvar",
-    "fresh": "Fräscht",
     "lowStock": "Lågt lager",
     "editItem": "Redigera {{name}}",
     "deleteItem": "Ta bort {{name}}"
