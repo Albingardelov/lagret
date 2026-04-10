@@ -118,6 +118,13 @@ export function EditItemModal({ item, onClose }: Props) {
     <BottomSheet opened={!!item} onClose={onClose} title={t('editItem.title')}>
       <form onSubmit={handleSubmit}>
         <Stack gap="md">
+          {/* Capture initial focus so the keyboard doesn't open on mobile */}
+          <Box
+            tabIndex={0}
+            data-autofocus
+            style={{ outline: 'none', height: 0, overflow: 'hidden' }}
+          />
+
           {/* Name */}
           <TextInput label={t('common.fields.name')} required {...form.getInputProps('name')} />
 
