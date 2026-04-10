@@ -17,17 +17,61 @@ export function normalizeIngredient(name: string): string {
   return name.toLowerCase().trim().replace(/\s+/g, ' ')
 }
 
+// Swedish + common units at the start of a recipe ingredient string, e.g. "500 g", "2 dl", "1 msk"
+const QUANTITY_UNIT_RE =
+  /^[\d.,/½¼¾]+\s*(?:g|kg|hg|mg|dl|l|ml|cl|liter|gram|kilo|msk|tsk|krm|st|st\.|port|förp|burk|paket|pkt|ask|klyfta|klyft|knippe|näve|skiva|skivor|cm|mm|cup|tbsp|tsp|oz|lb)\.?\s+/i
+
+// Common Swedish stopwords that shouldn't count as ingredient words
+const STOPWORDS = new Set([
+  'och',
+  'med',
+  'för',
+  'som',
+  'vid',
+  'mot',
+  'per',
+  'den',
+  'det',
+  'ett',
+  'ska',
+  'kan',
+  'har',
+  'gul',
+  'röd',
+  'grön',
+  'stor',
+  'liten',
+  'färsk',
+])
+
+/** Strips leading quantity+unit from a recipe ingredient, e.g. "500 g fläskfärs" → "fläskfärs" */
+function stripQuantityUnit(s: string): string {
+  return s
+    .replace(QUANTITY_UNIT_RE, '')
+    .replace(/\s*\(.*?\)\s*/g, ' ')
+    .trim()
+}
+
 /** Returns true if two ingredient names are considered the same */
 export function ingredientsMatch(a: string, b: string): boolean {
   const na = normalizeIngredient(a)
   const nb = normalizeIngredient(b)
+
+  // Compare with quantity/unit stripped (e.g. "500 g fläskfärs" → "fläskfärs")
+  const ca = stripQuantityUnit(na)
+  const cb = stripQuantityUnit(nb)
+
+  if (ca === cb || ca.includes(cb) || cb.includes(ca)) return true
   if (na === nb || na.includes(nb) || nb.includes(na)) return true
-  // Word-level overlap: any significant word (≥4 chars, non-numeric) from one string appears in the other
+
+  // Word-level overlap: words ≥3 chars, non-numeric, not stopwords
   const significantWords = (s: string) =>
-    s.split(/\s+/).filter((w) => w.length >= 4 && !/^\d/.test(w))
-  const wa = significantWords(na)
-  const wb = significantWords(nb)
-  return wa.some((w) => nb.includes(w)) || wb.some((w) => na.includes(w))
+    s.split(/\s+/).filter((w) => w.length >= 3 && !/^\d/.test(w) && !STOPWORDS.has(w))
+
+  const wa = significantWords(ca)
+  const wb = significantWords(cb)
+
+  return wa.some((w) => cb.includes(w)) || wb.some((w) => ca.includes(w))
 }
 
 /** Computes a match score for one recipe against a list of inventory item names */

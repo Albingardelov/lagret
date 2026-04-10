@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { normalizeIngredient, matchRecipe, matchRecipes } from '../recipeMatching'
+import { normalizeIngredient, ingredientsMatch, matchRecipe, matchRecipes } from '../recipeMatching'
 import type { Recipe } from '../../types'
 
 const BASE_RECIPE: Recipe = {
@@ -24,6 +24,38 @@ describe('normalizeIngredient', () => {
 
   it('kollapsar mellanslag', () => {
     expect(normalizeIngredient('gul  lök')).toBe('gul lök')
+  })
+})
+
+describe('ingredientsMatch', () => {
+  it('matchar exakt namn', () => {
+    expect(ingredientsMatch('pasta', 'pasta')).toBe(true)
+  })
+
+  it('strippar kvantitet+enhet från receptingrediens', () => {
+    expect(ingredientsMatch('500 g fläskfärs', 'fläskfärs')).toBe(true)
+    expect(ingredientsMatch('2 dl mjölk', 'mjölk')).toBe(true)
+    expect(ingredientsMatch('1 msk smör', 'smör')).toBe(true)
+  })
+
+  it('matchar varumärkesnamn mot generisk ingrediens', () => {
+    expect(ingredientsMatch('hallonsylt', 'BOB hallonsylt')).toBe(true)
+    expect(ingredientsMatch('sylt', 'BOB hallonsylt')).toBe(true)
+    expect(ingredientsMatch('mjölk', 'Arla mjölk 3%')).toBe(true)
+  })
+
+  it('matchar branded lagernamn mot ingrediens med kvantitet', () => {
+    expect(ingredientsMatch('500 g fläskfärs', 'Fläskfärs Limmared säteri')).toBe(true)
+  })
+
+  it('matchar korta ingrediensord (3 tecken)', () => {
+    expect(ingredientsMatch('1 lök', 'lök')).toBe(true)
+    expect(ingredientsMatch('2 ägg', 'ägg')).toBe(true)
+  })
+
+  it('returnerar false för helt olika ingredienser', () => {
+    expect(ingredientsMatch('pasta', 'mjölk')).toBe(false)
+    expect(ingredientsMatch('500 g nötfärs', 'hallonsylt')).toBe(false)
   })
 })
 
