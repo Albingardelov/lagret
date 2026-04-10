@@ -1,13 +1,24 @@
-import { TextInput, NumberInput, Select, Button, Stack, Group, Alert } from '@mantine/core'
+import {
+  TextInput,
+  NumberInput,
+  Select,
+  Button,
+  Stack,
+  Group,
+  Alert,
+  Checkbox,
+} from '@mantine/core'
 import { BottomSheet } from './BottomSheet'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import dayjs from 'dayjs'
 import { useInventoryStore } from '../store/inventoryStore'
 import { useLocationsStore } from '../store/locationsStore'
 import { ITEM_CATEGORIES, categoryKey } from '../lib/categories'
 import { UNITS_FLAT, unitGroupKey } from '../lib/units'
+import { VACUUM_PACK_MULTIPLIER } from '../lib/storageDurations'
 import type { InventoryItem } from '../types'
 
 interface Props {
@@ -31,6 +42,7 @@ export function EditItemModal({ item, onClose }: Props) {
       expiryDate: null as Date | null,
       category: '',
       minQuantity: null as number | null,
+      vacuumPacked: false,
     },
   })
 
@@ -44,6 +56,7 @@ export function EditItemModal({ item, onClose }: Props) {
         expiryDate: item.expiryDate ? new Date(item.expiryDate) : null,
         category: item.category ?? '',
         minQuantity: item.minQuantity ?? null,
+        vacuumPacked: item.vacuumPacked ?? false,
       })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -54,8 +67,24 @@ export function EditItemModal({ item, onClose }: Props) {
     setSubmitError(null)
     setSubmitting(true)
     try {
-      const d = values.expiryDate
-      const expiryDate = d instanceof Date ? d.toISOString().split('T')[0] : (d ?? undefined)
+      // If the user toggled the vacuum-packed flag we recompute the expiry
+      // date by scaling the *remaining* days from today: enabling vacuum
+      // multiplies remaining days by ~5×, disabling it shrinks them back.
+      // If the user also edited the date manually we use that as the base.
+      let finalDate = values.expiryDate
+      const vacuumChanged = values.vacuumPacked !== (item.vacuumPacked ?? false)
+      if (vacuumChanged && finalDate instanceof Date) {
+        const today = dayjs().startOf('day')
+        const remaining = dayjs(finalDate).startOf('day').diff(today, 'day')
+        if (remaining > 0) {
+          const scaled = values.vacuumPacked
+            ? remaining * VACUUM_PACK_MULTIPLIER
+            : Math.round(remaining / VACUUM_PACK_MULTIPLIER)
+          finalDate = today.add(scaled, 'day').toDate()
+        }
+      }
+      const expiryDate =
+        finalDate instanceof Date ? finalDate.toISOString().split('T')[0] : (finalDate ?? undefined)
       await updateItem(item.id, {
         name: values.name,
         quantity: values.quantity,
@@ -64,6 +93,7 @@ export function EditItemModal({ item, onClose }: Props) {
         expiryDate,
         category: values.category || undefined,
         minQuantity: values.minQuantity ?? undefined,
+        vacuumPacked: values.vacuumPacked,
       })
     } catch (e) {
       setSubmitError(e instanceof Error ? e.message : t('common.errors.unknownError'))
@@ -104,6 +134,11 @@ export function EditItemModal({ item, onClose }: Props) {
             placeholder={t('common.fields.chooseDate')}
             clearable
             {...form.getInputProps('expiryDate')}
+          />
+          <Checkbox
+            label={t('addItem.vacuumPacked')}
+            description={t('addItem.vacuumPackedHint')}
+            {...form.getInputProps('vacuumPacked', { type: 'checkbox' })}
           />
           <Select
             label={t('common.fields.category')}

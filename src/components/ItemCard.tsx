@@ -252,6 +252,28 @@ export function ItemCard({ item, onEdit, onDelete }: ItemCardProps) {
               </Text>
             </Box>
           )}
+          {item.vacuumPacked && (
+            <Box
+              style={{
+                background: '#E0E7FF',
+                borderRadius: 6,
+                padding: '2px 7px',
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: '"Manrope", sans-serif',
+                  fontSize: 10,
+                  fontWeight: 700,
+                  color: '#3730A3',
+                  letterSpacing: '0.04em',
+                  textTransform: 'uppercase',
+                }}
+              >
+                {t('itemCard.vacuumPacked')}
+              </Text>
+            </Box>
+          )}
           <Group gap={4} mt={2}>
             <ActionIcon
               size={28}

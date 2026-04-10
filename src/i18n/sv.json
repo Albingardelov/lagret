@@ -93,6 +93,7 @@
     "daysLeft_one": "{{count}} dag kvar",
     "daysLeft_other": "{{count}} dagar kvar",
     "lowStock": "Lågt lager",
+    "vacuumPacked": "Vakuum",
     "editItem": "Redigera {{name}}",
     "deleteItem": "Ta bort {{name}}"
   },

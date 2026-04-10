@@ -20,6 +20,7 @@ export interface InventoryItem {
   imageUrl?: string
   category?: string
   minQuantity?: number
+  vacuumPacked?: boolean
   createdAt: string
   updatedAt: string
 }

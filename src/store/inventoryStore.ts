@@ -15,6 +15,7 @@ function mapItem(row: Record<string, unknown>): InventoryItem {
     expiryDate: (row.expiry_date as string) ?? undefined,
     category: (row.category as string) ?? undefined,
     minQuantity: (row.min_quantity as number) ?? undefined,
+    vacuumPacked: (row.vacuum_packed as boolean) ?? false,
     createdAt: row.created_at as string,
     updatedAt: row.updated_at as string,
   }
@@ -70,6 +71,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       expiry_date: item.expiryDate ?? null,
       category: item.category ?? null,
       min_quantity: item.minQuantity ?? null,
+      vacuum_packed: item.vacuumPacked ?? false,
       created_at: now,
       updated_at: now,
     })
@@ -94,6 +96,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
       expiry_date: item.expiryDate ?? null,
       category: item.category ?? null,
       min_quantity: item.minQuantity ?? null,
+      vacuum_packed: item.vacuumPacked ?? false,
       created_at: now,
       updated_at: now,
     }))
@@ -116,6 +119,7 @@ export const useInventoryStore = create<InventoryState>((set, get) => ({
     if (updates.category !== undefined) dbUpdates.category = updates.category ?? null
     if (updates.barcode !== undefined) dbUpdates.barcode = updates.barcode ?? null
     if (updates.minQuantity !== undefined) dbUpdates.min_quantity = updates.minQuantity ?? null
+    if (updates.vacuumPacked !== undefined) dbUpdates.vacuum_packed = updates.vacuumPacked
     const { data, error } = await supabase
       .from('inventory')
       .update(dbUpdates)

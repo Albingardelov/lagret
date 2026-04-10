@@ -93,6 +93,7 @@
     "daysLeft_one": "{{count}} day left",
     "daysLeft_other": "{{count}} days left",
     "lowStock": "Low stock",
+    "vacuumPacked": "Vacuum",
     "editItem": "Edit {{name}}",
     "deleteItem": "Delete {{name}}"
   },

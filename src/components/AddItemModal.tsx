@@ -187,9 +187,6 @@ export function AddItemModal({
       }
       const expiryDate =
         finalDate instanceof Date ? finalDate.toISOString().split('T')[0] : (finalDate ?? undefined)
-      // vacuumPacked is form-only — it influences the suggested expiry date
-      // but is not persisted on the inventory row, so build the payload
-      // explicitly rather than spreading the whole form.
       const base = {
         name: values.name,
         barcode: values.barcode,
@@ -198,6 +195,7 @@ export function AddItemModal({
         location: values.location,
         category: values.category,
         expiryDate,
+        vacuumPacked: values.vacuumPacked,
       }
       if (splitCount && splitCount > 1 && quantityPerPart !== null) {
         await addItems(
