@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { fireEvent } from '@testing-library/react'
 import { render, screen, waitFor } from '../../test/utils'
 import { AddItemModal } from '../AddItemModal'
 
@@ -94,14 +95,17 @@ describe('AddItemModal', () => {
 
   it('växlar till Scanner-vy vid klick på Skanna', async () => {
     const { user } = render(<AddItemModal opened={true} onClose={vi.fn()} />)
-    await user.click(screen.getByRole('button', { name: /Skanna/i }))
+    await user.click(screen.getByRole('button', { name: /Avancerat/i }))
+    // Mantine Collapse uses CSS max-height animation; fireEvent bypasses visibility check in jsdom
+    fireEvent.click(screen.getByRole('button', { name: /Skanna/i, hidden: true }))
     expect(screen.getByTestId('scanner')).toBeInTheDocument()
     expect(screen.queryByLabelText(/Namn/i)).not.toBeInTheDocument()
   })
 
   it('återgår till formulär när scanner stängs', async () => {
     const { user } = render(<AddItemModal opened={true} onClose={vi.fn()} />)
-    await user.click(screen.getByRole('button', { name: /Skanna/i }))
+    await user.click(screen.getByRole('button', { name: /Avancerat/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Skanna/i, hidden: true }))
     await user.click(screen.getByRole('button', { name: /Stäng scanner/i }))
     expect(screen.getByLabelText(/Namn/i)).toBeInTheDocument()
   })

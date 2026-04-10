@@ -4,13 +4,18 @@ import {
   Select,
   Button,
   Stack,
-  Group,
   Alert,
   Checkbox,
+  Collapse,
+  UnstyledButton,
+  Box,
+  Text,
+  Group,
 } from '@mantine/core'
 import { BottomSheet } from './BottomSheet'
 import { DateInput } from '@mantine/dates'
 import { useForm } from '@mantine/form'
+import { IconMinus, IconPlus, IconChevronDown, IconChevronUp } from '@tabler/icons-react'
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import dayjs from 'dayjs'
@@ -26,12 +31,18 @@ interface Props {
   onClose: () => void
 }
 
+function qtyStep(unit: string): number {
+  if (['kg', 'l', 'hg', 'dl'].includes(unit)) return 0.1
+  return 1
+}
+
 export function EditItemModal({ item, onClose }: Props) {
   const { t } = useTranslation()
   const updateItem = useInventoryStore((s) => s.updateItem)
   const locations = useLocationsStore((s) => s.locations)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [showAdvanced, setShowAdvanced] = useState(false)
 
   const form = useForm({
     initialValues: {
@@ -48,6 +59,7 @@ export function EditItemModal({ item, onClose }: Props) {
 
   useEffect(() => {
     if (item) {
+      setShowAdvanced(false)
       form.setValues({
         name: item.name,
         quantity: item.quantity,
@@ -67,10 +79,6 @@ export function EditItemModal({ item, onClose }: Props) {
     setSubmitError(null)
     setSubmitting(true)
     try {
-      // If the user toggled the vacuum-packed flag we recompute the expiry
-      // date by scaling the *remaining* days from today: enabling vacuum
-      // multiplies remaining days by ~5×, disabling it shrinks them back.
-      // If the user also edited the date manually we use that as the base.
       let finalDate = values.expiryDate
       const vacuumChanged = values.vacuumPacked !== (item.vacuumPacked ?? false)
       if (vacuumChanged && finalDate instanceof Date) {
@@ -104,42 +112,164 @@ export function EditItemModal({ item, onClose }: Props) {
     onClose()
   })
 
+  const step = qtyStep(form.values.unit)
+
   return (
     <BottomSheet opened={!!item} onClose={onClose} title={t('editItem.title')}>
       <form onSubmit={handleSubmit}>
-        <Stack>
+        <Stack gap="md">
+          {/* Name */}
           <TextInput label={t('common.fields.name')} required {...form.getInputProps('name')} />
-          <Group grow>
-            <NumberInput
-              label={t('common.fields.quantity')}
-              min={0}
-              step={0.5}
-              {...form.getInputProps('quantity')}
-            />
+
+          {/* Quantity stepper + Unit */}
+          <Group align="flex-end" gap={8}>
+            <Box style={{ flex: 2 }}>
+              <Text
+                component="label"
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  marginBottom: 6,
+                  color: '#212529',
+                }}
+              >
+                {t('common.fields.quantity')}
+              </Text>
+              <Group
+                gap={0}
+                wrap="nowrap"
+                style={{
+                  border: '1px solid #dee2e6',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                }}
+              >
+                <UnstyledButton
+                  onClick={() =>
+                    form.setFieldValue(
+                      'quantity',
+                      Math.max(0, Math.round((form.values.quantity - step) * 100) / 100)
+                    )
+                  }
+                  style={{
+                    width: 40,
+                    height: 40,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    color: '#495057',
+                    borderRight: '1px solid #dee2e6',
+                  }}
+                >
+                  <IconMinus size={14} />
+                </UnstyledButton>
+                <NumberInput
+                  hideControls
+                  min={0}
+                  step={step}
+                  styles={{
+                    root: { flex: 1 },
+                    input: {
+                      border: 'none',
+                      textAlign: 'center',
+                      borderRadius: 0,
+                      height: 40,
+                      fontWeight: 600,
+                    },
+                  }}
+                  {...form.getInputProps('quantity')}
+                />
+                <UnstyledButton
+                  onClick={() =>
+                    form.setFieldValue(
+                      'quantity',
+                      Math.round((form.values.quantity + step) * 100) / 100
+                    )
+                  }
+                  style={{
+                    width: 40,
+                    height: 40,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexShrink: 0,
+                    color: '#495057',
+                    borderLeft: '1px solid #dee2e6',
+                  }}
+                >
+                  <IconPlus size={14} />
+                </UnstyledButton>
+              </Group>
+            </Box>
             <Select
               label={t('common.fields.unit')}
               data={UNITS_FLAT.map((g) => ({ ...g, group: t(unitGroupKey(g.group)) }))}
               searchable
               allowDeselect={false}
+              style={{ flex: 1 }}
               {...form.getInputProps('unit')}
             />
           </Group>
-          <Select
-            label={t('common.fields.location')}
-            data={locations.map((loc) => ({ value: loc.id, label: loc.name }))}
-            {...form.getInputProps('location')}
-          />
+
+          {/* Location chips */}
+          {locations.length > 0 && (
+            <Box>
+              <Text
+                style={{
+                  display: 'block',
+                  fontSize: 14,
+                  fontWeight: 500,
+                  marginBottom: 8,
+                  color: '#212529',
+                }}
+              >
+                {t('common.fields.location')}
+              </Text>
+              <Group gap={8} style={{ flexWrap: 'wrap' }}>
+                {locations.map((loc) => {
+                  const active = form.values.location === loc.id
+                  return (
+                    <UnstyledButton
+                      key={loc.id}
+                      onClick={() => form.setFieldValue('location', loc.id)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: active ? 600 : 500,
+                        fontFamily: '"Manrope", sans-serif',
+                        background: active ? '#5C3D2E' : '#F5F2EE',
+                        color: active ? '#fff' : '#5C3D2E',
+                        border: `1.5px solid ${active ? '#5C3D2E' : '#D9D0C7'}`,
+                        transition: 'background 0.1s, color 0.1s',
+                      }}
+                    >
+                      {loc.name}
+                    </UnstyledButton>
+                  )
+                })}
+              </Group>
+            </Box>
+          )}
+
+          {/* Expiry date */}
           <DateInput
             label={t('common.fields.expiryDate')}
             placeholder={t('common.fields.chooseDate')}
             clearable
             {...form.getInputProps('expiryDate')}
           />
+
+          {/* Vacuum packed */}
           <Checkbox
             label={t('addItem.vacuumPacked')}
             description={t('addItem.vacuumPackedHint')}
             {...form.getInputProps('vacuumPacked', { type: 'checkbox' })}
           />
+
+          {/* Category */}
           <Select
             label={t('common.fields.category')}
             placeholder={t('common.fields.chooseCategory')}
@@ -148,14 +278,35 @@ export function EditItemModal({ item, onClose }: Props) {
             searchable
             {...form.getInputProps('category')}
           />
-          <NumberInput
-            label={t('editItem.minLevel')}
-            description={t('editItem.minLevelHint')}
-            placeholder={t('editItem.minLevelPlaceholder')}
-            min={0}
-            step={1}
-            {...form.getInputProps('minQuantity')}
-          />
+
+          {/* Advanced: min quantity */}
+          <UnstyledButton
+            onClick={() => setShowAdvanced((v) => !v)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              color: '#7A6A5A',
+              fontSize: 13,
+              fontWeight: 500,
+              fontFamily: '"Manrope", sans-serif',
+              alignSelf: 'flex-start',
+            }}
+          >
+            {showAdvanced ? <IconChevronUp size={14} /> : <IconChevronDown size={14} />}
+            {t('addItem.advanced')}
+          </UnstyledButton>
+
+          <Collapse in={showAdvanced}>
+            <NumberInput
+              label={t('editItem.minLevel')}
+              description={t('editItem.minLevelHint')}
+              placeholder={t('editItem.minLevelPlaceholder')}
+              min={0}
+              step={1}
+              {...form.getInputProps('minQuantity')}
+            />
+          </Collapse>
 
           {submitError && (
             <Alert color="red" title={t('editItem.error')}>

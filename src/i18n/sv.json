@@ -119,7 +119,8 @@
     "addPortions": "Lägg till {{count}} delar",
     "vacuumPacked": "Vakuumpackat",
     "vacuumPackedHint": "Förlänger hållbarheten ungefär 5×",
-    "error": "Fel"
+    "error": "Fel",
+    "advanced": "Avancerat"
   },
   "editItem": {
     "title": "Redigera vara",

@@ -49,25 +49,31 @@ export function BottomSheet({ opened, onClose, title, children, size = 'lg' }: B
         onClose={onClose}
         title={<DragHandle title={title} />}
         position="bottom"
-        size="92%"
+        size="auto"
         radius="16px 16px 0 0"
         withCloseButton={false}
-        scrollAreaComponent={ScrollArea.Autosize}
         styles={{
           header: {
             paddingTop: 10,
             paddingBottom: 8,
             borderBottom: '1px solid #ecefe3',
+            flexShrink: 0,
           },
           title: {
             width: '100%',
           },
           body: {
             paddingTop: 16,
-            paddingBottom: 24,
+            paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
+            overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            flex: 1,
           },
           content: {
             borderRadius: '16px 16px 0 0',
+            maxHeight: '92dvh',
+            display: 'flex',
+            flexDirection: 'column',
           },
           overlay: {
             backdropFilter: 'blur(4px)',

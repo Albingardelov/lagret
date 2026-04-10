@@ -119,7 +119,8 @@
     "addPortions": "Add {{count}} portions",
     "vacuumPacked": "Vacuum packed",
     "vacuumPackedHint": "Extends shelf life by approximately 5×",
-    "error": "Error"
+    "error": "Error",
+    "advanced": "Advanced"
   },
   "editItem": {
     "title": "Edit item",
