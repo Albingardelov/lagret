@@ -69,7 +69,7 @@ export async function getRecipeBySlug(slug: string): Promise<Recipe | null> {
   return mapRecipe(data as RecipeRow)
 }
 
-export async function getRecentRecipes(limit = 20): Promise<Recipe[]> {
+export async function getRecentRecipes(limit = 50, offset = 0): Promise<Recipe[]> {
   const { data, error } = await supabase
     .from('recipes')
     .select(
@@ -78,7 +78,7 @@ export async function getRecentRecipes(limit = 20): Promise<Recipe[]> {
     .not('name', 'is', null)
     .not('image_urls', 'eq', '[]')
     .order('id', { ascending: false })
-    .limit(limit)
+    .range(offset, offset + limit - 1)
   if (error || !data) return []
   return (data as RecipeRow[]).map(mapRecipe)
 }

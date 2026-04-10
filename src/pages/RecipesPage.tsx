@@ -34,13 +34,7 @@ import { useInventoryStore } from '../store/inventoryStore'
 import { useShoppingStore } from '../store/shoppingStore'
 import { parseShoppingInput } from '../lib/parseShoppingInput'
 import { suggestRecipes, searchRecipes, getRecentRecipes } from '../lib/recipes'
-import {
-  matchRecipes,
-  ingredientsMatch,
-  getAllIngredients,
-  getCached,
-  setCache,
-} from '../lib/recipeMatching'
+import { matchRecipes, ingredientsMatch, getAllIngredients } from '../lib/recipeMatching'
 import type { RecipeMatch } from '../lib/recipeMatching'
 import type { IngredientGroup } from '../types'
 
@@ -88,6 +82,9 @@ export function RecipesPage() {
   const [filter, setFilter] = useState<FilterMode>('all')
   const [favorites, setFavorites] = useState<Set<number>>(() => loadFavorites())
   const [isSuggested, setIsSuggested] = useState(false)
+  const [allOffset, setAllOffset] = useState(0)
+  const [hasMore, setHasMore] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [cooking, setCooking] = useState(false)
   const [cookChecked, setCookChecked] = useState<Set<string>>(new Set())
   const [cookDone, setCookDone] = useState(false)
@@ -100,18 +97,16 @@ export function RecipesPage() {
 
   const inventoryNames = items.map((i) => i.name)
 
+  const PAGE_SIZE = 50
+
   useEffect(() => {
-    const cached = getCached<RecipeMatch[]>('recipes:all')
-    if (cached && cached.length > 0) {
-      setMatches(cached)
-      return
-    }
     const loadInitial = async () => {
       setLoading(true)
-      const recipes = await getRecentRecipes(50)
+      const recipes = await getRecentRecipes(PAGE_SIZE, 0)
       const results = matchRecipes(recipes, inventoryNames)
       setMatches(results)
-      setCache('recipes:all', results)
+      setAllOffset(PAGE_SIZE)
+      setHasMore(recipes.length === PAGE_SIZE)
       setLoading(false)
     }
     loadInitial()
@@ -125,25 +120,31 @@ export function RecipesPage() {
     const results = matchRecipes(recipes, names)
     setMatches(results)
     setIsSuggested(true)
-    setCache('recipes:matches', results)
+    setHasMore(false)
     setLoading(false)
   }
 
   const handleShowAll = () => {
     setIsSuggested(false)
     setFilter('all')
-    const cached = getCached<RecipeMatch[]>('recipes:all')
-    if (cached && cached.length > 0) {
-      setMatches(cached)
-      return
-    }
     setLoading(true)
-    getRecentRecipes(50).then((recipes) => {
+    getRecentRecipes(PAGE_SIZE, 0).then((recipes) => {
       const results = matchRecipes(recipes, inventoryNames)
       setMatches(results)
-      setCache('recipes:all', results)
+      setAllOffset(PAGE_SIZE)
+      setHasMore(recipes.length === PAGE_SIZE)
       setLoading(false)
     })
+  }
+
+  const handleLoadMore = async () => {
+    setLoadingMore(true)
+    const recipes = await getRecentRecipes(PAGE_SIZE, allOffset)
+    const newMatches = matchRecipes(recipes, inventoryNames)
+    setMatches((prev) => [...prev, ...newMatches])
+    setAllOffset((prev) => prev + PAGE_SIZE)
+    setHasMore(recipes.length === PAGE_SIZE)
+    setLoadingMore(false)
   }
 
   const handleSearch = async () => {
@@ -152,7 +153,8 @@ export function RecipesPage() {
     const recipes = await searchRecipes(searchQuery)
     const results = matchRecipes(recipes, inventoryNames)
     setMatches(results)
-    setCache('recipes:matches', results)
+    setIsSuggested(false)
+    setHasMore(false)
     setLoading(false)
   }
 
@@ -448,11 +450,18 @@ export function RecipesPage() {
           </Center>
         ) : (
           <Stack gap="sm" px="md" pb={40}>
+            {filtered.length === 0 && !loading && (
+              <Center py={40}>
+                <Text c="dimmed" size="sm" style={{ fontFamily: '"Manrope", sans-serif' }}>
+                  {t('recipes.emptyState')}
+                </Text>
+              </Center>
+            )}
             {filtered.map((m) => {
               const isFav = favorites.has(m.recipe.id)
               return (
                 <Card
-                  key={m.recipe.id}
+                  key={`${m.recipe.id}-${m.recipe.name}`}
                   shadow="none"
                   radius={16}
                   p={0}
@@ -583,6 +592,22 @@ export function RecipesPage() {
                 </Card>
               )
             })}
+            {!isSuggested && hasMore && (
+              <Center pt={8} pb={16}>
+                <Button
+                  variant="subtle"
+                  loading={loadingMore}
+                  onClick={handleLoadMore}
+                  style={{
+                    color: TERRA,
+                    fontFamily: '"Manrope", sans-serif',
+                    fontWeight: 600,
+                  }}
+                >
+                  Ladda fler recept
+                </Button>
+              </Center>
+            )}
           </Stack>
         )}
 
