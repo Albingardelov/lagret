@@ -21,7 +21,13 @@ export function normalizeIngredient(name: string): string {
 export function ingredientsMatch(a: string, b: string): boolean {
   const na = normalizeIngredient(a)
   const nb = normalizeIngredient(b)
-  return na === nb || na.includes(nb) || nb.includes(na)
+  if (na === nb || na.includes(nb) || nb.includes(na)) return true
+  // Word-level overlap: any significant word (≥4 chars, non-numeric) from one string appears in the other
+  const significantWords = (s: string) =>
+    s.split(/\s+/).filter((w) => w.length >= 4 && !/^\d/.test(w))
+  const wa = significantWords(na)
+  const wb = significantWords(nb)
+  return wa.some((w) => nb.includes(w)) || wb.some((w) => na.includes(w))
 }
 
 /** Computes a match score for one recipe against a list of inventory item names */
