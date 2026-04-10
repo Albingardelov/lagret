@@ -172,7 +172,7 @@ export function RecipesPage() {
 
   const filtered = matches.filter((m) => {
     if (filter === 'ready') return m.score >= 1
-    if (filter === 'almost') return m.score >= 0.6
+    if (filter === 'almost') return m.score > 0 && m.missing.length <= 3
     if (filter === 'favorites') return favorites.has(m.recipe.id)
     return true
   })
