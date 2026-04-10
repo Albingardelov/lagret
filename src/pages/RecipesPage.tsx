@@ -87,6 +87,7 @@ export function RecipesPage() {
   const [selected, setSelected] = useState<RecipeMatch | null>(null)
   const [filter, setFilter] = useState<FilterMode>('all')
   const [favorites, setFavorites] = useState<Set<number>>(() => loadFavorites())
+  const [isSuggested, setIsSuggested] = useState(false)
   const [cooking, setCooking] = useState(false)
   const [cookChecked, setCookChecked] = useState<Set<string>>(new Set())
   const [cookDone, setCookDone] = useState(false)
@@ -100,23 +101,17 @@ export function RecipesPage() {
   const inventoryNames = items.map((i) => i.name)
 
   useEffect(() => {
-    const cached = getCached<RecipeMatch[]>('recipes:matches')
+    const cached = getCached<RecipeMatch[]>('recipes:all')
     if (cached && cached.length > 0) {
       setMatches(cached)
       return
     }
     const loadInitial = async () => {
       setLoading(true)
-      let results: RecipeMatch[]
-      if (inventoryNames.length > 0) {
-        const recipes = await suggestRecipes(inventoryNames)
-        results = matchRecipes(recipes, inventoryNames)
-      } else {
-        const recipes = await getRecentRecipes()
-        results = matchRecipes(recipes, [])
-      }
+      const recipes = await getRecentRecipes(50)
+      const results = matchRecipes(recipes, inventoryNames)
       setMatches(results)
-      setCache('recipes:matches', results)
+      setCache('recipes:all', results)
       setLoading(false)
     }
     loadInitial()
@@ -126,11 +121,29 @@ export function RecipesPage() {
   const handleSuggest = async () => {
     setLoading(true)
     const names = inventoryNames
-    const recipes = await suggestRecipes(names)
+    const recipes = await suggestRecipes(names, 50)
     const results = matchRecipes(recipes, names)
     setMatches(results)
+    setIsSuggested(true)
     setCache('recipes:matches', results)
     setLoading(false)
+  }
+
+  const handleShowAll = () => {
+    setIsSuggested(false)
+    setFilter('all')
+    const cached = getCached<RecipeMatch[]>('recipes:all')
+    if (cached && cached.length > 0) {
+      setMatches(cached)
+      return
+    }
+    setLoading(true)
+    getRecentRecipes(50).then((recipes) => {
+      const results = matchRecipes(recipes, inventoryNames)
+      setMatches(results)
+      setCache('recipes:all', results)
+      setLoading(false)
+    })
   }
 
   const handleSearch = async () => {
@@ -327,21 +340,39 @@ export function RecipesPage() {
             >
               {t('recipes.suggestHint')}
             </Text>
-            <Button
-              size="sm"
-              radius="xl"
-              leftSection={<IconChefHat size={15} />}
-              onClick={handleSuggest}
-              loading={loading}
-              style={{
-                background: '#FFFFFF',
-                color: TERRA,
-                fontFamily: '"Manrope", sans-serif',
-                fontWeight: 700,
-              }}
-            >
-              {t('recipes.suggest')}
-            </Button>
+            <Group gap={8}>
+              <Button
+                size="sm"
+                radius="xl"
+                leftSection={<IconChefHat size={15} />}
+                onClick={handleSuggest}
+                loading={loading}
+                style={{
+                  background: '#FFFFFF',
+                  color: TERRA,
+                  fontFamily: '"Manrope", sans-serif',
+                  fontWeight: 700,
+                }}
+              >
+                {t('recipes.suggest')}
+              </Button>
+              {isSuggested && (
+                <Button
+                  size="sm"
+                  radius="xl"
+                  variant="subtle"
+                  onClick={handleShowAll}
+                  style={{
+                    color: 'rgba(255,255,255,0.85)',
+                    fontFamily: '"Manrope", sans-serif',
+                    fontWeight: 600,
+                    textDecoration: 'underline',
+                  }}
+                >
+                  {t('recipes.all')}
+                </Button>
+              )}
+            </Group>
           </Box>
         </Box>
 
@@ -437,7 +468,12 @@ export function RecipesPage() {
                 >
                   {m.recipe.imageUrls?.[0] && (
                     <div style={{ position: 'relative' }}>
-                      <Image src={m.recipe.imageUrls[0]} h={220} style={{ display: 'block' }} />
+                      <Image
+                        src={m.recipe.imageUrls[0]}
+                        h={220}
+                        style={{ display: 'block' }}
+                        loading="lazy"
+                      />
                       {/* Gradient overlay */}
                       <div
                         style={{
