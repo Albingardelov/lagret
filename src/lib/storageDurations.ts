@@ -22,6 +22,13 @@ export const STORAGE_DAYS: Partial<Record<string, Record<LocationIcon, number>>>
 }
 
 /**
+ * Multiplier applied to storage days when an item is vacuum-packed.
+ * Vacuum packing removes oxygen which slows oxidation and microbial growth,
+ * extending shelf life roughly 4-6x (especially in the freezer).
+ */
+export const VACUUM_PACK_MULTIPLIER = 5
+
+/**
  * Returns a suggested expiry Date given a category and location type.
  * If baseDate is provided (e.g. the date on the packaging), days are added on top of that.
  * Otherwise today is used as the base.
@@ -29,11 +36,13 @@ export const STORAGE_DAYS: Partial<Record<string, Record<LocationIcon, number>>>
 export function suggestExpiryDate(
   category: string | undefined,
   locationType: LocationIcon | undefined,
-  baseDate?: Date
+  baseDate?: Date,
+  vacuumPacked = false
 ): Date | null {
   if (!category || !locationType) return null
-  const days = STORAGE_DAYS[category]?.[locationType]
+  let days = STORAGE_DAYS[category]?.[locationType]
   if (!days) return null
+  if (vacuumPacked) days *= VACUUM_PACK_MULTIPLIER
   const date = new Date(baseDate ?? new Date())
   date.setDate(date.getDate() + days)
   return date

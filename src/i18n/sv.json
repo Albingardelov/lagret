@@ -117,6 +117,8 @@
     "portionCount": "Antal delar",
     "eachPortion": "Varje del",
     "addPortions": "Lägg till {{count}} delar",
+    "vacuumPacked": "Vakuumpackat",
+    "vacuumPackedHint": "Förlänger hållbarheten ungefär 5×",
     "error": "Fel"
   },
   "editItem": {

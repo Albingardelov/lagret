@@ -117,6 +117,8 @@
     "portionCount": "Number of portions",
     "eachPortion": "Each portion",
     "addPortions": "Add {{count}} portions",
+    "vacuumPacked": "Vacuum packed",
+    "vacuumPackedHint": "Extends shelf life by approximately 5×",
     "error": "Error"
   },
   "editItem": {
