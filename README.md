@@ -1,73 +1,73 @@
-# React + TypeScript + Vite
+# Lagret
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+En PWA för att hålla koll på matförrådet hemma — med streckkodsscanning, inköpslista och receptförslag.
 
-Currently, two official plugins are available:
+[![Live](https://img.shields.io/badge/Live-lagret.vercel.app-black?style=for-the-badge)](https://lagret.vercel.app)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Vad är det?
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Lagret löser ett konkret problem: man vet aldrig riktigt vad man har hemma. Appen låter dig:
 
-## Expanding the ESLint configuration
+- Scanna streckkoder för att snabbt lägga till varor
+- Se vad som håller på att gå ut i datum
+- Dela förrådet med andra i samma hushåll i realtid
+- Få receptförslag baserat på det du faktiskt har hemma
+- Hantera en gemensam inköpslista
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Fungerar som en installationsbar app på mobilen (PWA).
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Stack
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+| Del | Teknologi |
+|-----|-----------|
+| UI | React 19 + TypeScript + Vite |
+| Komponenter | Mantine 8 |
+| State | Zustand |
+| Backend/Auth | Supabase (Postgres, RLS, Realtime) |
+| Streckkodsscanning | ZXing |
+| Recept | TheMealDB API |
+| Routing | React Router v7 |
+| PWA | vite-plugin-pwa + Workbox |
+| Tester | Vitest + React Testing Library + Playwright |
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Arkitektur
+
+```
+src/
+  components/   Återanvändbara UI-komponenter
+  pages/        En fil per route, lazy-laddad
+  store/        Zustand-stores (ett ansvarsområde per fil)
+  lib/          Extern API-logik (Supabase, streckkoder, recept)
+  hooks/        Custom React hooks
+  types/        Delade TypeScript-typer
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Dataflöde: `pages → store → lib → Supabase / externa API:er`
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Köra lokalt
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+# Klona och installera
+git clone https://github.com/Albingardelov/lagret.git
+cd lagret
+npm install
+
+# Miljövariabler
+cp .env.example .env.local
+# Fyll i VITE_SUPABASE_URL och VITE_SUPABASE_ANON_KEY
+
+# Starta dev-server
+npm run dev
+```
+
+Du behöver ett eget Supabase-projekt med tabellerna `households`, `household_members`, `inventory`, `shopping_list` och `barcodes`.
+
+## Tester
+
+```bash
+npm run test          # Enhetstester (Vitest)
+npm run test:e2e      # E2E-tester (Playwright)
+npm run build         # TypeScript-check + produktionsbygge
 ```
